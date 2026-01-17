@@ -14,6 +14,14 @@ import PdfToExcelPage from "./pages/PdfToExcelPage";
 import ExcelToPdfPage from "./pages/ExcelToPdfPage";
 import PdfToImagePage from "./pages/PdfToImagePage";
 import ImageToPdfPage from "./pages/ImageToPdfPage";
+import OcrPage from "./pages/OcrPage";
+import AboutPage from "./pages/AboutPage";
+import BlogPage from "./pages/BlogPage";
+import PricingPage from "./pages/PricingPage";
+import ContactPage from "./pages/ContactPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
+import CookiePage from "./pages/CookiePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +44,14 @@ const App = () => (
           <Route path="/excel-to-pdf" element={<ExcelToPdfPage />} />
           <Route path="/pdf-to-image" element={<PdfToImagePage />} />
           <Route path="/image-to-pdf" element={<ImageToPdfPage />} />
+          <Route path="/ocr" element={<OcrPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/cookies" element={<CookiePage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
