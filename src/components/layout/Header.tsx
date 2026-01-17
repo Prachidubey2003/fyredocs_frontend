@@ -3,17 +3,28 @@ import { FileText, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/auth/useAuth';
 
 const navItems = [
-  { label: 'Merge', href: '/merge' },
-  { label: 'Split', href: '/split' },
-  { label: 'Compress', href: '/compress' },
-  { label: 'Convert', href: '/convert' },
-  { label: 'All Tools', href: '/#tools' },
+  { label: 'Merge', href: '/merge', requiresAuth: true },
+  { label: 'Split', href: '/split', requiresAuth: true },
+  { label: 'Compress', href: '/compress', requiresAuth: true },
+  { label: 'Convert', href: '/convert', requiresAuth: true },
+  { label: 'All Tools', href: '/#tools', requiresAuth: true },
 ];
 
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    setIsMobileMenuOpen(false);
+  };
+
+  const visibleNavItems = navItems.filter(
+    (item) => !item.requiresAuth || isAuthenticated
+  );
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -28,7 +39,7 @@ export const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <Link
               key={item.href}
               to={item.href}
@@ -39,11 +50,29 @@ export const Header = () => {
           ))}
         </nav>
 
-        {/* CTA & Mobile Menu Toggle */}
+        {/* Auth & Mobile Menu Toggle */}
         <div className="flex items-center gap-3">
-          <Button className="hidden sm:flex bg-gradient-primary hover:opacity-90 transition-opacity">
-            Get Started
-          </Button>
+          {!isLoading && !isAuthenticated && (
+            <>
+              <Button variant="ghost" className="hidden sm:flex" asChild>
+                <Link to="/signin">Sign in</Link>
+              </Button>
+              <Button className="hidden sm:flex bg-gradient-primary hover:opacity-90 transition-opacity" asChild>
+                <Link to="/signup">Sign up</Link>
+              </Button>
+            </>
+          )}
+
+          {!isLoading && isAuthenticated && (
+            <>
+              <span className="hidden lg:inline text-sm text-muted-foreground">
+                {user?.email ?? 'Signed in'}
+              </span>
+              <Button variant="outline" className="hidden sm:flex" onClick={handleLogout}>
+                Log out
+              </Button>
+            </>
+          )}
 
           <Button
             variant="ghost"
@@ -68,7 +97,7 @@ export const Header = () => {
         )}
       >
         <nav className="container py-4 flex flex-col gap-1">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <Link
               key={item.href}
               to={item.href}
@@ -78,7 +107,26 @@ export const Header = () => {
               {item.label}
             </Link>
           ))}
-          <Button className="mt-3 bg-gradient-primary">Get Started</Button>
+          {!isLoading && !isAuthenticated && (
+            <div className="mt-3 grid gap-2">
+              <Button variant="outline" asChild>
+                <Link to="/signin" onClick={() => setIsMobileMenuOpen(false)}>
+                  Sign in
+                </Link>
+              </Button>
+              <Button className="bg-gradient-primary" asChild>
+                <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                  Sign up
+                </Link>
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && isAuthenticated && (
+            <Button variant="outline" className="mt-3" onClick={handleLogout}>
+              Log out
+            </Button>
+          )}
         </nav>
       </div>
     </header>

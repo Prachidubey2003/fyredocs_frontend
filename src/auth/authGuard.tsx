@@ -1,0 +1,70 @@
+import { type ReactNode } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '@/auth/useAuth';
+
+const LoadingState = () => (
+  <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
+    Checking session...
+  </div>
+);
+
+type GuardProps = {
+  redirectTo?: string;
+  children?: ReactNode;
+};
+
+export const ProtectedRoute = ({ redirectTo = '/signin', children }: GuardProps) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to={redirectTo} replace state={{ from: location }} />;
+  }
+
+  return children ? <>{children}</> : <Outlet />;
+};
+
+export const PublicOnlyRoute = ({ redirectTo = '/', children }: GuardProps) => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  return children ? <>{children}</> : <Outlet />;
+};
+
+type RoleRouteProps = GuardProps & {
+  allowedRoles: string[];
+};
+
+export const RoleRoute = ({
+  allowedRoles,
+  redirectTo = '/signin',
+  children,
+}: RoleRouteProps) => {
+  const { isAuthenticated, isLoading, role } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to={redirectTo} replace state={{ from: location }} />;
+  }
+
+  if (!role || !allowedRoles.includes(role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children ? <>{children}</> : <Outlet />;
+};

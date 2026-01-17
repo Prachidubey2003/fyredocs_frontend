@@ -1,3 +1,11 @@
+import { refreshAccessToken } from '@/auth/authClient';
+import { getAccessToken } from '@/auth/tokenStore';
+
+type ApiRequestOptions = RequestInit & {
+  skipAuth?: boolean;
+  skipRefresh?: boolean;
+};
+
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
 
 const getBaseUrl = () => {
@@ -7,6 +15,17 @@ const getBaseUrl = () => {
 
 const normalizeBaseUrl = (baseUrl: string) =>
   baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+
+const mergeHeaders = (source?: HeadersInit, overrides?: HeadersInit) => {
+  const headers = new Headers(source);
+  if (overrides) {
+    const overrideHeaders = new Headers(overrides);
+    overrideHeaders.forEach((value, key) => {
+      headers.set(key, value);
+    });
+  }
+  return headers;
+};
 
 export const buildApiUrl = (path: string) => {
   if (path.startsWith('http://') || path.startsWith('https://')) {
@@ -37,14 +56,38 @@ const parseErrorMessage = async (response: Response) => {
   return message;
 };
 
+const buildAuthHeaders = (headers: Headers, skipAuth?: boolean) => {
+  if (skipAuth) return headers;
+  const token = getAccessToken();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  return headers;
+};
+
 export const apiRequest = async <T>(
   path: string,
-  options: RequestInit = {}
+  options: ApiRequestOptions = {}
 ): Promise<T> => {
-  const response = await fetch(buildApiUrl(path), {
-    credentials: options.credentials ?? 'include',
-    ...options,
+  const { skipAuth, skipRefresh, ...fetchOptions } = options;
+  let headers = buildAuthHeaders(new Headers(fetchOptions.headers), skipAuth);
+  let response = await fetch(buildApiUrl(path), {
+    credentials: fetchOptions.credentials ?? 'include',
+    ...fetchOptions,
+    headers,
   });
+
+  if (response.status === 401 && !skipRefresh) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      headers = buildAuthHeaders(new Headers(fetchOptions.headers), skipAuth);
+      response = await fetch(buildApiUrl(path), {
+        credentials: fetchOptions.credentials ?? 'include',
+        ...fetchOptions,
+        headers,
+      });
+    }
+  }
 
   if (!response.ok) {
     throw new Error(await parseErrorMessage(response));
@@ -65,9 +108,9 @@ export const apiRequest = async <T>(
 
 export const apiJson = async <T>(
   path: string,
-  options: RequestInit = {}
+  options: ApiRequestOptions = {}
 ): Promise<T> => {
-  const headers = new Headers(options.headers);
+  const headers = mergeHeaders(options.headers);
   if (!headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }

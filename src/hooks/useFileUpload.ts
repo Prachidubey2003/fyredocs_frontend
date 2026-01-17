@@ -82,6 +82,29 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
     };
   }, []);
 
+  const setUploadState = useCallback((fileId: string, state: UploadState, error?: string) => {
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.id === fileId
+          ? {
+              ...f,
+              state,
+              error,
+              uploadedAt: state === 'completed' ? new Date() : f.uploadedAt,
+            }
+          : f
+      )
+    );
+  }, []);
+
+  const setServerFileId = useCallback((fileId: string, serverFileId: string) => {
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.id === fileId ? { ...f, serverFileId } : f
+      )
+    );
+  }, []);
+
   const syncUploadedChunks = useCallback((fileId: string, uploadedChunks: number[]) => {
     setFiles((prev) =>
       prev.map((file) => {
@@ -397,29 +420,6 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
               },
             }
           : f
-      )
-    );
-  }, []);
-
-  const setUploadState = useCallback((fileId: string, state: UploadState, error?: string) => {
-    setFiles((prev) =>
-      prev.map((f) =>
-        f.id === fileId
-          ? {
-              ...f,
-              state,
-              error,
-              uploadedAt: state === 'completed' ? new Date() : f.uploadedAt,
-            }
-          : f
-      )
-    );
-  }, []);
-
-  const setServerFileId = useCallback((fileId: string, serverFileId: string) => {
-    setFiles((prev) =>
-      prev.map((f) =>
-        f.id === fileId ? { ...f, serverFileId } : f
       )
     );
   }, []);

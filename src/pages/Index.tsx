@@ -2,8 +2,13 @@ import { Layout } from '@/components/layout/Layout';
 import { Hero } from '@/components/home/Hero';
 import { ToolGrid } from '@/components/home/ToolGrid';
 import { FeaturesSection } from '@/components/home/FeaturesSection';
+import { useAuth } from '@/auth/useAuth';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -18,11 +23,33 @@ const Index = () => {
             </h2>
             <p className="text-lg text-muted-foreground">
               Choose from our comprehensive collection of PDF tools. 
-              All tools are free, fast, and secure.
+              Sign in to access the full toolset.
             </p>
           </div>
 
-          <ToolGrid />
+          {isLoading && (
+            <div className="rounded-2xl border bg-card p-8 text-center text-sm text-muted-foreground">
+              Loading tools...
+            </div>
+          )}
+
+          {!isLoading && isAuthenticated && <ToolGrid />}
+
+          {!isLoading && !isAuthenticated && (
+            <div className="rounded-2xl border bg-card p-8 text-center">
+              <p className="text-sm text-muted-foreground mb-4">
+                Sign in to access all PDF tools.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button variant="outline" asChild>
+                  <Link to="/signin">Sign in</Link>
+                </Button>
+                <Button className="bg-gradient-primary" asChild>
+                  <Link to="/signup">Sign up</Link>
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -37,14 +64,11 @@ const Index = () => {
               Ready to work with your PDFs?
             </h2>
             <p className="text-muted-foreground mb-6">
-              No signup required. Start using our tools right away.
+              Sign in to unlock secure file conversions.
             </p>
-            <a
-              href="#tools"
-              className="inline-flex items-center justify-center h-12 px-8 text-base font-medium rounded-lg bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity"
-            >
-              Get Started Free
-            </a>
+            <Button className="bg-gradient-primary" asChild>
+              <Link to="/signin">Get started</Link>
+            </Button>
           </div>
         </div>
       </section>
