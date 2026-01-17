@@ -15,6 +15,10 @@ import ExcelToPdfPage from "./pages/ExcelToPdfPage";
 import PdfToImagePage from "./pages/PdfToImagePage";
 import ImageToPdfPage from "./pages/ImageToPdfPage";
 import OcrPage from "./pages/OcrPage";
+import WatermarkPage from "./pages/WatermarkPage";
+import ProtectPage from "./pages/ProtectPage";
+import RotatePage from "./pages/RotatePage";
+import ReorderPage from "./pages/ReorderPage";
 import AboutPage from "./pages/AboutPage";
 import BlogPage from "./pages/BlogPage";
 import PricingPage from "./pages/PricingPage";
@@ -45,6 +49,10 @@ const App = () => (
           <Route path="/pdf-to-image" element={<PdfToImagePage />} />
           <Route path="/image-to-pdf" element={<ImageToPdfPage />} />
           <Route path="/ocr" element={<OcrPage />} />
+          <Route path="/watermark" element={<WatermarkPage />} />
+          <Route path="/protect" element={<ProtectPage />} />
+          <Route path="/rotate" element={<RotatePage />} />
+          <Route path="/reorder" element={<ReorderPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/pricing" element={<PricingPage />} />
