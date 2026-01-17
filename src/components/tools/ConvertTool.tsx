@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { TOOLS } from '@/config/tools';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
@@ -25,6 +24,9 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
     removeFile,
     clearFiles,
     canProceed,
+    pauseUpload,
+    resumeUpload,
+    retryUpload: retryFileUpload,
   } = useFileUpload({
     tool,
     onValidationError: (errors) => {
@@ -48,6 +50,15 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
       return;
     }
 
+    const uploadIds = files
+      .map((file) => file.serverFileId)
+      .filter((id): id is string => Boolean(id));
+
+    if (uploadIds.length !== files.length) {
+      toast.error('Please wait for all uploads to finish');
+      return;
+    }
+
     const options: ConvertOptions = {
       format: outputFormat,
       quality: 'high',
@@ -55,7 +66,7 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
 
     createJob(
       tool.id,
-      files.map((f) => f.id),
+      uploadIds,
       options
     );
   };
@@ -100,7 +111,14 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
                   </Button>
                 </div>
 
-                <FileList files={files} onRemove={removeFile} className="mb-6" />
+                <FileList
+                  files={files}
+                  onRemove={removeFile}
+                  onRetry={retryFileUpload}
+                  onPause={pauseUpload}
+                  onResume={resumeUpload}
+                  className="mb-6"
+                />
 
                 <div className="p-4 rounded-lg bg-tool-convert/5 border border-tool-convert/20 mb-6">
                   <p className="text-sm text-center">
@@ -139,7 +157,9 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
               onCancel={cancelJob}
               onRetry={retryJob}
               onDownload={() => {
-                toast.success('Download started');
+                if (job.result?.downloadUrl) {
+                  window.open(job.result.downloadUrl, '_blank');
+                }
               }}
             />
 

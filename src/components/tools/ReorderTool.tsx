@@ -25,9 +25,9 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
   const {
     files,
     addFiles,
-    removeFile,
     clearFiles,
     isUploading,
+    canProceed,
   } = useFileUpload({ tool });
 
   const { job, createJob, cancelJob, retryJob } = useJob();
@@ -83,7 +83,14 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
 
   const handleProcess = () => {
     if (files.length === 0 || pages.length === 0) return;
-    createJob(tool.id, files.map((f) => f.id), {
+
+    const uploadIds = files
+      .map((file) => file.serverFileId)
+      .filter((id): id is string => Boolean(id));
+
+    if (uploadIds.length !== files.length) return;
+
+    createJob(tool.id, uploadIds, {
       pageOrder: pages.map((p) => p.id),
     } as any);
   };
@@ -173,8 +180,8 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
                     New page order: {pages.map((p) => p.id).join(', ')}
                   </p>
                   <Button
-                    onClick={handleProcess}
-                    disabled={!hasFiles || isProcessing || pages.length === 0}
+                  onClick={handleProcess}
+                    disabled={!hasFiles || isProcessing || pages.length === 0 || !canProceed}
                     className="w-full bg-gradient-primary"
                     size="lg"
                   >

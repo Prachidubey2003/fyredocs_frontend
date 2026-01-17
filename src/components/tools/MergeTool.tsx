@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { TOOLS } from '@/config/tools';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
@@ -21,6 +20,9 @@ export const MergeTool = () => {
     reorderFiles,
     isUploading,
     canProceed,
+    pauseUpload,
+    resumeUpload,
+    retryUpload: retryFileUpload,
   } = useFileUpload({
     tool,
     onValidationError: (errors) => {
@@ -47,11 +49,20 @@ export const MergeTool = () => {
       return;
     }
 
+    const uploadIds = files
+      .map((file) => file.serverFileId)
+      .filter((id): id is string => Boolean(id));
+
+    if (uploadIds.length !== files.length) {
+      toast.error('Please wait for all uploads to finish');
+      return;
+    }
+
     // Create job with file IDs and merge order
     createJob(
       tool.id,
-      files.map((f) => f.id),
-      { order: files.map((f) => f.id) }
+      uploadIds,
+      { order: uploadIds }
     );
   };
 
@@ -103,6 +114,9 @@ export const MergeTool = () => {
                 <FileList
                   files={files}
                   onRemove={removeFile}
+                  onRetry={retryFileUpload}
+                  onPause={pauseUpload}
+                  onResume={resumeUpload}
                   onReorder={reorderFiles}
                   showReorder
                   className="mb-6"
@@ -147,8 +161,9 @@ export const MergeTool = () => {
               onCancel={cancelJob}
               onRetry={retryJob}
               onDownload={() => {
-                // In production, this would trigger actual download
-                toast.success('Download started');
+                if (job.result?.downloadUrl) {
+                  window.open(job.result.downloadUrl, '_blank');
+                }
               }}
             />
 

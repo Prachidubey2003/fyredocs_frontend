@@ -33,6 +33,10 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
     removeFile,
     clearFiles,
     isUploading,
+    canProceed,
+    pauseUpload,
+    resumeUpload,
+    retryUpload: retryFileUpload,
   } = useFileUpload({ tool });
 
   const { job, createJob, cancelJob, retryJob } = useJob();
@@ -43,7 +47,14 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
 
   const handleProcess = () => {
     if (files.length === 0) return;
-    createJob(tool.id, files.map((f) => f.id), {
+
+    const uploadIds = files
+      .map((file) => file.serverFileId)
+      .filter((id): id is string => Boolean(id));
+
+    if (uploadIds.length !== files.length) return;
+
+    createJob(tool.id, uploadIds, {
       type: watermarkType,
       text: watermarkType === 'text' ? text : undefined,
       position,
@@ -74,7 +85,13 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
 
           {hasFiles && (
             <>
-              <FileList files={files} onRemove={removeFile} />
+              <FileList
+                files={files}
+                onRemove={removeFile}
+                onRetry={retryFileUpload}
+                onPause={pauseUpload}
+                onResume={resumeUpload}
+              />
 
               <div className="flex justify-end mb-4">
                 <Button variant="outline" onClick={clearFiles} size="sm">
@@ -210,7 +227,7 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
 
                 <Button
                   onClick={handleProcess}
-                  disabled={!hasFiles || isProcessing || (watermarkType === 'text' && !text.trim())}
+                  disabled={!hasFiles || isProcessing || !canProceed || (watermarkType === 'text' && !text.trim())}
                   className="w-full bg-gradient-primary"
                   size="lg"
                 >

@@ -54,6 +54,9 @@ export const CompressTool = () => {
     removeFile,
     clearFiles,
     canProceed,
+    pauseUpload,
+    resumeUpload,
+    retryUpload: retryFileUpload,
   } = useFileUpload({
     tool,
     onValidationError: (errors) => {
@@ -77,11 +80,20 @@ export const CompressTool = () => {
       return;
     }
 
+    const uploadIds = files
+      .map((file) => file.serverFileId)
+      .filter((id): id is string => Boolean(id));
+
+    if (uploadIds.length !== files.length) {
+      toast.error('Please wait for all uploads to finish');
+      return;
+    }
+
     const options: CompressOptions = { quality };
 
     createJob(
       tool.id,
-      files.map((f) => f.id),
+      uploadIds,
       options
     );
   };
@@ -129,7 +141,14 @@ export const CompressTool = () => {
                   </Button>
                 </div>
 
-                <FileList files={files} onRemove={removeFile} className="mb-8" />
+                <FileList
+                  files={files}
+                  onRemove={removeFile}
+                  onRetry={retryFileUpload}
+                  onPause={pauseUpload}
+                  onResume={resumeUpload}
+                  className="mb-8"
+                />
 
                 {/* Compression options */}
                 <div className="p-6 rounded-xl border bg-card mb-6">
@@ -203,7 +222,9 @@ export const CompressTool = () => {
               onCancel={cancelJob}
               onRetry={retryJob}
               onDownload={() => {
-                toast.success('Download started');
+                if (job.result?.downloadUrl) {
+                  window.open(job.result.downloadUrl, '_blank');
+                }
               }}
             />
 
