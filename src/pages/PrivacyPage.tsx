@@ -12,7 +12,7 @@ const PrivacyPage = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">1. Introduction</h2>
               <p className="text-muted-foreground">
-                FileBlossom ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our PDF tools service.
+                Esydocs ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our PDF tools service.
               </p>
             </section>
 
@@ -64,7 +64,7 @@ const PrivacyPage = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">7. Contact Us</h2>
               <p className="text-muted-foreground">
-                If you have any questions about this Privacy Policy, please contact us at privacy@fileblossom.com.
+                If you have any questions about this Privacy Policy, please contact us at privacy@esydocs.com.
               </p>
             </section>
           </div>

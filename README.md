@@ -1,8 +1,8 @@
-# File Blossom Lab
+# Esydocs
 
 ## Project info
 
-This repository contains the File Blossom Lab frontend.
+This repository contains the Esydocs frontend.
 
 ## Development
 

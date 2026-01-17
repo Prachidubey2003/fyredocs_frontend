@@ -1,5 +1,13 @@
 import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { AuthCredentials, AuthUser, getMe, login, logout, signup } from '@/auth/authClient';
+import {
+  AuthCredentials,
+  AuthSignupCredentials,
+  AuthUser,
+  getMe,
+  login,
+  logout,
+  signup,
+} from '@/auth/authClient';
 import { clearAccessToken, subscribeAccessToken } from '@/auth/tokenStore';
 
 type AuthContextValue = {
@@ -8,7 +16,7 @@ type AuthContextValue = {
   user: AuthUser | null;
   role: string | null;
   login: (credentials: AuthCredentials) => Promise<AuthUser | null>;
-  signup: (credentials: AuthCredentials) => Promise<AuthUser | null>;
+  signup: (credentials: AuthSignupCredentials) => Promise<AuthUser | null>;
   logout: () => Promise<void>;
 };
 

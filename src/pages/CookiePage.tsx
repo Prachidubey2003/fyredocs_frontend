@@ -18,7 +18,7 @@ const CookiePage = () => {
 
             <section>
               <h2 className="text-2xl font-semibold mb-4">2. How We Use Cookies</h2>
-              <p className="text-muted-foreground mb-4">FileBlossom uses cookies for the following purposes:</p>
+              <p className="text-muted-foreground mb-4">Esydocs uses cookies for the following purposes:</p>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
                 <li><strong>Essential cookies:</strong> Required for the website to function properly, including user authentication and security.</li>
                 <li><strong>Preference cookies:</strong> Remember your settings like theme preferences and language selection.</li>
@@ -93,7 +93,7 @@ const CookiePage = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">7. Contact Us</h2>
               <p className="text-muted-foreground">
-                If you have any questions about our use of cookies, please contact us at privacy@fileblossom.com.
+                If you have any questions about our use of cookies, please contact us at privacy@esydocs.com.
               </p>
             </section>
           </div>
