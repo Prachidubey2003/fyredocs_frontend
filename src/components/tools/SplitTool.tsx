@@ -28,6 +28,9 @@ export const SplitTool = () => {
     removeFile,
     clearFiles,
     canProceed,
+    pauseUpload,
+    resumeUpload,
+    retryUpload: retryFileUpload,
   } = useFileUpload({
     tool,
     onValidationError: (errors) => {
@@ -51,14 +54,33 @@ export const SplitTool = () => {
       return;
     }
 
+    if (splitMode !== 'range') {
+      toast.error('Only range splitting is supported right now');
+      return;
+    }
+
+    if (!rangeInput.trim()) {
+      toast.error('Please enter a page range');
+      return;
+    }
+
+    const uploadIds = files
+      .map((file) => file.serverFileId)
+      .filter((id): id is string => Boolean(id));
+
+    if (uploadIds.length !== files.length) {
+      toast.error('Please wait for the upload to finish');
+      return;
+    }
+
     const options: SplitOptions = {
       mode: splitMode,
-      ranges: splitMode === 'range' ? rangeInput : undefined,
+      ranges: rangeInput.trim(),
     };
 
     createJob(
       tool.id,
-      files.map((f) => f.id),
+      uploadIds,
       options
     );
   };
@@ -89,7 +111,13 @@ export const SplitTool = () => {
               <>
                 {/* File preview */}
                 <div className="mb-8">
-                  <FileList files={files} onRemove={removeFile} />
+                  <FileList
+                    files={files}
+                    onRemove={removeFile}
+                    onRetry={retryFileUpload}
+                    onPause={pauseUpload}
+                    onResume={resumeUpload}
+                  />
                 </div>
 
                 {/* Split options */}
@@ -162,7 +190,7 @@ export const SplitTool = () => {
                   <Button
                     className="flex-1 bg-tool-split hover:bg-tool-split/90"
                     onClick={handleSplit}
-                    disabled={!canProceed || (splitMode === 'range' && !rangeInput)}
+                    disabled={!canProceed || splitMode !== 'range' || !rangeInput.trim()}
                   >
                     <Scissors className="w-4 h-4 mr-2" />
                     Split PDF
@@ -181,7 +209,9 @@ export const SplitTool = () => {
               onCancel={cancelJob}
               onRetry={retryJob}
               onDownload={() => {
-                toast.success('Download started');
+                if (job.result?.downloadUrl) {
+                  window.open(job.result.downloadUrl, '_blank');
+                }
               }}
             />
 

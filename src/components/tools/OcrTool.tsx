@@ -39,6 +39,10 @@ export const OcrTool = ({ tool }: OcrToolProps) => {
     removeFile,
     clearFiles,
     isUploading,
+    canProceed,
+    pauseUpload,
+    resumeUpload,
+    retryUpload: retryFileUpload,
   } = useFileUpload({ tool });
 
   const { job, createJob, cancelJob, retryJob } = useJob();
@@ -49,7 +53,14 @@ export const OcrTool = ({ tool }: OcrToolProps) => {
 
   const handleProcess = () => {
     if (files.length === 0) return;
-    createJob(tool.id, files.map((f) => f.id), { language, enhanceScans: enhanceScan } as const);
+
+    const uploadIds = files
+      .map((file) => file.serverFileId)
+      .filter((id): id is string => Boolean(id));
+
+    if (uploadIds.length !== files.length) return;
+
+    createJob(tool.id, uploadIds, { language, enhanceScans: enhanceScan } as const);
   };
 
   const handleDownload = () => {
@@ -76,6 +87,9 @@ export const OcrTool = ({ tool }: OcrToolProps) => {
               <FileList
                 files={files}
                 onRemove={removeFile}
+                onRetry={retryFileUpload}
+                onPause={pauseUpload}
+                onResume={resumeUpload}
               />
 
               <div className="flex justify-end mb-4">
@@ -143,7 +157,7 @@ export const OcrTool = ({ tool }: OcrToolProps) => {
 
                 <Button
                   onClick={handleProcess}
-                  disabled={!hasFiles || isProcessing}
+                  disabled={!hasFiles || isProcessing || !canProceed}
                   className="w-full bg-gradient-primary"
                   size="lg"
                 >
