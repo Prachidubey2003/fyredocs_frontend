@@ -53,7 +53,7 @@ const BlogPage = () => {
       <div className="container py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            FileBlossom <span className="text-gradient-primary">Blog</span>
+            Esydocs <span className="text-gradient-primary">Blog</span>
           </h1>
           <p className="text-xl text-muted-foreground">
             Tips, tutorials, and insights about working with PDFs

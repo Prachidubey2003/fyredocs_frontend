@@ -5,6 +5,10 @@ import { AuthError, parseAuthError } from '@/auth/authErrors';
 export type AuthUser = {
   id: string;
   email?: string;
+  fullName?: string;
+  country?: string;
+  phone?: string;
+  image?: string;
   role?: string;
   scope?: string[] | string;
   [key: string]: unknown;
@@ -13,6 +17,13 @@ export type AuthUser = {
 export type AuthCredentials = {
   email: string;
   password: string;
+};
+
+export type AuthSignupCredentials = AuthCredentials & {
+  fullName: string;
+  country: string;
+  phone?: string;
+  image?: string;
 };
 
 type AuthResponse = Record<string, unknown> | null;
@@ -56,7 +67,10 @@ const extractAccessToken = (data: AuthResponse) => {
 
 const normalizeUser = (data: AuthResponse, token?: string): AuthUser | null => {
   if (!data || typeof data !== 'object') return null;
-  const raw = (data.user as Record<string, unknown> | undefined) ?? data;
+  const raw =
+    (data.user as Record<string, unknown> | undefined) ??
+    (data.profile as Record<string, unknown> | undefined) ??
+    data;
   if (!raw || typeof raw !== 'object') return null;
 
   const id = (raw.id ?? raw.userId ?? raw.sub) as string | number | undefined;
@@ -162,7 +176,7 @@ export const login = async (credentials: AuthCredentials) => {
   };
 };
 
-export const signup = async (credentials: AuthCredentials) => {
+export const signup = async (credentials: AuthSignupCredentials) => {
   const data = await authRequest('/auth/signup', {
     method: 'POST',
     body: JSON.stringify(credentials),
@@ -178,6 +192,16 @@ export const signup = async (credentials: AuthCredentials) => {
     accessToken: token,
     user: normalizeUser(data, token),
   };
+};
+
+export const getProfile = async () => {
+  const data = await authRequest('/auth/profile', { method: 'GET' }, true);
+  const token = getAccessToken();
+  const user = normalizeUser(data, token ?? undefined);
+  if (!user) {
+    throw new AuthError('SERVER_ERROR', 'Invalid profile response.');
+  }
+  return user;
 };
 
 export const getMe = async () => {

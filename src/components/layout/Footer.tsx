@@ -33,7 +33,7 @@ export const Footer = () => {
               <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center">
                 <FileText className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span>PDF Tools</span>
+              <span>Esydocs</span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4 max-w-xs">
               Free online PDF tools to merge, split, compress, and convert your
@@ -116,7 +116,7 @@ export const Footer = () => {
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} PDF Tools. All rights reserved.
+            (c) {new Date().getFullYear()} Esydocs. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground">
             Your files are processed securely and deleted after 1 hour.

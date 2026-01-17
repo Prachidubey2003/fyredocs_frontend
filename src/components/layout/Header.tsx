@@ -1,9 +1,18 @@
 import { Link } from 'react-router-dom';
-import { FileText, Menu, X } from 'lucide-react';
+import { FileText, Menu, User, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/auth/useAuth';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const navItems = [
   { label: 'Merge', href: '/merge', requiresAuth: true },
@@ -22,6 +31,8 @@ export const Header = () => {
     setIsMobileMenuOpen(false);
   };
 
+  const formatValue = (value?: string) => (value && value.trim().length > 0 ? value : '-');
+
   const visibleNavItems = navItems.filter(
     (item) => !item.requiresAuth || isAuthenticated
   );
@@ -34,7 +45,7 @@ export const Header = () => {
           <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center">
             <FileText className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="hidden sm:inline">PDF Tools</span>
+          <span className="hidden sm:inline">Esydocs</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -65,12 +76,77 @@ export const Header = () => {
 
           {!isLoading && isAuthenticated && (
             <>
-              <span className="hidden lg:inline text-sm text-muted-foreground">
-                {user?.email ?? 'Signed in'}
-              </span>
-              <Button variant="outline" className="hidden sm:flex" onClick={handleLogout}>
-                Log out
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage
+                        src={user?.image ? user.image : undefined}
+                        alt={user?.fullName ?? user?.email ?? 'Profile'}
+                      />
+                      <AvatarFallback>
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  sideOffset={10}
+                  className="w-64 max-w-[calc(100vw-2rem)] p-2"
+                >
+                  <div className="flex items-center gap-3 rounded-lg border bg-muted/40 px-3 py-2">
+                    <Avatar className="h-9 w-9 border border-border">
+                      <AvatarImage
+                        src={user?.image ? user.image : undefined}
+                        alt={user?.fullName ?? user?.email ?? 'Profile'}
+                      />
+                      <AvatarFallback>
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-foreground">
+                        {user?.fullName ?? 'Signed in'}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {formatValue(user?.email)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2 rounded-lg border px-3 py-2">
+                    <DropdownMenuLabel className="px-0 pb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Profile details
+                    </DropdownMenuLabel>
+                    <div className="grid gap-1 text-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-muted-foreground">Country</span>
+                        <span className="font-medium text-foreground truncate">
+                          {formatValue(user?.country)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-muted-foreground">Phone</span>
+                        <span className="font-medium text-foreground truncate">
+                          {formatValue(user?.phone)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-muted-foreground">Role</span>
+                        <span className="font-medium text-foreground truncate">
+                          {formatValue(user?.role)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <DropdownMenuItem
+                    className="mt-2 justify-center rounded-md text-destructive focus:text-destructive"
+                    onSelect={() => void handleLogout()}
+                  >
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
 
