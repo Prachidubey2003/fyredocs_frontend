@@ -1,5 +1,6 @@
 import { refreshAccessToken } from '@/auth/authClient';
 import { getAccessToken } from '@/auth/tokenStore';
+import { getAuthHeaders } from '@/lib/auth';
 
 type ApiRequestOptions = RequestInit & {
   skipAuth?: boolean;
@@ -56,12 +57,18 @@ const parseErrorMessage = async (response: Response) => {
   return message;
 };
 
-const buildAuthHeaders = (headers: Headers, skipAuth?: boolean) => {
+export const buildAuthHeaders = (headers: Headers, skipAuth?: boolean) => {
   if (skipAuth) return headers;
   const token = getAccessToken();
-  if (token) {
+  if (token && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${token}`);
   }
+  const extraHeaders = getAuthHeaders();
+  Object.entries(extraHeaders).forEach(([key, value]) => {
+    if (!headers.has(key)) {
+      headers.set(key, value);
+    }
+  });
   return headers;
 };
 

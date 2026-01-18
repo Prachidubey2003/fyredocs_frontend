@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { FileUpload, UploadState, ChunkInfo, ToolDefinition, ValidationResult } from '@/types';
-import { apiJson, buildApiUrl } from '@/lib/apiClient';
+import { apiJson, buildApiUrl, buildAuthHeaders } from '@/lib/apiClient';
 
 /**
  * Custom hook for managing file uploads with chunked upload support.
@@ -184,6 +184,8 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
         let current = filesRef.current.find((item) => item.id === fileId);
         if (!current || !uploadId) return;
 
+        const authHeaders = buildAuthHeaders(new Headers());
+
         for (const chunk of current.chunks) {
           if (chunk.uploaded) continue;
           const blob = current.file.slice(chunk.start, chunk.end);
@@ -197,6 +199,7 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
               body: formData,
               signal: controller.signal,
               credentials: 'include',
+              headers: authHeaders,
             }
           );
 
