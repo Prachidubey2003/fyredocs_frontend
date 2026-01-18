@@ -2,13 +2,17 @@ import { useState } from 'react';
 import { FileDropzone } from '@/components/common/FileDropzone';
 import { FileList } from '@/components/common/FileList';
 import { JobProgress } from '@/components/common/JobProgress';
+import { BatchProgress } from '@/components/common/BatchProgress';
+import { BatchModeToggle } from '@/components/common/BatchModeToggle';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
+import { useBatchJob } from '@/hooks/useBatchJob';
 import { ToolDefinition } from '@/types';
 import { RotateCw, RotateCcw } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface RotateToolProps {
   tool: ToolDefinition;
@@ -19,6 +23,7 @@ type RotationDegree = 90 | 180 | 270;
 export const RotateTool = ({ tool }: RotateToolProps) => {
   const [rotation, setRotation] = useState<RotationDegree>(90);
   const [applyTo, setApplyTo] = useState<'all' | 'odd' | 'even'>('all');
+  const [batchMode, setBatchMode] = useState(false);
 
   const {
     files,
@@ -32,7 +37,32 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
     retryUpload: retryFileUpload,
   } = useFileUpload({ tool });
 
-  const { job, createJob, cancelJob, retryJob } = useJob();
+  const { job, createJob, cancelJob, retryJob, resetJob } = useJob({
+    onComplete: () => toast.success('Pages rotated successfully!'),
+  });
+
+  const {
+    batchJobs,
+    startBatch,
+    cancelBatch,
+    retryFailed,
+    resetBatch,
+    isProcessing: isBatchProcessing,
+    completedCount,
+    failedCount,
+    totalCount,
+    overallProgress,
+  } = useBatchJob({
+    onAllComplete: (jobs) => {
+      const successful = jobs.filter((j) => j.status === 'completed').length;
+      const failed = jobs.filter((j) => j.status === 'failed').length;
+      if (failed === 0) {
+        toast.success(`All ${successful} files rotated!`);
+      } else {
+        toast.warning(`${successful} files rotated, ${failed} failed`);
+      }
+    },
+  });
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     addFiles(selectedFiles);
@@ -41,16 +71,27 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
   const handleProcess = () => {
     if (files.length === 0) return;
 
-    const uploadIds = files
-      .map((file) => file.serverFileId)
-      .filter((id): id is string => Boolean(id));
+    const uploadedFiles = files
+      .filter((f) => f.state === 'completed' && f.serverFileId)
+      .map((f) => ({
+        id: f.id,
+        name: f.file.name,
+        serverFileId: f.serverFileId!,
+      }));
 
-    if (uploadIds.length !== files.length) return;
+    if (uploadedFiles.length !== files.length) {
+      toast.error('Please wait for all uploads to finish');
+      return;
+    }
 
-    createJob(tool.id, uploadIds, {
-      rotation,
-      applyToPages: applyTo,
-    } as any);
+    const options = { rotation, applyToPages: applyTo };
+
+    if (batchMode && files.length > 1) {
+      startBatch(tool.id, uploadedFiles, options as any);
+    } else {
+      const uploadIds = uploadedFiles.map((f) => f.serverFileId);
+      createJob(tool.id, uploadIds, options as any);
+    }
   };
 
   const handleDownload = () => {
@@ -59,12 +100,28 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
     }
   };
 
+  const handleDownloadAll = () => {
+    batchJobs
+      .filter((bj) => bj.status === 'completed' && bj.job?.result?.downloadUrl)
+      .forEach((bj) => {
+        window.open(bj.job?.result?.downloadUrl, '_blank');
+      });
+  };
+
+  const handleStartOver = () => {
+    resetJob();
+    resetBatch();
+    clearFiles();
+    setBatchMode(false);
+  };
+
   const hasFiles = files.length > 0;
   const isProcessing = job?.state === 'processing' || job?.state === 'queued';
+  const showBatchProgress = batchMode && batchJobs.length > 0;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {!job && (
+      {!job && !showBatchProgress && (
         <>
           <FileDropzone
             tool={tool}
@@ -87,6 +144,13 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
                   Clear All
                 </Button>
               </div>
+
+              <BatchModeToggle
+                enabled={batchMode}
+                onToggle={setBatchMode}
+                fileCount={files.length}
+                className="mb-6"
+              />
 
               <div className="rounded-xl border bg-card p-6 space-y-6">
                 <h3 className="font-semibold text-lg flex items-center gap-2">
@@ -174,7 +238,9 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
                   size="lg"
                 >
                   <RotateCw className="w-5 h-5 mr-2" />
-                  Rotate Pages
+                  {batchMode && files.length > 1
+                    ? `Rotate ${files.length} files`
+                    : 'Rotate Pages'}
                 </Button>
               </div>
             </>
@@ -182,12 +248,34 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
         </>
       )}
 
-      {job && (
-        <JobProgress
-          job={job}
-          onCancel={cancelJob}
-          onRetry={retryJob}
-          onDownload={handleDownload}
+      {job && !showBatchProgress && (
+        <div className="space-y-6">
+          <JobProgress
+            job={job}
+            onCancel={cancelJob}
+            onRetry={retryJob}
+            onDownload={handleDownload}
+          />
+          {(job.state === 'completed' || job.state === 'failed') && (
+            <Button variant="outline" className="w-full" onClick={handleStartOver}>
+              Start over with new files
+            </Button>
+          )}
+        </div>
+      )}
+
+      {showBatchProgress && (
+        <BatchProgress
+          batchJobs={batchJobs}
+          isProcessing={isBatchProcessing}
+          completedCount={completedCount}
+          failedCount={failedCount}
+          totalCount={totalCount}
+          overallProgress={overallProgress}
+          onCancel={cancelBatch}
+          onRetryFailed={retryFailed}
+          onDownloadAll={handleDownloadAll}
+          onReset={handleStartOver}
         />
       )}
     </div>
