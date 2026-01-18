@@ -13,7 +13,10 @@ export const useAuth = () => {
   const [auth, setAuth] = useState<AuthState>(() => getAuthState());
 
   useEffect(() => {
-    return subscribeAuth(setAuth);
+    const unsubscribe = subscribeAuth(setAuth);
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   return {
