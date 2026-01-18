@@ -51,13 +51,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [syncUser]);
 
   useEffect(() => {
-    return subscribeAccessToken((token) => {
+    const unsubscribe = subscribeAccessToken((token) => {
       if (!token) {
         setUser(null);
         setRole(null);
         setIsAuthenticated(false);
       }
     });
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const handleLogin = useCallback(
@@ -76,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const handleSignup = useCallback(
-    async (credentials: AuthCredentials) => {
+    async (credentials: AuthSignupCredentials) => {
       const response = await signup(credentials);
       if (response.user) {
         setUser(response.user);

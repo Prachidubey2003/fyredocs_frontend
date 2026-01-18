@@ -8,6 +8,10 @@ const footerLinks = {
     { label: 'Compress PDF', href: '/compress' },
     { label: 'PDF to Word', href: '/pdf-to-word' },
     { label: 'OCR PDF', href: '/ocr' },
+    { label: 'Add Watermark', href: '/watermark' },
+    { label: 'Protect PDF', href: '/protect' },
+    { label: 'Rotate Pages', href: '/rotate' },
+    { label: 'Reorder Pages', href: '/reorder' },
   ],
   company: [
     { label: 'About', href: '/about' },

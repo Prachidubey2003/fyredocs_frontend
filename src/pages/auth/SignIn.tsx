@@ -45,7 +45,7 @@ const SignIn = () => {
   const handleSubmit = async (values: SignInValues) => {
     setFormError(null);
     try {
-      await login(values);
+      await login({ email: values.email, password: values.password });
       navigate(redirectTo, { replace: true });
     } catch (error) {
       const message = isAuthError(error)
