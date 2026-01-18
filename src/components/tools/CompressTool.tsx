@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { TOOLS } from '@/config/tools';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
+import { useBatchJob } from '@/hooks/useBatchJob';
 import { CompressOptions } from '@/types';
 import { ToolPageLayout } from './ToolPageLayout';
 import { FileDropzone } from '@/components/common/FileDropzone';
 import { FileList } from '@/components/common/FileList';
 import { JobProgress } from '@/components/common/JobProgress';
+import { BatchProgress } from '@/components/common/BatchProgress';
+import { BatchModeToggle } from '@/components/common/BatchModeToggle';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -47,6 +50,7 @@ const compressionLevels = [
 
 export const CompressTool = () => {
   const [quality, setQuality] = useState<CompressionLevel>('medium');
+  const [batchMode, setBatchMode] = useState(false);
 
   const {
     files,
@@ -70,6 +74,32 @@ export const CompressTool = () => {
     },
   });
 
+  const {
+    batchJobs,
+    startBatch,
+    cancelBatch,
+    retryFailed,
+    resetBatch,
+    isProcessing: isBatchProcessing,
+    completedCount,
+    failedCount,
+    totalCount,
+    overallProgress,
+  } = useBatchJob({
+    onAllComplete: (jobs) => {
+      const successful = jobs.filter((j) => j.status === 'completed').length;
+      const failed = jobs.filter((j) => j.status === 'failed').length;
+      if (failed === 0) {
+        toast.success(`All ${successful} files compressed successfully!`);
+      } else {
+        toast.warning(`${successful} files compressed, ${failed} failed`);
+      }
+    },
+    onJobComplete: (batchJob) => {
+      toast.success(`${batchJob.fileName} compressed`);
+    },
+  });
+
   const handleFilesSelected = (selectedFiles: File[]) => {
     addFiles(selectedFiles);
   };
@@ -80,38 +110,57 @@ export const CompressTool = () => {
       return;
     }
 
-    const uploadIds = files
-      .map((file) => file.serverFileId)
-      .filter((id): id is string => Boolean(id));
+    const uploadedFiles = files
+      .filter((f) => f.state === 'completed' && f.serverFileId)
+      .map((f) => ({
+        id: f.id,
+        name: f.file.name,
+        serverFileId: f.serverFileId!,
+      }));
 
-    if (uploadIds.length !== files.length) {
+    if (uploadedFiles.length !== files.length) {
       toast.error('Please wait for all uploads to finish');
       return;
     }
 
     const options: CompressOptions = { quality };
 
-    createJob(
-      tool.id,
-      uploadIds,
-      options
-    );
+    if (batchMode && files.length > 1) {
+      // Process each file separately
+      startBatch(tool.id, uploadedFiles, options);
+    } else {
+      // Single job combining all files
+      const uploadIds = uploadedFiles.map((f) => f.serverFileId);
+      createJob(tool.id, uploadIds, options);
+    }
   };
 
   const handleStartOver = () => {
     resetJob();
+    resetBatch();
     clearFiles();
     setQuality('medium');
+    setBatchMode(false);
+  };
+
+  const handleDownloadAll = () => {
+    batchJobs
+      .filter((bj) => bj.status === 'completed' && bj.job?.result?.downloadUrl)
+      .forEach((bj) => {
+        window.open(bj.job?.result?.downloadUrl, '_blank');
+      });
   };
 
   const hasFiles = files.length > 0;
   const isComplete = job?.state === 'completed';
+  const isBatchComplete = totalCount > 0 && completedCount + failedCount === totalCount;
+  const showBatchProgress = batchMode && batchJobs.length > 0;
 
   return (
     <ToolPageLayout tool={tool}>
       <div className="max-w-3xl mx-auto">
         {/* Upload section */}
-        {!job && (
+        {!job && !showBatchProgress && (
           <>
             <FileDropzone
               tool={tool}
@@ -147,7 +196,15 @@ export const CompressTool = () => {
                   onRetry={retryFileUpload}
                   onPause={pauseUpload}
                   onResume={resumeUpload}
-                  className="mb-8"
+                  className="mb-6"
+                />
+
+                {/* Batch mode toggle */}
+                <BatchModeToggle
+                  enabled={batchMode}
+                  onToggle={setBatchMode}
+                  fileCount={files.length}
+                  className="mb-6"
                 />
 
                 {/* Compression options */}
@@ -206,7 +263,9 @@ export const CompressTool = () => {
                     disabled={!canProceed}
                   >
                     <Minimize2 className="w-4 h-4 mr-2" />
-                    Compress {files.length} PDF{files.length !== 1 ? 's' : ''}
+                    {batchMode && files.length > 1
+                      ? `Compress ${files.length} files separately`
+                      : `Compress ${files.length} PDF${files.length !== 1 ? 's' : ''}`}
                   </Button>
                 </div>
               </>
@@ -214,8 +273,8 @@ export const CompressTool = () => {
           </>
         )}
 
-        {/* Job progress */}
-        {job && (
+        {/* Single Job progress */}
+        {job && !showBatchProgress && (
           <div className="space-y-6">
             <JobProgress
               job={job}
@@ -238,6 +297,22 @@ export const CompressTool = () => {
               </Button>
             )}
           </div>
+        )}
+
+        {/* Batch progress */}
+        {showBatchProgress && (
+          <BatchProgress
+            batchJobs={batchJobs}
+            isProcessing={isBatchProcessing}
+            completedCount={completedCount}
+            failedCount={failedCount}
+            totalCount={totalCount}
+            overallProgress={overallProgress}
+            onCancel={cancelBatch}
+            onRetryFailed={retryFailed}
+            onDownloadAll={handleDownloadAll}
+            onReset={handleStartOver}
+          />
         )}
       </div>
     </ToolPageLayout>
