@@ -3,6 +3,12 @@ export type AuthErrorCode =
   | 'USER_ALREADY_EXISTS'
   | 'TOKEN_EXPIRED'
   | 'UNAUTHORIZED'
+  | 'AUTH_UNAUTHORIZED'
+  | 'AUTH_FORBIDDEN'
+  | 'INVALID_INPUT'
+  | 'NOT_FOUND'
+  | 'FILE_TOO_LARGE'
+  | 'RATE_LIMIT_EXCEEDED'
   | 'SERVER_ERROR';
 
 export class AuthError extends Error {
@@ -54,7 +60,18 @@ const userSafeMessage = (code: AuthErrorCode, fallback: string) => {
     case 'TOKEN_EXPIRED':
       return 'Your session has expired. Please sign in again.';
     case 'UNAUTHORIZED':
+    case 'AUTH_UNAUTHORIZED':
       return 'You are not authorized. Please sign in again.';
+    case 'AUTH_FORBIDDEN':
+      return 'Access denied. You do not have permission to perform this action.';
+    case 'INVALID_INPUT':
+      return 'Invalid input. Please check your data and try again.';
+    case 'NOT_FOUND':
+      return 'Resource not found.';
+    case 'FILE_TOO_LARGE':
+      return 'File size exceeds the maximum allowed limit.';
+    case 'RATE_LIMIT_EXCEEDED':
+      return 'Too many requests. Please try again later.';
     case 'SERVER_ERROR':
     default:
       return fallback || 'Something went wrong. Please try again.';
@@ -72,6 +89,15 @@ const parseResponseBody = async (response: Response) => {
 
 export const parseAuthError = async (response: Response) => {
   const details = await parseResponseBody(response);
+
+  // Handle new API error format: { error: { code, message } }
+  if (details?.error?.message && details?.error?.code) {
+    const code = details.error.code as AuthErrorCode;
+    const message = userSafeMessage(code, details.error.message);
+    return new AuthError(code, message, response.status, details);
+  }
+
+  // Fallback to old format
   const rawMessage =
     details?.message ??
     details?.error ??
