@@ -110,11 +110,41 @@ const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
 
   switch (toolId) {
     case 'split': {
-      const range = (options as { ranges?: string }).ranges?.trim();
+      const range = (options as { range?: string }).range?.trim();
       if (!range) {
         throw new Error('Page range is required for split.');
       }
       return { range };
+    }
+    case 'reorder': {
+      const order = (options as { order?: string }).order?.trim();
+      if (!order) {
+        throw new Error('Page order is required for reorder.');
+      }
+      return { order };
+    }
+    case 'remove-pages':
+    case 'extract-pages': {
+      const pages = (options as { pages?: string }).pages?.trim();
+      if (!pages) {
+        throw new Error('Page selection is required.');
+      }
+      return { pages };
+    }
+    case 'compress': {
+      const quality = (options as { quality?: string }).quality || 'ebook';
+      return { quality };
+    }
+    case 'ocr': {
+      const opts = options as { language?: string; dpi?: string };
+      return {
+        language: opts.language || 'eng',
+        dpi: opts.dpi || '300',
+      };
+    }
+    case 'scan-to-pdf': {
+      const ocr = (options as { ocr?: boolean }).ocr;
+      return ocr ? { ocr: true } : undefined;
     }
     case 'password-protect': {
       const password = (options as { password?: string }).password;
@@ -123,13 +153,21 @@ const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
       }
       return { password };
     }
+    // Tools with no options
     case 'merge':
+    case 'repair-pdf':
     case 'pdf-to-word':
     case 'pdf-to-excel':
     case 'pdf-to-image':
+    case 'pdf-to-ppt':
+    case 'pdf-to-html':
+    case 'pdf-to-text':
+    case 'pdf-to-pdfa':
     case 'word-to-pdf':
     case 'excel-to-pdf':
     case 'image-to-pdf':
+    case 'powerpoint-to-pdf':
+    case 'html-to-pdf':
       return undefined;
     default:
       return options as Record<string, unknown>;

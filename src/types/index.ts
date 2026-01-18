@@ -8,18 +8,33 @@
 // ============================================================================
 
 export type ToolId =
+  // Organize PDF tools
   | 'merge'
   | 'split'
-  | 'compress'
-  | 'pdf-to-word'
-  | 'word-to-pdf'
-  | 'pdf-to-excel'
-  | 'excel-to-pdf'
-  | 'pdf-to-image'
-  | 'image-to-pdf'
   | 'reorder'
-  | 'rotate'
+  | 'remove-pages'
+  | 'extract-pages'
+  | 'scan-to-pdf'
+  // Optimize PDF tools
+  | 'compress'
   | 'ocr'
+  | 'repair-pdf'
+  // Convert From PDF tools
+  | 'pdf-to-word'
+  | 'pdf-to-excel'
+  | 'pdf-to-image'
+  | 'pdf-to-ppt'
+  | 'pdf-to-html'
+  | 'pdf-to-text'
+  | 'pdf-to-pdfa'
+  // Convert To PDF tools
+  | 'word-to-pdf'
+  | 'excel-to-pdf'
+  | 'image-to-pdf'
+  | 'powerpoint-to-pdf'
+  | 'html-to-pdf'
+  // Legacy tools
+  | 'rotate'
   | 'watermark'
   | 'password-protect';
 
@@ -136,13 +151,11 @@ export interface MergeOptions {
 }
 
 export interface SplitOptions {
-  mode: 'all' | 'range' | 'extract';
-  ranges?: string; // e.g., "1-3, 5, 7-9"
-  extractPages?: number[];
+  range: string; // e.g., "1-3,5,7-9" or "all"
 }
 
 export interface CompressOptions {
-  quality: 'low' | 'medium' | 'high' | 'extreme';
+  quality: 'screen' | 'ebook' | 'printer' | 'prepress';
 }
 
 export interface WatermarkOptions {
@@ -167,7 +180,7 @@ export interface PasswordProtectOptions {
 
 export interface OcrOptions {
   language: string;
-  enhanceScans: boolean;
+  dpi?: string; // e.g., "150", "300", "400", "600"
 }
 
 export interface RotateOptions {
@@ -176,12 +189,24 @@ export interface RotateOptions {
 }
 
 export interface ReorderOptions {
-  pageOrder: number[];
+  order: string; // Comma-separated page numbers, e.g., "3,1,2,5,4"
 }
 
 export interface ConvertOptions {
   format: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf';
   quality?: 'low' | 'medium' | 'high';
+}
+
+export interface RemovePagesOptions {
+  pages: string; // Comma-separated page numbers or ranges, e.g., "2,4,6-8"
+}
+
+export interface ExtractPagesOptions {
+  pages: string; // Comma-separated page numbers or ranges, e.g., "1,3,5-7"
+}
+
+export interface ScanToPdfOptions {
+  ocr?: boolean; // Apply OCR to make text searchable
 }
 
 export type ToolOptions =
@@ -194,6 +219,9 @@ export type ToolOptions =
   | RotateOptions
   | ReorderOptions
   | ConvertOptions
+  | RemovePagesOptions
+  | ExtractPagesOptions
+  | ScanToPdfOptions
   | Record<string, never>; // Empty options for simple tools
 
 // ============================================================================

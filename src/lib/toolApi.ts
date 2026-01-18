@@ -6,20 +6,39 @@ type ToolApiConfig = {
 };
 
 const TOOL_API_CONFIG: Record<ToolId, ToolApiConfig> = {
-  merge: { basePath: '/api/convert-to-pdf', tool: 'merge-pdf' },
-  split: { basePath: '/api/convert-to-pdf', tool: 'split-pdf' },
-  compress: { basePath: '/api/convert-to-pdf', tool: 'compress-pdf' },
+  // Organize PDF tools
+  merge: { basePath: '/api/organize-pdf', tool: 'merge-pdf' },
+  split: { basePath: '/api/organize-pdf', tool: 'split-pdf' },
+  reorder: { basePath: '/api/organize-pdf', tool: 'organize-pdf' },
+  'remove-pages': { basePath: '/api/organize-pdf', tool: 'remove-pages' },
+  'extract-pages': { basePath: '/api/organize-pdf', tool: 'extract-pages' },
+  'scan-to-pdf': { basePath: '/api/organize-pdf', tool: 'scan-to-pdf' },
+
+  // Optimize PDF tools
+  compress: { basePath: '/api/optimize-pdf', tool: 'compress-pdf' },
+  ocr: { basePath: '/api/optimize-pdf', tool: 'ocr-pdf' },
+  'repair-pdf': { basePath: '/api/optimize-pdf', tool: 'repair-pdf' },
+
+  // Convert From PDF tools
   'pdf-to-word': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-word' },
-  'word-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'word-to-pdf' },
   'pdf-to-excel': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-excel' },
-  'excel-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'excel-to-pdf' },
   'pdf-to-image': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-image' },
+  'pdf-to-ppt': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-ppt' },
+  'pdf-to-html': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-html' },
+  'pdf-to-text': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-text' },
+  'pdf-to-pdfa': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-pdfa' },
+
+  // Convert To PDF tools
+  'word-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'word-to-pdf' },
+  'excel-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'excel-to-pdf' },
   'image-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'image-to-pdf' },
-  reorder: { basePath: '/api/convert-to-pdf', tool: 'page-reorder' },
-  rotate: { basePath: '/api/convert-to-pdf', tool: 'page-rotate' },
-  ocr: { basePath: '/api/convert-from-pdf', tool: 'ocr' },
-  watermark: { basePath: '/api/convert-to-pdf', tool: 'watermark-pdf' },
-  'password-protect': { basePath: '/api/convert-to-pdf', tool: 'protect-pdf' },
+  'powerpoint-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'powerpoint-to-pdf' },
+  'html-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'html-to-pdf' },
+
+  // Legacy tools (keeping for backward compatibility)
+  rotate: { basePath: '/api/organize-pdf', tool: 'organize-pdf' },
+  watermark: { basePath: '/api/optimize-pdf', tool: 'watermark-pdf' },
+  'password-protect': { basePath: '/api/optimize-pdf', tool: 'protect-pdf' },
 };
 
 export const getToolApiConfig = (toolId: ToolId) => TOOL_API_CONFIG[toolId];
