@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const navItems = [
   { label: 'Merge', href: '/merge', requiresAuth: true },
@@ -61,8 +62,10 @@ export const Header = () => {
           ))}
         </nav>
 
-        {/* Auth & Mobile Menu Toggle */}
-        <div className="flex items-center gap-3">
+        {/* Theme Toggle & Auth & Mobile Menu Toggle */}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          
           {!isLoading && !isAuthenticated && (
             <>
               <Button variant="ghost" className="hidden sm:flex" asChild>
