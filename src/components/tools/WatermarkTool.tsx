@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { FileDropzone } from '@/components/common/FileDropzone';
 import { FileList } from '@/components/common/FileList';
 import { JobProgress } from '@/components/common/JobProgress';
+import { BatchProgress } from '@/components/common/BatchProgress';
+import { BatchModeToggle } from '@/components/common/BatchModeToggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,8 +12,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
+import { useBatchJob } from '@/hooks/useBatchJob';
 import { ToolDefinition } from '@/types';
 import { Stamp, Type, Image } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface WatermarkToolProps {
   tool: ToolDefinition;
@@ -26,6 +30,7 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
   const [opacity, setOpacity] = useState([50]);
   const [fontSize, setFontSize] = useState([48]);
   const [color, setColor] = useState('#6366f1');
+  const [batchMode, setBatchMode] = useState(false);
 
   const {
     files,
@@ -39,7 +44,32 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
     retryUpload: retryFileUpload,
   } = useFileUpload({ tool });
 
-  const { job, createJob, cancelJob, retryJob } = useJob();
+  const { job, createJob, cancelJob, retryJob, resetJob } = useJob({
+    onComplete: () => toast.success('Watermark added successfully!'),
+  });
+
+  const {
+    batchJobs,
+    startBatch,
+    cancelBatch,
+    retryFailed,
+    resetBatch,
+    isProcessing: isBatchProcessing,
+    completedCount,
+    failedCount,
+    totalCount,
+    overallProgress,
+  } = useBatchJob({
+    onAllComplete: (jobs) => {
+      const successful = jobs.filter((j) => j.status === 'completed').length;
+      const failed = jobs.filter((j) => j.status === 'failed').length;
+      if (failed === 0) {
+        toast.success(`Watermark added to all ${successful} files!`);
+      } else {
+        toast.warning(`${successful} files watermarked, ${failed} failed`);
+      }
+    },
+  });
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     addFiles(selectedFiles);
@@ -48,20 +78,34 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
   const handleProcess = () => {
     if (files.length === 0) return;
 
-    const uploadIds = files
-      .map((file) => file.serverFileId)
-      .filter((id): id is string => Boolean(id));
+    const uploadedFiles = files
+      .filter((f) => f.state === 'completed' && f.serverFileId)
+      .map((f) => ({
+        id: f.id,
+        name: f.file.name,
+        serverFileId: f.serverFileId!,
+      }));
 
-    if (uploadIds.length !== files.length) return;
+    if (uploadedFiles.length !== files.length) {
+      toast.error('Please wait for all uploads to finish');
+      return;
+    }
 
-    createJob(tool.id, uploadIds, {
+    const options = {
       type: watermarkType,
       text: watermarkType === 'text' ? text : undefined,
       position,
       opacity: opacity[0],
       fontSize: fontSize[0],
       color,
-    } as any);
+    };
+
+    if (batchMode && files.length > 1) {
+      startBatch(tool.id, uploadedFiles, options as any);
+    } else {
+      const uploadIds = uploadedFiles.map((f) => f.serverFileId);
+      createJob(tool.id, uploadIds, options as any);
+    }
   };
 
   const handleDownload = () => {
@@ -70,12 +114,28 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
     }
   };
 
+  const handleDownloadAll = () => {
+    batchJobs
+      .filter((bj) => bj.status === 'completed' && bj.job?.result?.downloadUrl)
+      .forEach((bj) => {
+        window.open(bj.job?.result?.downloadUrl, '_blank');
+      });
+  };
+
+  const handleStartOver = () => {
+    resetJob();
+    resetBatch();
+    clearFiles();
+    setBatchMode(false);
+  };
+
   const hasFiles = files.length > 0;
   const isProcessing = job?.state === 'processing' || job?.state === 'queued';
+  const showBatchProgress = batchMode && batchJobs.length > 0;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {!job && (
+      {!job && !showBatchProgress && (
         <>
           <FileDropzone
             tool={tool}
@@ -98,6 +158,13 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
                   Clear All
                 </Button>
               </div>
+
+              <BatchModeToggle
+                enabled={batchMode}
+                onToggle={setBatchMode}
+                fileCount={files.length}
+                className="mb-6"
+              />
 
               <div className="rounded-xl border bg-card p-6 space-y-6">
                 <h3 className="font-semibold text-lg flex items-center gap-2">
@@ -232,7 +299,9 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
                   size="lg"
                 >
                   <Stamp className="w-5 h-5 mr-2" />
-                  Add Watermark
+                  {batchMode && files.length > 1
+                    ? `Add watermark to ${files.length} files`
+                    : 'Add Watermark'}
                 </Button>
               </div>
             </>
@@ -240,12 +309,34 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
         </>
       )}
 
-      {job && (
-        <JobProgress
-          job={job}
-          onCancel={cancelJob}
-          onRetry={retryJob}
-          onDownload={handleDownload}
+      {job && !showBatchProgress && (
+        <div className="space-y-6">
+          <JobProgress
+            job={job}
+            onCancel={cancelJob}
+            onRetry={retryJob}
+            onDownload={handleDownload}
+          />
+          {(job.state === 'completed' || job.state === 'failed') && (
+            <Button variant="outline" className="w-full" onClick={handleStartOver}>
+              Start over with new files
+            </Button>
+          )}
+        </div>
+      )}
+
+      {showBatchProgress && (
+        <BatchProgress
+          batchJobs={batchJobs}
+          isProcessing={isBatchProcessing}
+          completedCount={completedCount}
+          failedCount={failedCount}
+          totalCount={totalCount}
+          overallProgress={overallProgress}
+          onCancel={cancelBatch}
+          onRetryFailed={retryFailed}
+          onDownloadAll={handleDownloadAll}
+          onReset={handleStartOver}
         />
       )}
     </div>
