@@ -8,7 +8,6 @@ import {
   logout,
   signup,
 } from '@/auth/authClient';
-import { clearAccessToken, subscribeAccessToken } from '@/auth/tokenStore';
 
 type AuthContextValue = {
   isAuthenticated: boolean;
@@ -28,7 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Bootstrap or refresh the in-memory session state using the backend as source of truth.
+  // Bootstrap session state from server cookie
   const syncUser = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -37,7 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setRole(me.role ?? null);
       setIsAuthenticated(true);
     } catch {
-      clearAccessToken();
+      // Session cookie is invalid or expired
       setUser(null);
       setRole(null);
       setIsAuthenticated(false);
@@ -49,19 +48,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     void syncUser();
   }, [syncUser]);
-
-  useEffect(() => {
-    const unsubscribe = subscribeAccessToken((token) => {
-      if (!token) {
-        setUser(null);
-        setRole(null);
-        setIsAuthenticated(false);
-      }
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, []);
 
   const handleLogin = useCallback(
     async (credentials: AuthCredentials) => {

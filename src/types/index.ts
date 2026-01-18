@@ -257,3 +257,69 @@ export interface JobService {
   cancelJob(jobId: string): Promise<void>;
   retryJob(jobId: string): Promise<{ jobId: string }>;
 }
+
+// ============================================================================
+// NEW API RESPONSE TYPES
+// ============================================================================
+
+/**
+ * Standard error response format from API
+ */
+export interface ApiError {
+  error: {
+    code: string;
+    message: string;
+  };
+}
+
+/**
+ * Auth response format
+ */
+export interface AuthResponse {
+  user: {
+    id: string;
+    email: string;
+    fullName: string;
+    phone?: string;
+    country: string;
+    image?: string;
+    role: string;
+  };
+}
+
+/**
+ * Job creation response
+ */
+export interface JobCreateResponse {
+  jobID: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  message: string;
+}
+
+/**
+ * Job status response
+ */
+export interface JobStatusResponse {
+  id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  toolType: string;
+  createdAt: string;
+  updatedAt: string;
+  metadata?: {
+    originalFilename?: string;
+    outputFilename?: string;
+    fileSize?: number;
+    progress?: number;
+    [key: string]: any;
+  };
+}
+
+/**
+ * Jobs list response
+ */
+export interface JobsListResponse {
+  jobs: JobStatusResponse[];
+  total: number;
+  limit: number;
+  offset: number;
+}

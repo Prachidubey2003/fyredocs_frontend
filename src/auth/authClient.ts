@@ -1,5 +1,3 @@
-import { clearAccessToken, getAccessToken, setAccessToken } from '@/auth/tokenStore';
-import { decodeJwt, isTokenExpired, JwtPayload } from '@/auth/jwtUtils';
 import { AuthError, parseAuthError } from '@/auth/authErrors';
 
 export type AuthUser = {
@@ -55,17 +53,7 @@ const parseResponseBody = async (response: Response) => {
   return text ? { message: text } : null;
 };
 
-const extractAccessToken = (data: AuthResponse) => {
-  if (!data || typeof data !== 'object') return undefined;
-  return (
-    (data.accessToken as string | undefined) ??
-    (data.access_token as string | undefined) ??
-    (data.token as string | undefined) ??
-    (data.AccessToken as string | undefined)
-  );
-};
-
-const normalizeUser = (data: AuthResponse, token?: string): AuthUser | null => {
+const normalizeUser = (data: AuthResponse): AuthUser | null => {
   if (!data || typeof data !== 'object') return null;
   const raw =
     (data.user as Record<string, unknown> | undefined) ??
@@ -74,39 +62,34 @@ const normalizeUser = (data: AuthResponse, token?: string): AuthUser | null => {
   if (!raw || typeof raw !== 'object') return null;
 
   const id = (raw.id ?? raw.userId ?? raw.sub) as string | number | undefined;
-  const payload = token ? decodeJwt<JwtPayload>(token) : null;
-  const resolvedId = id ?? payload?.sub;
 
-  if (!resolvedId) return null;
+  if (!id) return null;
 
   return {
     ...raw,
-    id: String(resolvedId),
-    email: (raw.email as string | undefined) ?? (payload?.email as string | undefined),
-    role: (raw.role as string | undefined) ?? payload?.role,
-    scope: (raw.scope as string[] | string | undefined) ?? payload?.scope,
+    id: String(id),
+    email: raw.email as string | undefined,
+    fullName: raw.fullName as string | undefined,
+    country: raw.country as string | undefined,
+    phone: raw.phone as string | undefined,
+    image: raw.image as string | undefined,
+    role: raw.role as string | undefined,
+    scope: raw.scope as string[] | string | undefined,
   };
 };
 
 const authRequest = async (
   path: string,
-  options: RequestInit = {},
-  withAuth = false
+  options: RequestInit = {}
 ) => {
   const headers = new Headers(options.headers);
-  if (withAuth) {
-    const token = getAccessToken();
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
-    }
-  }
 
   if (!headers.has('Content-Type') && options.body) {
     headers.set('Content-Type', 'application/json');
   }
 
   const response = await fetch(buildAuthUrl(path), {
-    credentials: 'include',
+    credentials: 'include', // Always include cookies for authentication
     ...options,
     headers,
   });
@@ -118,45 +101,7 @@ const authRequest = async (
   return parseResponseBody(response);
 };
 
-// Prevents parallel refresh requests from racing and overwriting tokens.
-let refreshPromise: Promise<string | null> | null = null;
-
-export const refreshAccessToken = async () => {
-  if (refreshPromise) return refreshPromise;
-
-  refreshPromise = (async () => {
-    try {
-      const response = await fetch(buildAuthUrl('/auth/refresh'), {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        if (response.status >= 500) {
-          throw await parseAuthError(response);
-        }
-        clearAccessToken();
-        return null;
-      }
-
-      const data = await parseResponseBody(response);
-      const token = extractAccessToken(data);
-      if (!token) {
-        clearAccessToken();
-        return null;
-      }
-      setAccessToken(token);
-      return token;
-    } catch {
-      clearAccessToken();
-      return null;
-    } finally {
-      refreshPromise = null;
-    }
-  })();
-
-  return refreshPromise;
-};
+// Cookie-based authentication: No token refresh needed on client side
 
 export const login = async (credentials: AuthCredentials) => {
   const data = await authRequest('/auth/login', {
@@ -164,16 +109,12 @@ export const login = async (credentials: AuthCredentials) => {
     body: JSON.stringify(credentials),
   });
 
-  const token = extractAccessToken(data);
-  if (!token) {
-    throw new AuthError('SERVER_ERROR', 'No access token returned from server.');
+  const user = normalizeUser(data);
+  if (!user) {
+    throw new AuthError('SERVER_ERROR', 'Invalid user data returned from server.');
   }
 
-  setAccessToken(token);
-  return {
-    accessToken: token,
-    user: normalizeUser(data, token),
-  };
+  return { user };
 };
 
 export const signup = async (credentials: AuthSignupCredentials) => {
@@ -182,22 +123,17 @@ export const signup = async (credentials: AuthSignupCredentials) => {
     body: JSON.stringify(credentials),
   });
 
-  const token = extractAccessToken(data);
-  if (!token) {
-    throw new AuthError('SERVER_ERROR', 'No access token returned from server.');
+  const user = normalizeUser(data);
+  if (!user) {
+    throw new AuthError('SERVER_ERROR', 'Invalid user data returned from server.');
   }
 
-  setAccessToken(token);
-  return {
-    accessToken: token,
-    user: normalizeUser(data, token),
-  };
+  return { user };
 };
 
 export const getProfile = async () => {
-  const data = await authRequest('/auth/profile', { method: 'GET' }, true);
-  const token = getAccessToken();
-  const user = normalizeUser(data, token ?? undefined);
+  const data = await authRequest('/auth/profile', { method: 'GET' });
+  const user = normalizeUser(data);
   if (!user) {
     throw new AuthError('SERVER_ERROR', 'Invalid profile response.');
   }
@@ -205,46 +141,15 @@ export const getProfile = async () => {
 };
 
 export const getMe = async () => {
-  const currentToken = getAccessToken();
-  const shouldRefresh = !currentToken || isTokenExpired(currentToken);
-
-  if (shouldRefresh) {
-    const refreshed = await refreshAccessToken();
-    if (!refreshed) {
-      throw new AuthError('UNAUTHORIZED', 'Session expired.');
-    }
+  const data = await authRequest('/auth/me', { method: 'GET' });
+  const user = normalizeUser(data);
+  if (!user) {
+    throw new AuthError('SERVER_ERROR', 'Invalid user response.');
   }
-
-  try {
-    const data = await authRequest('/auth/me', { method: 'GET' }, true);
-    const token = getAccessToken();
-    const user = normalizeUser(data, token ?? undefined);
-    if (!user) {
-      throw new AuthError('SERVER_ERROR', 'Invalid user response.');
-    }
-    return user;
-  } catch (error) {
-    if (error instanceof AuthError && error.status === 401) {
-      const refreshed = await refreshAccessToken();
-      if (!refreshed) {
-        throw error;
-      }
-      const data = await authRequest('/auth/me', { method: 'GET' }, true);
-      const token = getAccessToken();
-      const user = normalizeUser(data, token ?? undefined);
-      if (!user) {
-        throw new AuthError('SERVER_ERROR', 'Invalid user response.');
-      }
-      return user;
-    }
-    throw error;
-  }
+  return user;
 };
 
 export const logout = async () => {
-  try {
-    await authRequest('/auth/logout', { method: 'POST' }, true);
-  } finally {
-    clearAccessToken();
-  }
+  // Server will clear the cookie
+  await authRequest('/auth/logout', { method: 'POST' });
 };

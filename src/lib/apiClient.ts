@@ -1,9 +1,4 @@
-import { refreshAccessToken } from '@/auth/authClient';
-import { getAccessToken } from '@/auth/tokenStore';
-import { getAuthHeaders } from '@/lib/auth';
-
 type ApiRequestOptions = RequestInit & {
-  skipAuth?: boolean;
   skipRefresh?: boolean;
 };
 
@@ -42,7 +37,10 @@ const parseErrorMessage = async (response: Response) => {
 
   if (contentType.includes('application/json')) {
     const data = await response.json().catch(() => null);
-    if (data?.error) {
+    // Handle new API error format: { error: { code: string, message: string } }
+    if (data?.error?.message) {
+      message = data.error.message;
+    } else if (data?.error && typeof data.error === 'string') {
       message = data.error;
     } else if (data?.message) {
       message = data.message;
@@ -57,43 +55,28 @@ const parseErrorMessage = async (response: Response) => {
   return message;
 };
 
-export const buildAuthHeaders = (headers: Headers, skipAuth?: boolean) => {
-  if (skipAuth) return headers;
-  const token = getAccessToken();
-  if (token && !headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
-  const extraHeaders = getAuthHeaders();
-  Object.entries(extraHeaders).forEach(([key, value]) => {
-    if (!headers.has(key)) {
-      headers.set(key, value);
-    }
-  });
-  return headers;
+const buildHeaders = (headers?: HeadersInit): Headers => {
+  return new Headers(headers);
 };
 
 export const apiRequest = async <T>(
   path: string,
   options: ApiRequestOptions = {}
 ): Promise<T> => {
-  const { skipAuth, skipRefresh, ...fetchOptions } = options;
-  let headers = buildAuthHeaders(new Headers(fetchOptions.headers), skipAuth);
-  let response = await fetch(buildApiUrl(path), {
-    credentials: fetchOptions.credentials ?? 'include',
+  const { skipRefresh, ...fetchOptions } = options;
+  const headers = buildHeaders(fetchOptions.headers);
+
+  const response = await fetch(buildApiUrl(path), {
+    credentials: 'include', // Always include cookies
     ...fetchOptions,
     headers,
   });
 
+  // Handle 401 - redirect to login (session expired)
   if (response.status === 401 && !skipRefresh) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      headers = buildAuthHeaders(new Headers(fetchOptions.headers), skipAuth);
-      response = await fetch(buildApiUrl(path), {
-        credentials: fetchOptions.credentials ?? 'include',
-        ...fetchOptions,
-        headers,
-      });
-    }
+    // Clear any client state and redirect to login
+    window.location.href = '/signin';
+    throw new Error('Session expired. Please log in again.');
   }
 
   if (!response.ok) {
