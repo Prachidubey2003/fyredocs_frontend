@@ -151,11 +151,12 @@ export interface MergeOptions {
 }
 
 export interface SplitOptions {
-  range: string; // e.g., "1-3,5,7-9" or "all"
+  mode?: 'all' | 'range' | 'extract';
+  ranges?: string; // e.g., "1-3,5,7-9"
 }
 
 export interface CompressOptions {
-  quality: 'screen' | 'ebook' | 'printer' | 'prepress';
+  quality: 'low' | 'medium' | 'high' | 'extreme';
 }
 
 export interface WatermarkOptions {

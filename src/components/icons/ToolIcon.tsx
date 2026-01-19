@@ -12,9 +12,20 @@ import {
   ScanText,
   Stamp,
   Lock,
+  Unlock,
   LucideIcon,
+  Wrench,
+  FileOutput,
+  FileMinus,
+  Scan,
+  Presentation,
+  Code,
+  Archive,
+  Hash,
+  Edit,
+  PenTool,
 } from 'lucide-react';
-import { ToolId, ToolCategory } from '@/types';
+import { ToolCategory } from '@/types';
 import { cn } from '@/lib/utils';
 
 const iconMap: Record<string, LucideIcon> = {
@@ -31,12 +42,23 @@ const iconMap: Record<string, LucideIcon> = {
   'scan-text': ScanText,
   stamp: Stamp,
   lock: Lock,
+  unlock: Unlock,
   'file-spreadsheet': Table,
+  wrench: Wrench,
+  'file-output': FileOutput,
+  'file-minus': FileMinus,
+  scan: Scan,
+  presentation: Presentation,
+  code: Code,
+  archive: Archive,
+  hash: Hash,
+  edit: Edit,
+  'pen-tool': PenTool,
 };
 
-interface ToolIconProps {
+export interface ToolIconProps {
   icon: string;
-  category: ToolCategory;
+  category?: ToolCategory;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
@@ -64,7 +86,11 @@ export const ToolIcon = ({ icon, category, size = 'md', className }: ToolIconPro
 
   return (
     <IconComponent
-      className={cn(sizeClasses[size], categoryColors[category], className)}
+      className={cn(
+        sizeClasses[size], 
+        category ? categoryColors[category] : undefined, 
+        className
+      )}
     />
   );
 };
