@@ -178,13 +178,17 @@ export const Header = () => {
             )}
           </div>
 
-          {/* All PDF Tools Mega Menu */}
-          <div className="relative" ref={megaMenuRef}>
+          {/* All PDF Tools Mega Menu - Hover */}
+          <div 
+            className="relative" 
+            ref={megaMenuRef}
+            onMouseEnter={() => {
+              setIsMegaMenuOpen(true);
+              setIsConvertOpen(false);
+            }}
+            onMouseLeave={() => setIsMegaMenuOpen(false)}
+          >
             <button
-              onClick={() => {
-                setIsMegaMenuOpen(!isMegaMenuOpen);
-                setIsConvertOpen(false);
-              }}
               className={cn(
                 'px-4 py-2 text-sm font-semibold transition-colors flex items-center gap-1',
                 isMegaMenuOpen ? 'text-primary' : 'text-primary hover:text-primary/80'
@@ -195,32 +199,34 @@ export const Header = () => {
             </button>
 
             {isMegaMenuOpen && (
-              <div className="absolute top-full right-0 mt-2 w-[900px] max-w-[calc(100vw-2rem)] rounded-xl border bg-background shadow-xl p-6 z-50">
-                <div className="grid grid-cols-6 gap-6">
-                  {toolCategories.map((category) => (
-                    <div key={category.title}>
-                      <h3 className={cn('text-xs font-bold mb-3', category.color)}>
-                        {category.title}
-                      </h3>
-                      <ul className="space-y-2">
-                        {category.tools.map((tool) => (
-                          <li key={tool.href + tool.name}>
-                            <Link
-                              to={tool.href}
-                              className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors group"
-                              onClick={() => setIsMegaMenuOpen(false)}
-                            >
-                              <ToolIcon 
-                                icon={tool.icon} 
-                                className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" 
-                              />
-                              <span>{tool.name}</span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+              <div className="absolute top-full right-0 mt-0 pt-2">
+                <div className="w-[900px] max-w-[calc(100vw-2rem)] rounded-xl border bg-background shadow-xl p-6">
+                  <div className="grid grid-cols-6 gap-6">
+                    {toolCategories.map((category) => (
+                      <div key={category.title}>
+                        <h3 className={cn('text-xs font-bold mb-3', category.color)}>
+                          {category.title}
+                        </h3>
+                        <ul className="space-y-2">
+                          {category.tools.map((tool) => (
+                            <li key={tool.href + tool.name}>
+                              <Link
+                                to={tool.href}
+                                className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors group"
+                                onClick={() => setIsMegaMenuOpen(false)}
+                              >
+                                <ToolIcon 
+                                  icon={tool.icon} 
+                                  className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" 
+                                />
+                                <span>{tool.name}</span>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
