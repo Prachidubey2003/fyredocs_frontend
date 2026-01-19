@@ -199,27 +199,39 @@ export const Header = () => {
             </button>
 
             {isMegaMenuOpen && (
-              <div className="absolute top-full right-0 mt-0 pt-2">
-                <div className="w-[900px] max-w-[calc(100vw-2rem)] rounded-xl border bg-background shadow-xl p-6">
-                  <div className="grid grid-cols-6 gap-6">
+              <div className="fixed inset-x-0 top-16 flex justify-center pt-2 z-50">
+                <div 
+                  className="w-[960px] max-w-[calc(100vw-2rem)] rounded-2xl border bg-background/98 backdrop-blur-xl shadow-2xl p-8 animate-in fade-in-0 slide-in-from-top-2 duration-200"
+                  onMouseEnter={() => setIsMegaMenuOpen(true)}
+                  onMouseLeave={() => setIsMegaMenuOpen(false)}
+                >
+                  <div className="grid grid-cols-6 gap-8">
                     {toolCategories.map((category) => (
-                      <div key={category.title}>
-                        <h3 className={cn('text-xs font-bold mb-3', category.color)}>
+                      <div key={category.title} className="space-y-4">
+                        <h3 className={cn(
+                          'text-[11px] font-bold tracking-wider pb-2 border-b border-border/50',
+                          category.color
+                        )}>
                           {category.title}
                         </h3>
-                        <ul className="space-y-2">
+                        <ul className="space-y-1">
                           {category.tools.map((tool) => (
                             <li key={tool.href + tool.name}>
                               <Link
                                 to={tool.href}
-                                className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors group"
+                                className="flex items-center gap-2.5 px-2 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/80 transition-all duration-150 group"
                                 onClick={() => setIsMegaMenuOpen(false)}
                               >
-                                <ToolIcon 
-                                  icon={tool.icon} 
-                                  className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" 
-                                />
-                                <span>{tool.name}</span>
+                                <div className={cn(
+                                  'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150',
+                                  'bg-muted/50 group-hover:bg-primary/10 group-hover:scale-105'
+                                )}>
+                                  <ToolIcon 
+                                    icon={tool.icon} 
+                                    className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" 
+                                  />
+                                </div>
+                                <span className="font-medium">{tool.name}</span>
                               </Link>
                             </li>
                           ))}
