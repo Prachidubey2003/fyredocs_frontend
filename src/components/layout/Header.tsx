@@ -408,14 +408,27 @@ export const Header = () => {
           ))}
           
           {/* Mobile Convert Section */}
-          <div className="px-4 py-2 text-xs font-bold text-primary mt-2">CONVERT PDF</div>
-          {convertDropdownItems.map((item) => (
+          <div className="px-4 py-2 text-xs font-bold text-yellow-600 mt-2">CONVERT TO PDF</div>
+          {convertToPdf.map((item) => (
             <Link
               key={item.href}
               to={item.href}
-              className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted ml-2"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted ml-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
+              <ToolIcon icon={item.icon} className="w-4 h-4" />
+              {item.name}
+            </Link>
+          ))}
+          <div className="px-4 py-2 text-xs font-bold text-purple-500 mt-2">CONVERT FROM PDF</div>
+          {convertFromPdf.map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted ml-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <ToolIcon icon={item.icon} className="w-4 h-4" />
               {item.name}
             </Link>
           ))}
