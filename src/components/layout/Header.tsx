@@ -87,13 +87,20 @@ const mainNavItems = [
   { label: 'COMPRESS PDF', href: '/compress' },
 ];
 
-const convertDropdownItems = [
-  { name: 'PDF to Word', href: '/pdf-to-word' },
-  { name: 'PDF to Excel', href: '/pdf-to-excel' },
-  { name: 'PDF to Image', href: '/pdf-to-image' },
-  { name: 'Word to PDF', href: '/word-to-pdf' },
-  { name: 'Excel to PDF', href: '/excel-to-pdf' },
-  { name: 'Image to PDF', href: '/image-to-pdf' },
+const convertToPdf = [
+  { name: 'JPG to PDF', href: '/image-to-pdf', icon: 'file-image' },
+  { name: 'WORD to PDF', href: '/word-to-pdf', icon: 'file' },
+  { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation' },
+  { name: 'EXCEL to PDF', href: '/excel-to-pdf', icon: 'file-spreadsheet' },
+  { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code' },
+];
+
+const convertFromPdf = [
+  { name: 'PDF to JPG', href: '/pdf-to-image', icon: 'image' },
+  { name: 'PDF to WORD', href: '/pdf-to-word', icon: 'file-text' },
+  { name: 'PDF to POWERPOINT', href: '/pdf-to-ppt', icon: 'presentation' },
+  { name: 'PDF to EXCEL', href: '/pdf-to-excel', icon: 'table' },
+  { name: 'PDF to PDF/A', href: '/pdf-to-pdfa', icon: 'archive' },
 ];
 
 export const Header = () => {
