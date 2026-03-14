@@ -87,13 +87,20 @@ const mainNavItems = [
   { label: 'COMPRESS PDF', href: '/compress' },
 ];
 
-const convertDropdownItems = [
-  { name: 'PDF to Word', href: '/pdf-to-word' },
-  { name: 'PDF to Excel', href: '/pdf-to-excel' },
-  { name: 'PDF to Image', href: '/pdf-to-image' },
-  { name: 'Word to PDF', href: '/word-to-pdf' },
-  { name: 'Excel to PDF', href: '/excel-to-pdf' },
-  { name: 'Image to PDF', href: '/image-to-pdf' },
+const convertToPdf = [
+  { name: 'JPG to PDF', href: '/image-to-pdf', icon: 'file-image' },
+  { name: 'WORD to PDF', href: '/word-to-pdf', icon: 'file' },
+  { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation' },
+  { name: 'EXCEL to PDF', href: '/excel-to-pdf', icon: 'file-spreadsheet' },
+  { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code' },
+];
+
+const convertFromPdf = [
+  { name: 'PDF to JPG', href: '/pdf-to-image', icon: 'image' },
+  { name: 'PDF to WORD', href: '/pdf-to-word', icon: 'file-text' },
+  { name: 'PDF to POWERPOINT', href: '/pdf-to-ppt', icon: 'presentation' },
+  { name: 'PDF to EXCEL', href: '/pdf-to-excel', icon: 'table' },
+  { name: 'PDF to PDF/A', href: '/pdf-to-pdfa', icon: 'archive' },
 ];
 
 export const Header = () => {
@@ -163,17 +170,47 @@ export const Header = () => {
             </button>
 
             {isConvertOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 rounded-lg border bg-background shadow-lg py-2 z-50">
-                {convertDropdownItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className="block px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                    onClick={() => setIsConvertOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl border bg-background/98 backdrop-blur-xl shadow-2xl p-6 z-50 animate-in fade-in-0 slide-in-from-top-2 duration-200">
+                <div className="flex gap-10">
+                  <div>
+                    <h4 className="text-[11px] font-bold tracking-wider text-yellow-600 mb-3 pb-2 border-b border-border/50">CONVERT TO PDF</h4>
+                    <ul className="space-y-1">
+                      {convertToPdf.map((item) => (
+                        <li key={item.href}>
+                          <Link
+                            to={item.href}
+                            className="flex items-center gap-2.5 px-2 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/80 transition-all duration-150 group whitespace-nowrap"
+                            onClick={() => setIsConvertOpen(false)}
+                          >
+                            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-muted/50 group-hover:bg-primary/10 transition-all">
+                              <ToolIcon icon={item.icon} className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                            </div>
+                            <span className="font-medium">{item.name}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="text-[11px] font-bold tracking-wider text-purple-500 mb-3 pb-2 border-b border-border/50">CONVERT FROM PDF</h4>
+                    <ul className="space-y-1">
+                      {convertFromPdf.map((item) => (
+                        <li key={item.href}>
+                          <Link
+                            to={item.href}
+                            className="flex items-center gap-2.5 px-2 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/80 transition-all duration-150 group whitespace-nowrap"
+                            onClick={() => setIsConvertOpen(false)}
+                          >
+                            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-muted/50 group-hover:bg-primary/10 transition-all">
+                              <ToolIcon icon={item.icon} className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                            </div>
+                            <span className="font-medium">{item.name}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -371,14 +408,27 @@ export const Header = () => {
           ))}
           
           {/* Mobile Convert Section */}
-          <div className="px-4 py-2 text-xs font-bold text-primary mt-2">CONVERT PDF</div>
-          {convertDropdownItems.map((item) => (
+          <div className="px-4 py-2 text-xs font-bold text-yellow-600 mt-2">CONVERT TO PDF</div>
+          {convertToPdf.map((item) => (
             <Link
               key={item.href}
               to={item.href}
-              className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted ml-2"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted ml-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
+              <ToolIcon icon={item.icon} className="w-4 h-4" />
+              {item.name}
+            </Link>
+          ))}
+          <div className="px-4 py-2 text-xs font-bold text-purple-500 mt-2">CONVERT FROM PDF</div>
+          {convertFromPdf.map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted ml-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <ToolIcon icon={item.icon} className="w-4 h-4" />
               {item.name}
             </Link>
           ))}
