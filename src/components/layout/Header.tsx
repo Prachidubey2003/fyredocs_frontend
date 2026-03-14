@@ -157,58 +157,71 @@ export const Header = () => {
           ))}
 
           {/* Convert PDF Dropdown */}
-          <div className="relative" ref={convertMenuRef}>
+          <div 
+            className="relative" 
+            ref={convertMenuRef}
+            onMouseEnter={() => {
+              setIsConvertOpen(true);
+              setIsMegaMenuOpen(false);
+            }}
+            onMouseLeave={() => setIsConvertOpen(false)}
+          >
             <button
-              onClick={() => {
-                setIsConvertOpen(!isConvertOpen);
-                setIsMegaMenuOpen(false);
-              }}
-              className="px-4 py-2 text-sm font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1"
+              className={cn(
+                'px-4 py-2 text-sm font-semibold transition-colors flex items-center gap-1',
+                isConvertOpen ? 'text-primary' : 'text-foreground hover:text-primary'
+              )}
             >
               CONVERT PDF
               <ChevronDown className={cn('w-4 h-4 transition-transform', isConvertOpen && 'rotate-180')} />
             </button>
 
             {isConvertOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl border bg-background shadow-2xl p-6 z-50 animate-in fade-in-0 slide-in-from-top-2 duration-200">
-                <div className="flex gap-10">
-                  <div>
-                    <h4 className="text-[11px] font-bold tracking-wider text-yellow-600 mb-3 pb-2 border-b border-border/50">CONVERT TO PDF</h4>
-                    <ul className="space-y-1">
-                      {convertToPdf.map((item) => (
-                        <li key={item.href}>
-                          <Link
-                            to={item.href}
-                            className="flex items-center gap-2.5 px-2 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/80 transition-all duration-150 group whitespace-nowrap"
-                            onClick={() => setIsConvertOpen(false)}
-                          >
-                            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-muted/50 group-hover:bg-primary/10 transition-all">
-                              <ToolIcon icon={item.icon} className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                            </div>
-                            <span className="font-medium">{item.name}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="text-[11px] font-bold tracking-wider text-purple-500 mb-3 pb-2 border-b border-border/50">CONVERT FROM PDF</h4>
-                    <ul className="space-y-1">
-                      {convertFromPdf.map((item) => (
-                        <li key={item.href}>
-                          <Link
-                            to={item.href}
-                            className="flex items-center gap-2.5 px-2 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/80 transition-all duration-150 group whitespace-nowrap"
-                            onClick={() => setIsConvertOpen(false)}
-                          >
-                            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-muted/50 group-hover:bg-primary/10 transition-all">
-                              <ToolIcon icon={item.icon} className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                            </div>
-                            <span className="font-medium">{item.name}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
+              <div 
+                className="absolute top-full left-1/2 -translate-x-1/2 mt-0 pt-2 z-50"
+                onMouseEnter={() => setIsConvertOpen(true)}
+                onMouseLeave={() => setIsConvertOpen(false)}
+              >
+                <div className="rounded-xl border bg-background shadow-2xl p-5 animate-in fade-in-0 slide-in-from-top-2 duration-200">
+                  <div className="flex gap-8">
+                    <div>
+                      <h4 className="text-[10px] font-bold tracking-wider text-yellow-600 mb-2 pb-1.5 border-b border-border/50">CONVERT TO PDF</h4>
+                      <ul className="space-y-0.5">
+                        {convertToPdf.map((item) => (
+                          <li key={item.href}>
+                            <Link
+                              to={item.href}
+                              className="flex items-center gap-2 px-1.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/80 transition-all duration-150 group whitespace-nowrap"
+                              onClick={() => setIsConvertOpen(false)}
+                            >
+                              <div className="w-6 h-6 rounded-md flex items-center justify-center bg-muted/50 group-hover:bg-primary/10 transition-all">
+                                <ToolIcon icon={item.icon} size="sm" className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                              </div>
+                              <span className="font-medium">{item.name}</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="text-[10px] font-bold tracking-wider text-purple-500 mb-2 pb-1.5 border-b border-border/50">CONVERT FROM PDF</h4>
+                      <ul className="space-y-0.5">
+                        {convertFromPdf.map((item) => (
+                          <li key={item.href}>
+                            <Link
+                              to={item.href}
+                              className="flex items-center gap-2 px-1.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/80 transition-all duration-150 group whitespace-nowrap"
+                              onClick={() => setIsConvertOpen(false)}
+                            >
+                              <div className="w-6 h-6 rounded-md flex items-center justify-center bg-muted/50 group-hover:bg-primary/10 transition-all">
+                                <ToolIcon icon={item.icon} size="sm" className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                              </div>
+                              <span className="font-medium">{item.name}</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -242,30 +255,31 @@ export const Header = () => {
                   onMouseEnter={() => setIsMegaMenuOpen(true)}
                   onMouseLeave={() => setIsMegaMenuOpen(false)}
                 >
-                  <div className="grid grid-cols-6 gap-8">
+                  <div className="grid grid-cols-6 gap-6">
                     {toolCategories.map((category) => (
-                      <div key={category.title} className="space-y-4">
+                      <div key={category.title} className="space-y-3">
                         <h3 className={cn(
-                          'text-[11px] font-bold tracking-wider pb-2 border-b border-border/50',
+                          'text-[10px] font-bold tracking-wider pb-1.5 border-b border-border/50',
                           category.color
                         )}>
                           {category.title}
                         </h3>
-                        <ul className="space-y-1">
+                        <ul className="space-y-0.5">
                           {category.tools.map((tool) => (
                             <li key={tool.href + tool.name}>
                               <Link
                                 to={tool.href}
-                                className="flex items-center gap-2.5 px-2 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/80 transition-all duration-150 group"
+                                className="flex items-center gap-2 px-1.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/80 transition-all duration-150 group"
                                 onClick={() => setIsMegaMenuOpen(false)}
                               >
                                 <div className={cn(
-                                  'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150',
+                                  'w-6 h-6 rounded-md flex items-center justify-center transition-all duration-150',
                                   'bg-muted/50 group-hover:bg-primary/10 group-hover:scale-105'
                                 )}>
                                   <ToolIcon 
                                     icon={tool.icon} 
-                                    className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" 
+                                    size="sm"
+                                    className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" 
                                   />
                                 </div>
                                 <span className="font-medium">{tool.name}</span>
