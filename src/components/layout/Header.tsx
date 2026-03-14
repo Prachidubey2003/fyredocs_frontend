@@ -170,7 +170,7 @@ export const Header = () => {
             </button>
 
             {isConvertOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl border bg-background/98 backdrop-blur-xl shadow-2xl p-6 z-50 animate-in fade-in-0 slide-in-from-top-2 duration-200">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl border bg-background shadow-2xl p-6 z-50 animate-in fade-in-0 slide-in-from-top-2 duration-200">
                 <div className="flex gap-10">
                   <div>
                     <h4 className="text-[11px] font-bold tracking-wider text-yellow-600 mb-3 pb-2 border-b border-border/50">CONVERT TO PDF</h4>
