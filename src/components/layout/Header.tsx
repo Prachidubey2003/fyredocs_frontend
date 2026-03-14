@@ -170,7 +170,7 @@ export const Header = () => {
             </button>
 
             {isConvertOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl border bg-background/98 backdrop-blur-xl shadow-2xl p-6 z-50 animate-in fade-in-0 slide-in-from-top-2 duration-200">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 rounded-xl border bg-background shadow-2xl p-6 z-50 animate-in fade-in-0 slide-in-from-top-2 duration-200">
                 <div className="flex gap-10">
                   <div>
                     <h4 className="text-[11px] font-bold tracking-wider text-yellow-600 mb-3 pb-2 border-b border-border/50">CONVERT TO PDF</h4>
@@ -238,7 +238,7 @@ export const Header = () => {
             {isMegaMenuOpen && (
               <div className="fixed inset-x-0 top-16 flex justify-center pt-2 z-50">
                 <div 
-                  className="w-[960px] max-w-[calc(100vw-2rem)] rounded-2xl border bg-background/98 backdrop-blur-xl shadow-2xl p-8 animate-in fade-in-0 slide-in-from-top-2 duration-200"
+                  className="w-[960px] max-w-[calc(100vw-2rem)] rounded-2xl border bg-background shadow-2xl p-8 animate-in fade-in-0 slide-in-from-top-2 duration-200"
                   onMouseEnter={() => setIsMegaMenuOpen(true)}
                   onMouseLeave={() => setIsMegaMenuOpen(false)}
                 >
