@@ -255,30 +255,31 @@ export const Header = () => {
                   onMouseEnter={() => setIsMegaMenuOpen(true)}
                   onMouseLeave={() => setIsMegaMenuOpen(false)}
                 >
-                  <div className="grid grid-cols-6 gap-8">
+                  <div className="grid grid-cols-6 gap-6">
                     {toolCategories.map((category) => (
-                      <div key={category.title} className="space-y-4">
+                      <div key={category.title} className="space-y-3">
                         <h3 className={cn(
-                          'text-[11px] font-bold tracking-wider pb-2 border-b border-border/50',
+                          'text-[10px] font-bold tracking-wider pb-1.5 border-b border-border/50',
                           category.color
                         )}>
                           {category.title}
                         </h3>
-                        <ul className="space-y-1">
+                        <ul className="space-y-0.5">
                           {category.tools.map((tool) => (
                             <li key={tool.href + tool.name}>
                               <Link
                                 to={tool.href}
-                                className="flex items-center gap-2.5 px-2 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/80 transition-all duration-150 group"
+                                className="flex items-center gap-2 px-1.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/80 transition-all duration-150 group"
                                 onClick={() => setIsMegaMenuOpen(false)}
                               >
                                 <div className={cn(
-                                  'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150',
+                                  'w-6 h-6 rounded-md flex items-center justify-center transition-all duration-150',
                                   'bg-muted/50 group-hover:bg-primary/10 group-hover:scale-105'
                                 )}>
                                   <ToolIcon 
                                     icon={tool.icon} 
-                                    className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" 
+                                    size="sm"
+                                    className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" 
                                   />
                                 </div>
                                 <span className="font-medium">{tool.name}</span>
