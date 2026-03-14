@@ -39,14 +39,14 @@ export const Hero = () => {
 
           {/* Headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 animate-slide-up">
-            Every PDF tool you need,{' '}
-            <span className="gradient-text">all in one place</span>
+            Your documents,{' '}
+            <span className="gradient-text">simplified</span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-slide-up [animation-delay:100ms]">
-            Merge, split, compress, convert, rotate, and unlock PDF files with ease.
-            No installation required. 100% free and secure.
+            Edit, convert, merge, compress — handle any PDF task in seconds.
+            No installs, no signups. Fast, free, and fully secure.
           </p>
 
           {/* CTA Buttons */}
