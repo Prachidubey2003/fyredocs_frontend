@@ -238,7 +238,7 @@ export const Header = () => {
             {isMegaMenuOpen && (
               <div className="fixed inset-x-0 top-16 flex justify-center pt-2 z-50">
                 <div 
-                  className="w-[960px] max-w-[calc(100vw-2rem)] rounded-2xl border bg-background/98 backdrop-blur-xl shadow-2xl p-8 animate-in fade-in-0 slide-in-from-top-2 duration-200"
+                  className="w-[960px] max-w-[calc(100vw-2rem)] rounded-2xl border bg-background shadow-2xl p-8 animate-in fade-in-0 slide-in-from-top-2 duration-200"
                   onMouseEnter={() => setIsMegaMenuOpen(true)}
                   onMouseLeave={() => setIsMegaMenuOpen(false)}
                 >
