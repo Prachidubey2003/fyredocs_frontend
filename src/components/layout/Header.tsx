@@ -168,7 +168,7 @@ export const Header = () => {
           >
             <button
               className={cn(
-                'px-4 py-2 text-sm font-semibold transition-colors flex items-center gap-1',
+                'px-4 py-4 text-sm font-semibold transition-colors flex items-center gap-1',
                 isConvertOpen ? 'text-primary' : 'text-foreground hover:text-primary'
               )}
             >
@@ -240,7 +240,7 @@ export const Header = () => {
           >
             <button
               className={cn(
-                'px-4 py-2 text-sm font-semibold transition-colors flex items-center gap-1',
+                'px-4 py-4 text-sm font-semibold transition-colors flex items-center gap-1',
                 isMegaMenuOpen ? 'text-primary' : 'text-primary hover:text-primary/80'
               )}
             >
@@ -249,7 +249,7 @@ export const Header = () => {
             </button>
 
             {isMegaMenuOpen && (
-              <div className="fixed inset-x-0 top-16 flex justify-center pt-2 z-50">
+              <div className="fixed inset-x-0 top-full flex justify-center pt-2 z-50">
                 <div 
                   className="w-[960px] max-w-[calc(100vw-2rem)] rounded-2xl border bg-background shadow-2xl p-8 animate-in fade-in-0 slide-in-from-top-2 duration-200"
                   onMouseEnter={() => setIsMegaMenuOpen(true)}
