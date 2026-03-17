@@ -152,7 +152,7 @@ export interface MergeOptions {
 
 export interface SplitOptions {
   mode?: 'all' | 'range' | 'extract';
-  ranges?: string; // e.g., "1-3,5,7-9"
+  range?: string; // e.g., "1-3,5,7-9"
 }
 
 export interface CompressOptions {
