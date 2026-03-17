@@ -56,7 +56,7 @@ export const Hero = () => {
               className="bg-gradient-primary hover:opacity-90 transition-opacity text-base h-12 px-8"
               asChild
             >
-              <Link to="/#tools">
+              <Link to="/all-tools">
                 Explore All Tools
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

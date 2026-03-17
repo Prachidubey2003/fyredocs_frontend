@@ -72,11 +72,12 @@ export const apiRequest = async <T>(
     headers,
   });
 
-  // Handle 401 - redirect to login (session expired)
-  if (response.status === 401 && !skipRefresh) {
-    // Clear any client state and redirect to login
-    window.location.href = '/signin';
-    throw new Error('Session expired. Please log in again.');
+  // Handle 401/403 - notify app to navigate to sign-in (session expired or access denied)
+  if ((response.status === 401 || response.status === 403) && !skipRefresh) {
+    window.dispatchEvent(new CustomEvent('esydocs:unauthorized'));
+    throw new Error(
+      response.status === 403 ? 'Access denied.' : 'Session expired. Please log in again.'
+    );
   }
 
   if (!response.ok) {

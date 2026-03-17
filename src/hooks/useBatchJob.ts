@@ -251,8 +251,8 @@ export const useBatchJob = ({
     (batchId: string, toolId: ToolId, jobId: string, fileId: string, options: ToolOptions) => {
       const poll = async () => {
         try {
-          const apiJob = await apiRequest<ApiJob>(buildJobPath(toolId, jobId));
-          const mappedJob = mapApiJob(apiJob, toolId, [fileId], options);
+          const apiResponse = await apiRequest<{ data: ApiJob }>(buildJobPath(toolId, jobId));
+          const mappedJob = mapApiJob(apiResponse.data, toolId, [fileId], options);
 
           setBatchJobs((prev) =>
             prev.map((bj) =>
@@ -340,12 +340,12 @@ export const useBatchJob = ({
           payload.options = options as Record<string, unknown>;
         }
 
-        const apiJob = await apiJson<ApiJob>(buildJobPath(toolId), {
+        const apiResponse = await apiJson<{ data: ApiJob }>(buildJobPath(toolId), {
           method: 'POST',
           body: JSON.stringify(payload),
         });
 
-        const mappedJob = mapApiJob(apiJob, toolId, [serverFileId], options);
+        const mappedJob = mapApiJob(apiResponse.data, toolId, [serverFileId], options);
 
         setBatchJobs((prev) =>
           prev.map((bj) =>

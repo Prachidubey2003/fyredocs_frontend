@@ -13,16 +13,13 @@ type GuardProps = {
   children?: ReactNode;
 };
 
-export const ProtectedRoute = ({ redirectTo = '/signin', children }: GuardProps) => {
-  const { isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
+// All tool pages are freely accessible — no account required.
+// The backend handles anonymous requests automatically.
+export const ProtectedRoute = ({ children }: GuardProps) => {
+  const { isLoading } = useAuth();
 
   if (isLoading) {
     return <LoadingState />;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to={redirectTo} replace state={{ from: location }} />;
   }
 
   return children ? <>{children}</> : <Outlet />;
