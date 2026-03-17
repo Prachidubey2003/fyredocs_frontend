@@ -285,8 +285,8 @@ export const useJob = ({
 
       const poll = async () => {
         try {
-          const apiJob = await apiRequest<ApiJob>(buildJobPath(toolId, jobId));
-          const mappedJob = mapApiJob(apiJob, toolId, fileIds, options);
+          const apiResponse = await apiRequest<{ data: ApiJob }>(buildJobPath(toolId, jobId));
+          const mappedJob = mapApiJob(apiResponse.data, toolId, fileIds, options);
           setJob(mappedJob);
 
           if (mappedJob.state === 'completed') {
@@ -378,12 +378,12 @@ export const useJob = ({
             payload.options = normalizedOptions;
           }
 
-          const apiJob = await apiJson<ApiJob>(buildJobPath(toolId), {
+          const apiResponse = await apiJson<{ data: ApiJob }>(buildJobPath(toolId), {
             method: 'POST',
             body: JSON.stringify(payload),
           });
 
-          const mappedJob = mapApiJob(apiJob, toolId, normalizedIds, options);
+          const mappedJob = mapApiJob(apiResponse.data, toolId, normalizedIds, options);
           setJob(mappedJob);
           startPolling(toolId, mappedJob.id, normalizedIds, options);
         } catch (error) {

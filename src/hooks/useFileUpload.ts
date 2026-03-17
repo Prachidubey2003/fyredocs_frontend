@@ -148,7 +148,7 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
         let uploadId = file.serverFileId;
 
         if (!uploadId) {
-          const initResponse = await apiJson<{ uploadId: string }>('/api/upload/init', {
+          const initResponse = await apiJson<{ data: { uploadId: string } }>('/api/upload/init', {
             method: 'POST',
             body: JSON.stringify({
               fileName: file.file.name,
@@ -158,24 +158,20 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
             signal: controller.signal,
           });
 
-          uploadId = initResponse.uploadId;
+          uploadId = initResponse.data?.uploadId ?? '';
           setServerFileId(fileId, uploadId);
         } else {
           const status = await apiJson<{
-            receivedChunks?: number[] | number | string;
-            ReceivedChunks?: number[] | number | string;
+            data?: { receivedChunks?: number | string };
           }>(
             `/api/upload/${uploadId}/status`,
             { method: 'GET', signal: controller.signal }
           );
-          const receivedChunks = status.receivedChunks ?? status.ReceivedChunks ?? [];
-          const received = Array.isArray(receivedChunks)
-            ? receivedChunks
-            : typeof receivedChunks === 'number'
-            ? Array.from({ length: receivedChunks }, (_, index) => index)
-            : typeof receivedChunks === 'string'
-            ? Array.from({ length: Number(receivedChunks) || 0 }, (_, index) => index)
-            : [];
+          const rawChunks = status.data?.receivedChunks ?? 0;
+          const received =
+            typeof rawChunks === 'number'
+              ? Array.from({ length: rawChunks }, (_, index) => index)
+              : Array.from({ length: Number(rawChunks) || 0 }, (_, index) => index);
           if (received.length > 0) {
             syncUploadedChunks(fileId, received);
           }

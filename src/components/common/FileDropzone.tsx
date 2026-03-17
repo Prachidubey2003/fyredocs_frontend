@@ -10,6 +10,10 @@ interface FileDropzoneProps {
   disabled?: boolean;
   className?: string;
   compact?: boolean;
+  /** Override tool.maxFileSize with a plan-based limit (bytes) */
+  maxFileSize?: number;
+  /** Override tool.maxFiles with a plan-based limit */
+  maxFiles?: number;
 }
 
 export const FileDropzone = ({
@@ -18,7 +22,11 @@ export const FileDropzone = ({
   disabled = false,
   className,
   compact = false,
+  maxFileSize,
+  maxFiles,
 }: FileDropzoneProps) => {
+  const effectiveMaxFileSize = maxFileSize ?? tool.maxFileSize;
+  const effectiveMaxFiles = maxFiles ?? tool.maxFiles;
   const [isDragActive, setIsDragActive] = useState(false);
   const [isDragReject, setIsDragReject] = useState(false);
 
@@ -120,7 +128,7 @@ export const FileDropzone = ({
       <input
         type="file"
         accept={tool.acceptedFileTypes.join(',')}
-        multiple={tool.maxFiles > 1}
+        multiple={effectiveMaxFiles > 1}
         onChange={handleFileInput}
         disabled={disabled}
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -175,12 +183,12 @@ export const FileDropzone = ({
           </span>
           <span>•</span>
           <span>
-            {tool.minFiles === tool.maxFiles
-              ? `${tool.maxFiles} file${tool.maxFiles > 1 ? 's' : ''}`
-              : `${tool.minFiles}-${tool.maxFiles} files`}
+            {tool.minFiles === effectiveMaxFiles
+              ? `${effectiveMaxFiles} file${effectiveMaxFiles > 1 ? 's' : ''}`
+              : `${tool.minFiles}-${effectiveMaxFiles} files`}
           </span>
           <span>•</span>
-          <span>Max {formatFileSize(tool.maxFileSize)}</span>
+          <span>Max {formatFileSize(effectiveMaxFileSize)}</span>
         </div>
       </div>
     </div>
