@@ -54,12 +54,7 @@ export const SplitTool = () => {
       return;
     }
 
-    if (splitMode !== 'range') {
-      toast.error('Only range splitting is supported right now');
-      return;
-    }
-
-    if (!rangeInput.trim()) {
+    if (splitMode === 'range' && !rangeInput.trim()) {
       toast.error('Please enter a page range');
       return;
     }
@@ -75,7 +70,7 @@ export const SplitTool = () => {
 
     const options: SplitOptions = {
       mode: splitMode,
-      ranges: rangeInput.trim(),
+      range: rangeInput.trim(),
     };
 
     createJob(
@@ -190,7 +185,7 @@ export const SplitTool = () => {
                   <Button
                     className="flex-1 bg-tool-split hover:bg-tool-split/90"
                     onClick={handleSplit}
-                    disabled={!canProceed || splitMode !== 'range' || !rangeInput.trim()}
+                    disabled={!canProceed || (splitMode === 'range' && !rangeInput.trim())}
                   >
                     <Scissors className="w-4 h-4 mr-2" />
                     Split PDF

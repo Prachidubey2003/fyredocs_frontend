@@ -36,7 +36,7 @@ const TOOL_API_CONFIG: Record<ToolId, ToolApiConfig> = {
   'html-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'html-to-pdf' },
 
   // Legacy tools (keeping for backward compatibility)
-  rotate: { basePath: '/api/organize-pdf', tool: 'organize-pdf' },
+  rotate: { basePath: '/api/organize-pdf', tool: 'rotate-pdf' },
   watermark: { basePath: '/api/optimize-pdf', tool: 'watermark-pdf' },
   'password-protect': { basePath: '/api/optimize-pdf', tool: 'protect-pdf' },
 };

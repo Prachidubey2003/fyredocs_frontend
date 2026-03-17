@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Job, JobState, ToolId, ToolOptions } from '@/types';
+import { Job, JobState, SplitOptions, ToolId, ToolOptions } from '@/types';
 import { apiJson, apiRequest, buildApiUrl } from '@/lib/apiClient';
 import { buildDownloadPath, buildJobPath } from '@/lib/toolApi';
 
@@ -110,11 +110,15 @@ const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
 
   switch (toolId) {
     case 'split': {
-      const range = (options as { range?: string }).range?.trim();
-      if (!range) {
-        throw new Error('Page range is required for split.');
+      const opts = options as SplitOptions;
+      if (opts.mode === 'range') {
+        const range = opts.range?.trim();
+        if (!range) {
+          throw new Error('Page range is required for split.');
+        }
+        return { mode: 'range', range };
       }
-      return { range };
+      return { mode: 'all', range: 'all' };
     }
     case 'reorder': {
       const order = (options as { order?: string }).order?.trim();
@@ -152,6 +156,13 @@ const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
         throw new Error('Password is required.');
       }
       return { password };
+    }
+    case 'rotate': {
+      const opts = options as { rotation?: number; applyToPages?: string };
+      if (!opts.rotation) {
+        throw new Error('Rotation angle is required.');
+      }
+      return { rotation: opts.rotation, applyToPages: opts.applyToPages || 'all' };
     }
     // Tools with no options
     case 'merge':
