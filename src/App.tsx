@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/auth/authContext";
 import { ThemeProvider } from "next-themes";
-import { ProtectedRoute, PublicOnlyRoute } from "@/auth/authGuard";
+import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from "@/auth/authGuard";
 import { PageSkeleton } from "@/components/common/PageSkeleton";
 
 const Index = lazy(() => import("./pages/Index"));
@@ -37,6 +37,7 @@ const AllToolsPage = lazy(() => import("./pages/AllToolsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SignIn = lazy(() => import("./pages/auth/SignIn"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,9 @@ const App = () => (
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/cookies" element={<CookiePage />} />
+                <Route element={<RoleRoute allowedRoles={['super-admin']} />}>
+                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                </Route>
                 <Route element={<PublicOnlyRoute />}>
                   <Route path="/signin" element={<SignIn />} />
                   <Route path="/signup" element={<SignUp />} />

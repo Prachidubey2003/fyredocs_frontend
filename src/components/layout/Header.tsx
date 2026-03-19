@@ -460,6 +460,11 @@ export const Header = () => {
                       </div>
                     </div>
                   </div>
+                  {user?.role === 'super-admin' && (
+                    <DropdownMenuItem asChild className="mt-2">
+                      <Link to="/admin/dashboard">Admin Dashboard</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem
                     className="mt-2 justify-center rounded-md text-destructive focus:text-destructive"
                     onSelect={() => void handleLogout()}
@@ -565,9 +570,18 @@ export const Header = () => {
           )}
 
           {!isLoading && isAuthenticated && (
-            <Button variant="outline" className="mt-3" onClick={handleLogout}>
-              Log out
-            </Button>
+            <div className="mt-3 grid gap-2">
+              {user?.role === 'super-admin' && (
+                <Button variant="outline" asChild>
+                  <Link to="/admin/dashboard" onClick={closeMobileMenu}>
+                    Admin Dashboard
+                  </Link>
+                </Button>
+              )}
+              <Button variant="outline" onClick={handleLogout}>
+                Log out
+              </Button>
+            </div>
           )}
         </nav>
       </div>
