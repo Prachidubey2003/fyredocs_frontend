@@ -9,7 +9,8 @@ import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 import {
   Form,
   FormControl,
@@ -64,6 +65,14 @@ const SignIn = () => {
             <CardDescription>Access your account and continue your work.</CardDescription>
           </CardHeader>
           <CardContent>
+            {redirectTo !== '/' && (
+              <Alert className="mb-4">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Sign in required</AlertTitle>
+                <AlertDescription>Sign in to access PDF tools.</AlertDescription>
+              </Alert>
+            )}
+
             {formError && (
               <Alert variant="destructive" className="mb-4">
                 <AlertDescription>{formError}</AlertDescription>

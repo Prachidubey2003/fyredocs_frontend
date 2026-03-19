@@ -46,7 +46,7 @@ export const Hero = () => {
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-slide-up [animation-delay:100ms]">
             Edit, convert, merge, compress — handle any PDF task in seconds.
-            No installs, no signups. Fast, free, and fully secure.
+            No installs needed. Fast, free, and fully secure.
           </p>
 
           {/* CTA Buttons */}

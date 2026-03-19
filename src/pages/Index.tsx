@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Layout } from '@/components/layout/Layout';
 import { Hero } from '@/components/home/Hero';
 import { ToolGrid } from '@/components/home/ToolGrid';
@@ -11,6 +12,10 @@ const Index = () => {
 
   return (
     <Layout>
+      <Helmet>
+        <title>Esydocs — Free Online PDF Tools</title>
+        <meta name="description" content="Merge, split, compress, and convert PDFs online for free. Fast, secure, no installation required." />
+      </Helmet>
       {/* Hero Section */}
       <Hero />
 
