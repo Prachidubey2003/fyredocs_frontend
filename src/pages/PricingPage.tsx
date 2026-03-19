@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +21,7 @@ const plans = [
       'Email support',
     ],
     cta: 'Get Started',
+    href: '/signup',
     popular: false,
   },
   {
@@ -37,6 +40,7 @@ const plans = [
       'No watermarks',
     ],
     cta: 'Start Free Trial',
+    href: '/signup?plan=pro',
     popular: true,
   },
   {
@@ -55,6 +59,7 @@ const plans = [
       'On-premise option',
     ],
     cta: 'Contact Sales',
+    href: '/contact',
     popular: false,
   },
 ];
@@ -62,6 +67,10 @@ const plans = [
 const PricingPage = () => {
   return (
     <Layout>
+      <Helmet>
+        <title>Pricing — Esydocs</title>
+        <meta name="description" content="Simple, transparent pricing for Esydocs PDF tools. Free plan available. Upgrade anytime." />
+      </Helmet>
       <div className="container py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -116,8 +125,9 @@ const PricingPage = () => {
                       plan.popular && 'bg-gradient-primary'
                     )}
                     variant={plan.popular ? 'default' : 'outline'}
+                    asChild
                   >
-                    {plan.cta}
+                    <Link to={plan.href}>{plan.cta}</Link>
                   </Button>
                 </CardContent>
               </Card>

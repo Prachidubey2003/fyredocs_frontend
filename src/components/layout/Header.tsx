@@ -14,19 +14,32 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ToolIcon } from '@/components/icons/ToolIcon';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+
+interface ToolItem {
+  name: string;
+  href: string;
+  icon: string;
+  comingSoon?: boolean;
+}
 
 // Tool menu categories matching iLovePDF structure
-const toolCategories = [
+const toolCategories: { title: string; color: string; tools: ToolItem[] }[] = [
   {
     title: 'ORGANIZE PDF',
     color: 'text-orange-500',
     tools: [
       { name: 'Merge PDF', href: '/merge', icon: 'layers' },
       { name: 'Split PDF', href: '/split', icon: 'scissors' },
-      { name: 'Remove pages', href: '/remove-pages', icon: 'file-minus' },
-      { name: 'Extract pages', href: '/extract-pages', icon: 'file-output' },
+      { name: 'Remove pages', href: '/remove-pages', icon: 'file-minus', comingSoon: true },
+      { name: 'Extract pages', href: '/extract-pages', icon: 'file-output', comingSoon: true },
       { name: 'Organize PDF', href: '/reorder', icon: 'arrow-up-down' },
-      { name: 'Scan to PDF', href: '/scan-to-pdf', icon: 'scan' },
+      { name: 'Scan to PDF', href: '/scan-to-pdf', icon: 'scan', comingSoon: true },
     ],
   },
   {
@@ -34,7 +47,7 @@ const toolCategories = [
     color: 'text-red-500',
     tools: [
       { name: 'Compress PDF', href: '/compress', icon: 'minimize-2' },
-      { name: 'Repair PDF', href: '/repair-pdf', icon: 'wrench' },
+      { name: 'Repair PDF', href: '/repair-pdf', icon: 'wrench', comingSoon: true },
       { name: 'OCR PDF', href: '/ocr', icon: 'scan-text' },
     ],
   },
@@ -44,9 +57,9 @@ const toolCategories = [
     tools: [
       { name: 'JPG to PDF', href: '/image-to-pdf', icon: 'file-image' },
       { name: 'WORD to PDF', href: '/word-to-pdf', icon: 'file' },
-      { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation' },
+      { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation', comingSoon: true },
       { name: 'EXCEL to PDF', href: '/excel-to-pdf', icon: 'file-spreadsheet' },
-      { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code' },
+      { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code', comingSoon: true },
     ],
   },
   {
@@ -55,9 +68,9 @@ const toolCategories = [
     tools: [
       { name: 'PDF to JPG', href: '/pdf-to-image', icon: 'image' },
       { name: 'PDF to WORD', href: '/pdf-to-word', icon: 'file-text' },
-      { name: 'PDF to POWERPOINT', href: '/pdf-to-ppt', icon: 'presentation' },
+      { name: 'PDF to POWERPOINT', href: '/pdf-to-ppt', icon: 'presentation', comingSoon: true },
       { name: 'PDF to EXCEL', href: '/pdf-to-excel', icon: 'table' },
-      { name: 'PDF to PDF/A', href: '/pdf-to-pdfa', icon: 'archive' },
+      { name: 'PDF to PDF/A', href: '/pdf-to-pdfa', icon: 'archive', comingSoon: true },
     ],
   },
   {
@@ -65,9 +78,9 @@ const toolCategories = [
     color: 'text-blue-500',
     tools: [
       { name: 'Rotate PDF', href: '/rotate', icon: 'rotate-cw' },
-      { name: 'Add page numbers', href: '/reorder', icon: 'hash' },
+      { name: 'Add page numbers', href: '/reorder', icon: 'hash', comingSoon: true },
       { name: 'Add watermark', href: '/watermark', icon: 'stamp' },
-      { name: 'Edit PDF', href: '/reorder', icon: 'edit' },
+      { name: 'Edit PDF', href: '/reorder', icon: 'edit', comingSoon: true },
     ],
   },
   {
@@ -87,21 +100,111 @@ const mainNavItems = [
   { label: 'COMPRESS PDF', href: '/compress' },
 ];
 
-const convertToPdf = [
+const convertToPdf: ToolItem[] = [
   { name: 'JPG to PDF', href: '/image-to-pdf', icon: 'file-image' },
   { name: 'WORD to PDF', href: '/word-to-pdf', icon: 'file' },
-  { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation' },
+  { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation', comingSoon: true },
   { name: 'EXCEL to PDF', href: '/excel-to-pdf', icon: 'file-spreadsheet' },
-  { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code' },
+  { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code', comingSoon: true },
 ];
 
-const convertFromPdf = [
+const convertFromPdf: ToolItem[] = [
   { name: 'PDF to JPG', href: '/pdf-to-image', icon: 'image' },
   { name: 'PDF to WORD', href: '/pdf-to-word', icon: 'file-text' },
-  { name: 'PDF to POWERPOINT', href: '/pdf-to-ppt', icon: 'presentation' },
+  { name: 'PDF to POWERPOINT', href: '/pdf-to-ppt', icon: 'presentation', comingSoon: true },
   { name: 'PDF to EXCEL', href: '/pdf-to-excel', icon: 'table' },
-  { name: 'PDF to PDF/A', href: '/pdf-to-pdfa', icon: 'archive' },
+  { name: 'PDF to PDF/A', href: '/pdf-to-pdfa', icon: 'archive', comingSoon: true },
 ];
+
+const ComingSoonBadge = () => (
+  <span className="text-[9px] font-semibold uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-1.5 py-0.5 leading-none">
+    Soon
+  </span>
+);
+
+const ToolLink = ({
+  item,
+  onClick,
+  className,
+}: {
+  item: ToolItem;
+  onClick?: () => void;
+  className?: string;
+}) => {
+  const baseClass = cn(
+    'flex items-center gap-2 px-1.5 py-1.5 text-xs rounded-md transition-all duration-150 group whitespace-nowrap',
+    item.comingSoon
+      ? 'pointer-events-none opacity-50 text-muted-foreground'
+      : 'text-muted-foreground hover:text-foreground hover:bg-muted/80',
+    className
+  );
+
+  return (
+    <Link
+      to={item.comingSoon ? '#' : item.href}
+      className={baseClass}
+      onClick={(e) => {
+        if (item.comingSoon) {
+          e.preventDefault();
+          return;
+        }
+        onClick?.();
+      }}
+      aria-disabled={item.comingSoon}
+      tabIndex={item.comingSoon ? -1 : undefined}
+    >
+      <div className={cn(
+        'w-6 h-6 rounded-md flex items-center justify-center transition-all duration-150',
+        'bg-muted/50',
+        !item.comingSoon && 'group-hover:bg-primary/10 group-hover:scale-105'
+      )}>
+        <ToolIcon
+          icon={item.icon}
+          size="sm"
+          className={cn(
+            'w-3.5 h-3.5 text-muted-foreground transition-colors',
+            !item.comingSoon && 'group-hover:text-primary'
+          )}
+        />
+      </div>
+      <span className="font-medium">{item.name}</span>
+      {item.comingSoon && <ComingSoonBadge />}
+    </Link>
+  );
+};
+
+const MobileToolLink = ({
+  item,
+  onClick,
+}: {
+  item: ToolItem;
+  onClick?: () => void;
+}) => {
+  return (
+    <Link
+      to={item.comingSoon ? '#' : item.href}
+      className={cn(
+        'flex items-center gap-2 px-4 py-2 text-sm transition-colors rounded-lg ml-2',
+        item.comingSoon
+          ? 'pointer-events-none opacity-50 text-muted-foreground'
+          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+      )}
+      onClick={(e) => {
+        if (item.comingSoon) {
+          e.preventDefault();
+          return;
+        }
+        onClick?.();
+      }}
+      aria-disabled={item.comingSoon}
+      tabIndex={item.comingSoon ? -1 : undefined}
+    >
+      <ToolIcon icon={item.icon} className="w-4 h-4" />
+      {item.name}
+      {item.comingSoon && <ComingSoonBadge />}
+    </Link>
+  );
+};
 
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -115,6 +218,8 @@ export const Header = () => {
     await logout();
     setIsMobileMenuOpen(false);
   };
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const formatValue = (value?: string) => (value && value.trim().length > 0 ? value : '-');
 
@@ -131,6 +236,19 @@ export const Header = () => {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close mega menus on Escape key
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMegaMenuOpen(false);
+        setIsConvertOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
@@ -157,8 +275,8 @@ export const Header = () => {
           ))}
 
           {/* Convert PDF Dropdown */}
-          <div 
-            className="relative" 
+          <div
+            className="relative"
             ref={convertMenuRef}
             onMouseEnter={() => {
               setIsConvertOpen(true);
@@ -177,7 +295,7 @@ export const Header = () => {
             </button>
 
             {isConvertOpen && (
-              <div 
+              <div
                 className="absolute top-full left-1/2 -translate-x-1/2 mt-0 pt-2 z-50"
                 onMouseEnter={() => setIsConvertOpen(true)}
                 onMouseLeave={() => setIsConvertOpen(false)}
@@ -188,17 +306,8 @@ export const Header = () => {
                       <h4 className="text-[10px] font-bold tracking-wider text-yellow-600 mb-2 pb-1.5 border-b border-border/50">CONVERT TO PDF</h4>
                       <ul className="space-y-0.5">
                         {convertToPdf.map((item) => (
-                          <li key={item.href}>
-                            <Link
-                              to={item.href}
-                              className="flex items-center gap-2 px-1.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/80 transition-all duration-150 group whitespace-nowrap"
-                              onClick={() => setIsConvertOpen(false)}
-                            >
-                              <div className="w-6 h-6 rounded-md flex items-center justify-center bg-muted/50 group-hover:bg-primary/10 transition-all">
-                                <ToolIcon icon={item.icon} size="sm" className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-                              </div>
-                              <span className="font-medium">{item.name}</span>
-                            </Link>
+                          <li key={item.href + item.name}>
+                            <ToolLink item={item} onClick={() => setIsConvertOpen(false)} />
                           </li>
                         ))}
                       </ul>
@@ -207,17 +316,8 @@ export const Header = () => {
                       <h4 className="text-[10px] font-bold tracking-wider text-purple-500 mb-2 pb-1.5 border-b border-border/50">CONVERT FROM PDF</h4>
                       <ul className="space-y-0.5">
                         {convertFromPdf.map((item) => (
-                          <li key={item.href}>
-                            <Link
-                              to={item.href}
-                              className="flex items-center gap-2 px-1.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/80 transition-all duration-150 group whitespace-nowrap"
-                              onClick={() => setIsConvertOpen(false)}
-                            >
-                              <div className="w-6 h-6 rounded-md flex items-center justify-center bg-muted/50 group-hover:bg-primary/10 transition-all">
-                                <ToolIcon icon={item.icon} size="sm" className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-                              </div>
-                              <span className="font-medium">{item.name}</span>
-                            </Link>
+                          <li key={item.href + item.name}>
+                            <ToolLink item={item} onClick={() => setIsConvertOpen(false)} />
                           </li>
                         ))}
                       </ul>
@@ -229,8 +329,8 @@ export const Header = () => {
           </div>
 
           {/* All PDF Tools Mega Menu - Hover */}
-          <div 
-            className="relative" 
+          <div
+            className="relative"
             ref={megaMenuRef}
             onMouseEnter={() => {
               setIsMegaMenuOpen(true);
@@ -250,7 +350,7 @@ export const Header = () => {
 
             {isMegaMenuOpen && (
               <div className="fixed inset-x-0 top-full flex justify-center pt-2 z-50">
-                <div 
+                <div
                   className="w-[960px] max-w-[calc(100vw-2rem)] rounded-2xl border bg-background shadow-2xl p-8 animate-in fade-in-0 slide-in-from-top-2 duration-200"
                   onMouseEnter={() => setIsMegaMenuOpen(true)}
                   onMouseLeave={() => setIsMegaMenuOpen(false)}
@@ -267,23 +367,7 @@ export const Header = () => {
                         <ul className="space-y-0.5">
                           {category.tools.map((tool) => (
                             <li key={tool.href + tool.name}>
-                              <Link
-                                to={tool.href}
-                                className="flex items-center gap-2 px-1.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/80 transition-all duration-150 group"
-                                onClick={() => setIsMegaMenuOpen(false)}
-                              >
-                                <div className={cn(
-                                  'w-6 h-6 rounded-md flex items-center justify-center transition-all duration-150',
-                                  'bg-muted/50 group-hover:bg-primary/10 group-hover:scale-105'
-                                )}>
-                                  <ToolIcon 
-                                    icon={tool.icon} 
-                                    size="sm"
-                                    className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" 
-                                  />
-                                </div>
-                                <span className="font-medium">{tool.name}</span>
-                              </Link>
+                              <ToolLink item={tool} onClick={() => setIsMegaMenuOpen(false)} />
                             </li>
                           ))}
                         </ul>
@@ -299,7 +383,7 @@ export const Header = () => {
         {/* Theme Toggle & Auth & Mobile Menu Toggle */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          
+
           {!isLoading && !isAuthenticated && (
             <>
               <Button variant="ghost" className="hidden sm:flex" asChild>
@@ -392,6 +476,7 @@ export const Header = () => {
             size="icon"
             className="lg:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
           >
             {isMobileMenuOpen ? (
               <X className="h-5 w-5" />
@@ -415,68 +500,64 @@ export const Header = () => {
               key={item.href}
               to={item.href}
               className="px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={closeMobileMenu}
             >
               {item.label}
             </Link>
           ))}
-          
-          {/* Mobile Convert Section */}
-          <div className="px-4 py-2 text-xs font-bold text-yellow-600 mt-2">CONVERT TO PDF</div>
-          {convertToPdf.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted ml-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <ToolIcon icon={item.icon} className="w-4 h-4" />
-              {item.name}
-            </Link>
-          ))}
-          <div className="px-4 py-2 text-xs font-bold text-purple-500 mt-2">CONVERT FROM PDF</div>
-          {convertFromPdf.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted ml-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <ToolIcon icon={item.icon} className="w-4 h-4" />
-              {item.name}
-            </Link>
-          ))}
 
-          {/* Mobile All Tools Section */}
-          <div className="px-4 py-2 text-xs font-bold text-primary mt-2">ALL PDF TOOLS</div>
-          {toolCategories.map((category) => (
-            <div key={category.title} className="mb-2">
-              <div className={cn('px-4 py-1 text-xs font-semibold', category.color)}>
-                {category.title}
-              </div>
-              {category.tools.map((tool) => (
-                <Link
-                  key={tool.href + tool.name}
-                  to={tool.href}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted ml-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <ToolIcon icon={tool.icon} className="w-4 h-4" />
-                  {tool.name}
-                </Link>
-              ))}
-            </div>
-          ))}
+          {/* Mobile Accordion Sections */}
+          <Accordion type="multiple" className="mt-2">
+            <AccordionItem value="convert-to" className="border-none">
+              <AccordionTrigger className="px-4 py-2 text-xs font-bold text-yellow-600 hover:no-underline">
+                CONVERT TO PDF
+              </AccordionTrigger>
+              <AccordionContent>
+                {convertToPdf.map((item) => (
+                  <MobileToolLink key={item.href + item.name} item={item} onClick={closeMobileMenu} />
+                ))}
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="convert-from" className="border-none">
+              <AccordionTrigger className="px-4 py-2 text-xs font-bold text-purple-500 hover:no-underline">
+                CONVERT FROM PDF
+              </AccordionTrigger>
+              <AccordionContent>
+                {convertFromPdf.map((item) => (
+                  <MobileToolLink key={item.href + item.name} item={item} onClick={closeMobileMenu} />
+                ))}
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="all-tools" className="border-none">
+              <AccordionTrigger className="px-4 py-2 text-xs font-bold text-primary hover:no-underline">
+                ALL PDF TOOLS
+              </AccordionTrigger>
+              <AccordionContent>
+                {toolCategories.map((category) => (
+                  <div key={category.title} className="mb-2">
+                    <div className={cn('px-4 py-1 text-xs font-semibold', category.color)}>
+                      {category.title}
+                    </div>
+                    {category.tools.map((tool) => (
+                      <MobileToolLink key={tool.href + tool.name} item={tool} onClick={closeMobileMenu} />
+                    ))}
+                  </div>
+                ))}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           {!isLoading && !isAuthenticated && (
             <div className="mt-3 grid gap-2">
               <Button variant="outline" asChild>
-                <Link to="/signin" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link to="/signin" onClick={closeMobileMenu}>
                   Login
                 </Link>
               </Button>
               <Button className="bg-gradient-primary" asChild>
-                <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link to="/signup" onClick={closeMobileMenu}>
                   Sign up
                 </Link>
               </Button>

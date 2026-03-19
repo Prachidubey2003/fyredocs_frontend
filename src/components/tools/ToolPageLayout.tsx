@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ChevronLeft } from 'lucide-react';
 import { ToolDefinition } from '@/types';
 import { ToolIcon } from '@/components/icons/ToolIcon';
@@ -30,6 +31,12 @@ export const ToolPageLayout = ({
 }: ToolPageLayoutProps) => {
   return (
     <Layout showFooter={false}>
+      <Helmet>
+        <title>{tool.name} — Esydocs</title>
+        <meta name="description" content={tool.description} />
+        <meta property="og:title" content={`${tool.name} — Esydocs`} />
+        <meta property="og:description" content={tool.description} />
+      </Helmet>
       {/* Tool header */}
       <div
         className={cn(
