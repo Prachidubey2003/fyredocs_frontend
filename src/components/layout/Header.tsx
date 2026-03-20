@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/auth/useAuth';
+import { AnimatedDropdown, AnimatePresence, motion } from '@/components/ui/animated';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -294,13 +295,13 @@ export const Header = () => {
               <ChevronDown className={cn('w-4 h-4 transition-transform', isConvertOpen && 'rotate-180')} />
             </button>
 
-            {isConvertOpen && (
+            <AnimatedDropdown show={isConvertOpen}>
               <div
                 className="absolute top-full left-1/2 -translate-x-1/2 mt-0 pt-2 z-50"
                 onMouseEnter={() => setIsConvertOpen(true)}
                 onMouseLeave={() => setIsConvertOpen(false)}
               >
-                <div className="rounded-xl border bg-background shadow-2xl p-5 animate-in fade-in-0 slide-in-from-top-2 duration-200">
+                <div className="rounded-xl border bg-background shadow-2xl p-5">
                   <div className="flex gap-8">
                     <div>
                       <h4 className="text-[10px] font-bold tracking-wider text-yellow-600 mb-2 pb-1.5 border-b border-border/50">CONVERT TO PDF</h4>
@@ -325,7 +326,7 @@ export const Header = () => {
                   </div>
                 </div>
               </div>
-            )}
+            </AnimatedDropdown>
           </div>
 
           {/* All PDF Tools Mega Menu - Hover */}
@@ -348,10 +349,10 @@ export const Header = () => {
               <ChevronDown className={cn('w-4 h-4 transition-transform', isMegaMenuOpen && 'rotate-180')} />
             </button>
 
-            {isMegaMenuOpen && (
+            <AnimatedDropdown show={isMegaMenuOpen}>
               <div className="fixed inset-x-0 top-full flex justify-center pt-2 z-50">
                 <div
-                  className="w-[960px] max-w-[calc(100vw-2rem)] rounded-2xl border bg-background shadow-2xl p-8 animate-in fade-in-0 slide-in-from-top-2 duration-200"
+                  className="w-[960px] max-w-[calc(100vw-2rem)] rounded-2xl border bg-background shadow-2xl p-8"
                   onMouseEnter={() => setIsMegaMenuOpen(true)}
                   onMouseLeave={() => setIsMegaMenuOpen(false)}
                 >
@@ -376,7 +377,7 @@ export const Header = () => {
                   </div>
                 </div>
               </div>
-            )}
+            </AnimatedDropdown>
           </div>
         </nav>
 
@@ -384,20 +385,34 @@ export const Header = () => {
         <div className="flex items-center gap-2">
           <ThemeToggle />
 
-          {!isLoading && !isAuthenticated && (
-            <>
-              <Button variant="ghost" className="hidden sm:flex" asChild>
-                <Link to="/signin">Login</Link>
-              </Button>
-              <Button className="hidden sm:flex bg-gradient-primary hover:opacity-90 transition-opacity" asChild>
-                <Link to="/signup">Sign up</Link>
-              </Button>
-            </>
-          )}
+          <AnimatePresence>
+            {!isLoading && !isAuthenticated && (
+              <motion.div
+                key="auth-buttons"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-2"
+              >
+                <Button variant="ghost" className="hidden sm:flex" asChild>
+                  <Link to="/signin">Login</Link>
+                </Button>
+                <Button className="hidden sm:flex bg-gradient-primary hover:opacity-90 transition-opacity" asChild>
+                  <Link to="/signup">Sign up</Link>
+                </Button>
+              </motion.div>
+            )}
 
-          {!isLoading && isAuthenticated && (
-            <>
-              <DropdownMenu>
+            {!isLoading && isAuthenticated && (
+              <motion.div
+                key="user-menu"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar className="h-9 w-9">
@@ -473,8 +488,9 @@ export const Header = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <Button
             variant="ghost"
@@ -483,11 +499,29 @@ export const Header = () => {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
           >
-            {isMobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
+            <AnimatePresence mode="wait" initial={false}>
+              {isMobileMenuOpen ? (
+                <motion.span
+                  key="close"
+                  initial={{ opacity: 0, rotate: -90 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0, rotate: 90 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <X className="h-5 w-5" />
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="menu"
+                  initial={{ opacity: 0, rotate: 90 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0, rotate: -90 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <Menu className="h-5 w-5" />
+                </motion.span>
+              )}
+            </AnimatePresence>
           </Button>
         </div>
       </div>

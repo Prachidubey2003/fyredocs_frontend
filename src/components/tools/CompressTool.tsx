@@ -16,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { Minimize2, Trash2, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AnimatedSwitch } from '@/components/ui/animated';
 
 const tool = TOOLS.compress;
 
@@ -155,165 +156,161 @@ export const CompressTool = () => {
   const isComplete = job?.state === 'completed';
   const isBatchComplete = totalCount > 0 && completedCount + failedCount === totalCount;
   const showBatchProgress = batchMode && batchJobs.length > 0;
+  const viewKey = showBatchProgress ? 'batch' : job ? 'progress' : 'upload';
 
   return (
     <ToolPageLayout tool={tool}>
       <div className="max-w-3xl mx-auto">
-        {/* Upload section */}
-        {!job && !showBatchProgress && (
-          <>
-            <FileDropzone
-              tool={tool}
-              onFilesSelected={handleFilesSelected}
-              compact={hasFiles}
-              className="mb-6"
+        <AnimatedSwitch switchKey={viewKey}>
+          {showBatchProgress ? (
+            <BatchProgress
+              batchJobs={batchJobs}
+              isProcessing={isBatchProcessing}
+              completedCount={completedCount}
+              failedCount={failedCount}
+              totalCount={totalCount}
+              overallProgress={overallProgress}
+              onCancel={cancelBatch}
+              onRetryFailed={retryFailed}
+              onDownloadAll={handleDownloadAll}
+              onReset={handleStartOver}
             />
+          ) : job ? (
+            <div className="space-y-6">
+              <JobProgress
+                job={job}
+                onCancel={cancelJob}
+                onRetry={retryJob}
+                onDownload={() => {
+                  if (job.result?.downloadUrl) {
+                    window.open(job.result.downloadUrl, '_blank');
+                  }
+                }}
+              />
 
-            {hasFiles && (
-              <>
-                {/* File list header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Minimize2 className="w-5 h-5 text-tool-compress" />
-                    <span className="font-medium">
-                      {files.length} file{files.length !== 1 ? 's' : ''} to compress
-                    </span>
+              {(isComplete || job.state === 'failed') && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleStartOver}
+                >
+                  Start over with new files
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
+              <FileDropzone
+                tool={tool}
+                onFilesSelected={handleFilesSelected}
+                compact={hasFiles}
+                className="mb-6"
+              />
+
+              {hasFiles && (
+                <>
+                  {/* File list header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Minimize2 className="w-5 h-5 text-tool-compress" />
+                      <span className="font-medium">
+                        {files.length} file{files.length !== 1 ? 's' : ''} to compress
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearFiles}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Clear all
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFiles}
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Clear all
-                  </Button>
-                </div>
 
-                <FileList
-                  files={files}
-                  onRemove={removeFile}
-                  onRetry={retryFileUpload}
-                  onPause={pauseUpload}
-                  onResume={resumeUpload}
-                  className="mb-6"
-                />
+                  <FileList
+                    files={files}
+                    onRemove={removeFile}
+                    onRetry={retryFileUpload}
+                    onPause={pauseUpload}
+                    onResume={resumeUpload}
+                    className="mb-6"
+                  />
 
-                {/* Batch mode toggle */}
-                <BatchModeToggle
-                  enabled={batchMode}
-                  onToggle={setBatchMode}
-                  fileCount={files.length}
-                  className="mb-6"
-                />
+                  {/* Batch mode toggle */}
+                  <BatchModeToggle
+                    enabled={batchMode}
+                    onToggle={setBatchMode}
+                    fileCount={files.length}
+                    className="mb-6"
+                  />
 
-                {/* Compression options */}
-                <div className="p-6 rounded-xl border bg-card mb-6">
-                  <h3 className="font-semibold mb-4">Compression Level</h3>
+                  {/* Compression options */}
+                  <div className="p-6 rounded-xl border bg-card mb-6">
+                    <h3 className="font-semibold mb-4">Compression Level</h3>
 
-                  <RadioGroup
-                    value={quality}
-                    onValueChange={(value) => setQuality(value as CompressionLevel)}
-                    className="grid grid-cols-2 md:grid-cols-4 gap-3"
-                  >
-                    {compressionLevels.map((level) => (
-                      <div key={level.value}>
-                        <RadioGroupItem
-                          value={level.value}
-                          id={level.value}
-                          className="peer sr-only"
-                        />
-                        <Label
-                          htmlFor={level.value}
-                          className={cn(
-                            'flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all',
-                            'hover:border-primary/50',
-                            'peer-data-[state=checked]:border-tool-compress peer-data-[state=checked]:bg-tool-compress/5'
-                          )}
-                        >
-                          <span className="font-medium mb-1">{level.label}</span>
-                          <span className="text-xs text-muted-foreground text-center">
-                            {level.reduction}
-                          </span>
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
+                    <RadioGroup
+                      value={quality}
+                      onValueChange={(value) => setQuality(value as CompressionLevel)}
+                      className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                    >
+                      {compressionLevels.map((level) => (
+                        <div key={level.value}>
+                          <RadioGroupItem
+                            value={level.value}
+                            id={level.value}
+                            className="peer sr-only"
+                          />
+                          <Label
+                            htmlFor={level.value}
+                            className={cn(
+                              'flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all',
+                              'hover:border-primary/50',
+                              'peer-data-[state=checked]:border-tool-compress peer-data-[state=checked]:bg-tool-compress/5'
+                            )}
+                          >
+                            <span className="font-medium mb-1">{level.label}</span>
+                            <span className="text-xs text-muted-foreground text-center">
+                              {level.reduction}
+                            </span>
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
 
-                  <p className="text-sm text-muted-foreground mt-4 text-center">
-                    {compressionLevels.find((l) => l.value === quality)?.description}
-                  </p>
-                </div>
+                    <p className="text-sm text-muted-foreground mt-4 text-center">
+                      {compressionLevels.find((l) => l.value === quality)?.description}
+                    </p>
+                  </div>
 
-                {/* Action buttons */}
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() =>
-                      document.querySelector<HTMLInputElement>('input[type="file"]')?.click()
-                    }
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add more files
-                  </Button>
-                  <Button
-                    className="flex-1 bg-tool-compress hover:bg-tool-compress/90"
-                    onClick={handleCompress}
-                    disabled={!canProceed}
-                  >
-                    <Minimize2 className="w-4 h-4 mr-2" />
-                    {batchMode && files.length > 1
-                      ? `Compress ${files.length} files separately`
-                      : `Compress ${files.length} PDF${files.length !== 1 ? 's' : ''}`}
-                  </Button>
-                </div>
-              </>
-            )}
-          </>
-        )}
-
-        {/* Single Job progress */}
-        {job && !showBatchProgress && (
-          <div className="space-y-6">
-            <JobProgress
-              job={job}
-              onCancel={cancelJob}
-              onRetry={retryJob}
-              onDownload={() => {
-                if (job.result?.downloadUrl) {
-                  window.open(job.result.downloadUrl, '_blank');
-                }
-              }}
-            />
-
-            {(isComplete || job.state === 'failed') && (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleStartOver}
-              >
-                Start over with new files
-              </Button>
-            )}
-          </div>
-        )}
-
-        {/* Batch progress */}
-        {showBatchProgress && (
-          <BatchProgress
-            batchJobs={batchJobs}
-            isProcessing={isBatchProcessing}
-            completedCount={completedCount}
-            failedCount={failedCount}
-            totalCount={totalCount}
-            overallProgress={overallProgress}
-            onCancel={cancelBatch}
-            onRetryFailed={retryFailed}
-            onDownloadAll={handleDownloadAll}
-            onReset={handleStartOver}
-          />
-        )}
+                  {/* Action buttons */}
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() =>
+                        document.querySelector<HTMLInputElement>('input[type="file"]')?.click()
+                      }
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add more files
+                    </Button>
+                    <Button
+                      className="flex-1 bg-tool-compress hover:bg-tool-compress/90"
+                      onClick={handleCompress}
+                      disabled={!canProceed}
+                    >
+                      <Minimize2 className="w-4 h-4 mr-2" />
+                      {batchMode && files.length > 1
+                        ? `Compress ${files.length} files separately`
+                        : `Compress ${files.length} PDF${files.length !== 1 ? 's' : ''}`}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </AnimatedSwitch>
       </div>
     </ToolPageLayout>
   );

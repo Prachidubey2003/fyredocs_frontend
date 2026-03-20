@@ -3,6 +3,7 @@ import { CheckCircle2, Loader2, AlertCircle, Clock } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { AnimatePresence, FadeIn } from '@/components/ui/animated';
 
 interface JobProgressProps {
   job: Job;
@@ -68,7 +69,7 @@ export const JobProgress = ({
       <div className="flex items-center gap-4 mb-6">
         <div
           className={cn(
-            'w-12 h-12 rounded-full flex items-center justify-center',
+            'w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-200',
             config.bgColor
           )}
         >
@@ -92,65 +93,83 @@ export const JobProgress = ({
       </div>
 
       {/* Progress bar */}
-      {(job.state === 'processing' || job.state === 'queued') && (
-        <div className="mb-6">
-          <Progress value={job.progress.percentage} className="h-2" />
-          <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-            <span>
-              Step {job.progress.completedSteps + 1} of {job.progress.totalSteps}
-            </span>
-            <span>{job.progress.percentage}%</span>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {(job.state === 'processing' || job.state === 'queued') && (
+          <FadeIn motionKey="progress-bar" className="mb-6">
+            <Progress value={job.progress.percentage} className="h-2" />
+            <div className="flex justify-between mt-2 text-sm text-muted-foreground">
+              <span>
+                Step {job.progress.completedSteps + 1} of {job.progress.totalSteps}
+              </span>
+              <span>{job.progress.percentage}%</span>
+            </div>
+          </FadeIn>
+        )}
+      </AnimatePresence>
 
       {/* Error message */}
-      {job.state === 'failed' && job.error && (
-        <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-          <p className="text-sm text-destructive font-medium">
-            {job.error.message}
-          </p>
-          {job.error.isRetryable && (
-            <p className="text-xs text-muted-foreground mt-1">
-              This error is retryable. You can try again.
-            </p>
-          )}
-        </div>
-      )}
+      <AnimatePresence>
+        {job.state === 'failed' && job.error && (
+          <FadeIn motionKey="error-msg" slide className="mb-6">
+            <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+              <p className="text-sm text-destructive font-medium">
+                {job.error.message}
+              </p>
+              {job.error.isRetryable && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  This error is retryable. You can try again.
+                </p>
+              )}
+            </div>
+          </FadeIn>
+        )}
+      </AnimatePresence>
 
       {/* Success result */}
-      {job.state === 'completed' && job.result && (
-        <div className="mb-6 p-4 rounded-lg bg-job-completed/10 border border-job-completed/20">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-foreground">
-                {job.result.fileName}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {(job.result.fileSize / (1024 * 1024)).toFixed(2)} MB
-              </p>
+      <AnimatePresence>
+        {job.state === 'completed' && job.result && (
+          <FadeIn motionKey="success-result" slide className="mb-6">
+            <div className="p-4 rounded-lg bg-job-completed/10 border border-job-completed/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-foreground">
+                    {job.result.fileName}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {(job.result.fileSize / (1024 * 1024)).toFixed(2)} MB
+                  </p>
+                </div>
+                <Button onClick={onDownload} className="bg-gradient-primary">
+                  Download
+                </Button>
+              </div>
             </div>
-            <Button onClick={onDownload} className="bg-gradient-primary">
-              Download
-            </Button>
-          </div>
-        </div>
-      )}
+          </FadeIn>
+        )}
+      </AnimatePresence>
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <AnimatePresence>
         {(job.state === 'processing' || job.state === 'queued') && onCancel && (
-          <Button variant="outline" onClick={onCancel} className="flex-1">
-            Cancel
-          </Button>
+          <FadeIn motionKey="cancel-action">
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={onCancel} className="flex-1">
+                Cancel
+              </Button>
+            </div>
+          </FadeIn>
         )}
 
         {job.state === 'failed' && job.error?.isRetryable && onRetry && (
-          <Button onClick={onRetry} className="flex-1">
-            Retry
-          </Button>
+          <FadeIn motionKey="retry-action">
+            <div className="flex gap-3">
+              <Button onClick={onRetry} className="flex-1">
+                Retry
+              </Button>
+            </div>
+          </FadeIn>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 };

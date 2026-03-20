@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { FileDropzone } from '@/components/common/FileDropzone';
 import { JobProgress } from '@/components/common/JobProgress';
+import { AnimatedSwitch } from '@/components/ui/animated';
 import { Button } from '@/components/ui/button';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
@@ -103,19 +104,27 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
 
   const hasFiles = files.length > 0;
   const isProcessing = job?.state === 'processing' || job?.state === 'queued';
+  const viewKey = job ? 'progress' : 'upload';
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {!job && (
-        <>
-          <FileDropzone
-            tool={tool}
-            onFilesSelected={handleFilesSelected}
-            disabled={isUploading}
+      <AnimatedSwitch switchKey={viewKey}>
+        {job ? (
+          <JobProgress
+            job={job}
+            onCancel={cancelJob}
+            onRetry={retryJob}
+            onDownload={handleDownload}
           />
+        ) : (
+          <>
+            <FileDropzone
+              tool={tool}
+              onFilesSelected={handleFilesSelected}
+              disabled={isUploading}
+            />
 
-          {hasFiles && pages.length > 0 && (
-            <>
+            {hasFiles && pages.length > 0 && (
               <div className="rounded-xl border bg-card p-6 space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-lg flex items-center gap-2">
@@ -180,7 +189,7 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
                     New page order: {pages.map((p) => p.id).join(', ')}
                   </p>
                   <Button
-                  onClick={handleProcess}
+                    onClick={handleProcess}
                     disabled={!hasFiles || isProcessing || pages.length === 0 || !canProceed}
                     className="w-full bg-gradient-primary"
                     size="lg"
@@ -190,19 +199,10 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
                   </Button>
                 </div>
               </div>
-            </>
-          )}
-        </>
-      )}
-
-      {job && (
-        <JobProgress
-          job={job}
-          onCancel={cancelJob}
-          onRetry={retryJob}
-          onDownload={handleDownload}
-        />
-      )}
+            )}
+          </>
+        )}
+      </AnimatedSwitch>
     </div>
   );
 };

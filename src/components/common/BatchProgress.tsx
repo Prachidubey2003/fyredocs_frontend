@@ -13,6 +13,7 @@ import {
   FileText,
   Package,
 } from 'lucide-react';
+import { AnimatePresence, FadeIn, motion } from '@/components/ui/animated';
 
 interface BatchProgressProps {
   batchJobs: BatchJob[];
@@ -29,17 +30,27 @@ interface BatchProgressProps {
 }
 
 const StatusIcon = ({ status }: { status: BatchJob['status'] }) => {
-  switch (status) {
-    case 'completed':
-      return <CheckCircle2 className="w-4 h-4 text-green-500" />;
-    case 'failed':
-      return <XCircle className="w-4 h-4 text-destructive" />;
-    case 'processing':
-      return <Loader2 className="w-4 h-4 text-primary animate-spin" />;
-    case 'pending':
-    default:
-      return <Clock className="w-4 h-4 text-muted-foreground" />;
-  }
+  const iconMap = {
+    completed: <CheckCircle2 className="w-4 h-4 text-green-500" />,
+    failed: <XCircle className="w-4 h-4 text-destructive" />,
+    processing: <Loader2 className="w-4 h-4 text-primary animate-spin" />,
+    pending: <Clock className="w-4 h-4 text-muted-foreground" />,
+  };
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.span
+        key={status}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        transition={{ duration: 0.15 }}
+        className="inline-flex"
+      >
+        {iconMap[status] ?? iconMap.pending}
+      </motion.span>
+    </AnimatePresence>
+  );
 };
 
 export const BatchProgress = ({
@@ -132,51 +143,65 @@ export const BatchProgress = ({
                 )}
               </div>
               <StatusIcon status={batchJob.status} />
-              {batchJob.status === 'completed' && batchJob.job?.result?.downloadUrl && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 p-0"
-                  onClick={() => window.open(batchJob.job?.result?.downloadUrl, '_blank')}
-                >
-                  <Download className="w-4 h-4" />
-                </Button>
-              )}
+              <AnimatePresence>
+                {batchJob.status === 'completed' && batchJob.job?.result?.downloadUrl && (
+                  <FadeIn motionKey={`dl-${batchJob.id}`}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onClick={() => window.open(batchJob.job?.result?.downloadUrl, '_blank')}
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  </FadeIn>
+                )}
+              </AnimatePresence>
             </div>
           ))}
         </div>
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <AnimatePresence mode="wait">
         {isProcessing ? (
-          <Button variant="outline" className="flex-1" onClick={onCancel}>
-            <X className="w-4 h-4 mr-2" />
-            Cancel All
-          </Button>
+          <FadeIn motionKey="cancel-actions">
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={onCancel}>
+                <X className="w-4 h-4 mr-2" />
+                Cancel All
+              </Button>
+            </div>
+          </FadeIn>
         ) : (
-          <>
-            {hasFailures && (
-              <Button variant="outline" className="flex-1" onClick={onRetryFailed}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Retry Failed ({failedCount})
-              </Button>
-            )}
-            {hasSuccesses && (
-              <Button className="flex-1" onClick={onDownloadAll}>
-                <Download className="w-4 h-4 mr-2" />
-                Download All ({completedCount})
-              </Button>
-            )}
-          </>
+          <FadeIn motionKey="complete-actions">
+            <div className="flex gap-3">
+              {hasFailures && (
+                <Button variant="outline" className="flex-1" onClick={onRetryFailed}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Retry Failed ({failedCount})
+                </Button>
+              )}
+              {hasSuccesses && (
+                <Button className="flex-1" onClick={onDownloadAll}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download All ({completedCount})
+                </Button>
+              )}
+            </div>
+          </FadeIn>
         )}
-      </div>
+      </AnimatePresence>
 
-      {allComplete && (
-        <Button variant="ghost" className="w-full" onClick={onReset}>
-          Start over with new files
-        </Button>
-      )}
+      <AnimatePresence>
+        {allComplete && (
+          <FadeIn motionKey="reset-btn" slide>
+            <Button variant="ghost" className="w-full" onClick={onReset}>
+              Start over with new files
+            </Button>
+          </FadeIn>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -4,11 +4,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/auth/authContext";
 import { ThemeProvider } from "next-themes";
 import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from "@/auth/authGuard";
 import { PageSkeleton } from "@/components/common/PageSkeleton";
+import { AnimatePresence, motion } from "framer-motion";
 
 const Index = lazy(() => import("./pages/Index"));
 const MergePage = lazy(() => import("./pages/MergePage"));
@@ -41,9 +42,63 @@ const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 
 const queryClient = new QueryClient();
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
+      >
+        <Routes location={location}>
+          <Route path="/" element={<Index />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/merge" element={<MergePage />} />
+            <Route path="/split" element={<SplitPage />} />
+            <Route path="/compress" element={<CompressPage />} />
+            <Route path="/convert" element={<ConvertPage />} />
+            <Route path="/pdf-to-word" element={<PdfToWordPage />} />
+            <Route path="/word-to-pdf" element={<WordToPdfPage />} />
+            <Route path="/pdf-to-excel" element={<PdfToExcelPage />} />
+            <Route path="/excel-to-pdf" element={<ExcelToPdfPage />} />
+            <Route path="/pdf-to-image" element={<PdfToImagePage />} />
+            <Route path="/image-to-pdf" element={<ImageToPdfPage />} />
+            <Route path="/ocr" element={<OcrPage />} />
+            <Route path="/watermark" element={<WatermarkPage />} />
+            <Route path="/protect" element={<ProtectPage />} />
+            <Route path="/rotate" element={<RotatePage />} />
+            <Route path="/reorder" element={<ReorderPage />} />
+          </Route>
+          <Route path="/all-tools" element={<AllToolsPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/cookies" element={<CookiePage />} />
+          <Route element={<RoleRoute allowedRoles={['super-admin']} />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          </Route>
+          <Route element={<PublicOnlyRoute />}>
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
+          </Route>
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const App = () => (
   <HelmetProvider>
-  <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -51,43 +106,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <Suspense fallback={<PageSkeleton />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/merge" element={<MergePage />} />
-                  <Route path="/split" element={<SplitPage />} />
-                  <Route path="/compress" element={<CompressPage />} />
-                  <Route path="/convert" element={<ConvertPage />} />
-                  <Route path="/pdf-to-word" element={<PdfToWordPage />} />
-                  <Route path="/word-to-pdf" element={<WordToPdfPage />} />
-                  <Route path="/pdf-to-excel" element={<PdfToExcelPage />} />
-                  <Route path="/excel-to-pdf" element={<ExcelToPdfPage />} />
-                  <Route path="/pdf-to-image" element={<PdfToImagePage />} />
-                  <Route path="/image-to-pdf" element={<ImageToPdfPage />} />
-                  <Route path="/ocr" element={<OcrPage />} />
-                  <Route path="/watermark" element={<WatermarkPage />} />
-                  <Route path="/protect" element={<ProtectPage />} />
-                  <Route path="/rotate" element={<RotatePage />} />
-                  <Route path="/reorder" element={<ReorderPage />} />
-                </Route>
-                <Route path="/all-tools" element={<AllToolsPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/blog" element={<BlogPage />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/cookies" element={<CookiePage />} />
-                <Route element={<RoleRoute allowedRoles={['super-admin']} />}>
-                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                </Route>
-                <Route element={<PublicOnlyRoute />}>
-                  <Route path="/signin" element={<SignIn />} />
-                  <Route path="/signup" element={<SignUp />} />
-                </Route>
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AnimatedRoutes />
             </Suspense>
           </AuthProvider>
         </BrowserRouter>

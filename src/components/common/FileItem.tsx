@@ -61,7 +61,7 @@ export const FileItem = ({
   return (
     <div
       className={cn(
-        'file-item group flex items-center gap-3 p-3 rounded-lg border bg-card transition-all',
+        'group flex items-center gap-3 p-3 rounded-lg border bg-card transition-all',
         state === 'failed' && 'border-destructive/50 bg-destructive/5',
         state === 'completed' && 'border-upload-success/30 bg-upload-success/5',
         state === 'uploading' && 'border-primary/30'
