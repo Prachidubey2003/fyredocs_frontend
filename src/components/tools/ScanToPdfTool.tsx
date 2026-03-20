@@ -1,29 +1,52 @@
+import { useState } from 'react';
 import { TOOLS } from '@/config/tools';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
-import { ConvertOptions, ToolId } from '@/types';
+import { ScanToPdfOptions } from '@/types';
 import { ToolPageLayout } from './ToolPageLayout';
 import { FileDropzone } from '@/components/common/FileDropzone';
 import { FileList } from '@/components/common/FileList';
 import { JobProgress } from '@/components/common/JobProgress';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { AnimatedSwitch, AnimatedCollapse } from '@/components/ui/animated';
 import { toast } from 'sonner';
-import { FileText, Plus, Trash2 } from 'lucide-react';
-import { AnimatedSwitch } from '@/components/ui/animated';
+import { Scan, Plus, Trash2 } from 'lucide-react';
 
-interface ConvertToolProps {
-  toolId: ToolId;
-  outputFormat: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf' | 'pptx' | 'html';
-}
+const tool = TOOLS['scan-to-pdf'];
 
-export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
-  const tool = TOOLS[toolId];
+const languages = [
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'de', label: 'German' },
+  { value: 'it', label: 'Italian' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'ja', label: 'Japanese' },
+  { value: 'ko', label: 'Korean' },
+  { value: 'ar', label: 'Arabic' },
+];
+
+export const ScanToPdfTool = () => {
+  const [ocrEnabled, setOcrEnabled] = useState(false);
+  const [language, setLanguage] = useState('en');
 
   const {
     files,
     addFiles,
     removeFile,
     clearFiles,
+    reorderFiles,
+    isUploading,
     canProceed,
     pauseUpload,
     resumeUpload,
@@ -37,7 +60,7 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
 
   const { job, createJob, cancelJob, retryJob, resetJob } = useJob({
     onComplete: () => {
-      toast.success('Conversion completed successfully!');
+      toast.success('PDF created successfully!');
     },
   });
 
@@ -45,9 +68,9 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
     addFiles(selectedFiles);
   };
 
-  const handleConvert = () => {
+  const handleCreatePdf = () => {
     if (files.length === 0) {
-      toast.error('Please add files to convert');
+      toast.error('Please add images to convert');
       return;
     }
 
@@ -60,21 +83,19 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
       return;
     }
 
-    const options: ConvertOptions = {
-      format: outputFormat,
-      quality: 'high',
+    const options: ScanToPdfOptions = {
+      ocr: ocrEnabled,
+      language: ocrEnabled ? language : undefined,
     };
 
-    createJob(
-      tool.id,
-      uploadIds,
-      options
-    );
+    createJob(tool.id, uploadIds, options);
   };
 
   const handleStartOver = () => {
     resetJob();
     clearFiles();
+    setOcrEnabled(false);
+    setLanguage('en');
   };
 
   const hasFiles = files.length > 0;
@@ -104,7 +125,7 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
                   className="w-full"
                   onClick={handleStartOver}
                 >
-                  Start over with new files
+                  Start over with new images
                 </Button>
               )}
             </div>
@@ -113,6 +134,7 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
               <FileDropzone
                 tool={tool}
                 onFilesSelected={handleFilesSelected}
+                disabled={isUploading}
                 compact={hasFiles}
                 className="mb-6"
               />
@@ -121,9 +143,9 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
                 <>
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-tool-convert" />
+                      <Scan className="w-5 h-5 text-tool-convert" />
                       <span className="font-medium">
-                        {files.length} file{files.length !== 1 ? 's' : ''} to convert
+                        {files.length} image{files.length !== 1 ? 's' : ''} selected
                       </span>
                     </div>
                     <Button
@@ -143,13 +165,57 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
                     onRetry={retryFileUpload}
                     onPause={pauseUpload}
                     onResume={resumeUpload}
-                    className="mb-6"
+                    onReorder={reorderFiles}
+                    showReorder
+                    className="mb-4"
                   />
 
-                  <div className="p-4 rounded-lg bg-tool-convert/5 border border-tool-convert/20 mb-6">
-                    <p className="text-sm text-center">
-                      Converting to <strong className="text-tool-convert">.{outputFormat.toUpperCase()}</strong> format
-                    </p>
+                  <p className="text-sm text-muted-foreground mb-6 text-center">
+                    Drag images to reorder. Pages will follow this order in the PDF.
+                  </p>
+
+                  <div className="p-6 rounded-xl border bg-card mb-6">
+                    <h3 className="font-semibold mb-4 flex items-center gap-2">
+                      <Scan className="w-5 h-5 text-tool-convert" />
+                      Scan Settings
+                    </h3>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="ocr-toggle">Enable OCR</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Make text in scanned images searchable
+                          </p>
+                        </div>
+                        <Switch
+                          id="ocr-toggle"
+                          checked={ocrEnabled}
+                          onCheckedChange={setOcrEnabled}
+                        />
+                      </div>
+
+                      <AnimatedCollapse show={ocrEnabled}>
+                        <div className="space-y-2">
+                          <Label htmlFor="language">Document Language</Label>
+                          <Select value={language} onValueChange={setLanguage}>
+                            <SelectTrigger id="language" className="max-w-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {languages.map((lang) => (
+                                <SelectItem key={lang.value} value={lang.value}>
+                                  {lang.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground">
+                            Select the primary language of your documents
+                          </p>
+                        </div>
+                      </AnimatedCollapse>
+                    </div>
                   </div>
 
                   <div className="flex gap-3">
@@ -161,14 +227,15 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
                       }
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Add more files
+                      Add more images
                     </Button>
                     <Button
                       className="flex-1 bg-tool-convert hover:bg-tool-convert/90"
-                      onClick={handleConvert}
+                      onClick={handleCreatePdf}
                       disabled={!canProceed}
                     >
-                      Convert {files.length} file{files.length !== 1 ? 's' : ''}
+                      <Scan className="w-4 h-4 mr-2" />
+                      Create PDF
                     </Button>
                   </div>
                 </>

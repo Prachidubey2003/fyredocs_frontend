@@ -76,9 +76,10 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
   }, [files]);
 
   useEffect(() => {
+    const controllers = uploadControllers.current;
     return () => {
-      uploadControllers.current.forEach((controller) => controller.abort());
-      uploadControllers.current.clear();
+      controllers.forEach((controller) => controller.abort());
+      controllers.clear();
     };
   }, []);
 

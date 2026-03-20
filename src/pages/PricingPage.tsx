@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Zap, Building, Infinity } from 'lucide-react';
+import { Check, Zap, Building, Infinity as InfinityIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const plans = [
@@ -48,7 +48,7 @@ const plans = [
     description: 'For organizations at scale',
     price: 'Custom',
     period: 'contact us',
-    icon: Infinity,
+    icon: InfinityIcon,
     features: [
       'Everything in Pro',
       'Unlimited file size',

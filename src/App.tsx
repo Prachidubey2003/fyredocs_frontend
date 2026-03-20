@@ -27,6 +27,14 @@ const WatermarkPage = lazy(() => import("./pages/WatermarkPage"));
 const ProtectPage = lazy(() => import("./pages/ProtectPage"));
 const RotatePage = lazy(() => import("./pages/RotatePage"));
 const ReorderPage = lazy(() => import("./pages/ReorderPage"));
+const RemovePagesPage = lazy(() => import("./pages/RemovePagesPage"));
+const ExtractPagesPage = lazy(() => import("./pages/ExtractPagesPage"));
+const ScanToPdfPage = lazy(() => import("./pages/ScanToPdfPage"));
+const PdfToPptPage = lazy(() => import("./pages/PdfToPptPage"));
+const PdfToHtmlPage = lazy(() => import("./pages/PdfToHtmlPage"));
+const PdfToPdfaPage = lazy(() => import("./pages/PdfToPdfaPage"));
+const PowerpointToPdfPage = lazy(() => import("./pages/PowerpointToPdfPage"));
+const HtmlToPdfPage = lazy(() => import("./pages/HtmlToPdfPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
@@ -72,6 +80,14 @@ const AnimatedRoutes = () => {
             <Route path="/protect" element={<ProtectPage />} />
             <Route path="/rotate" element={<RotatePage />} />
             <Route path="/reorder" element={<ReorderPage />} />
+            <Route path="/remove-pages" element={<RemovePagesPage />} />
+            <Route path="/extract-pages" element={<ExtractPagesPage />} />
+            <Route path="/scan-to-pdf" element={<ScanToPdfPage />} />
+            <Route path="/pdf-to-ppt" element={<PdfToPptPage />} />
+            <Route path="/pdf-to-html" element={<PdfToHtmlPage />} />
+            <Route path="/pdf-to-pdfa" element={<PdfToPdfaPage />} />
+            <Route path="/powerpoint-to-pdf" element={<PowerpointToPdfPage />} />
+            <Route path="/html-to-pdf" element={<HtmlToPdfPage />} />
           </Route>
           <Route path="/all-tools" element={<AllToolsPage />} />
           <Route path="/about" element={<AboutPage />} />
