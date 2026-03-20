@@ -55,9 +55,15 @@ const parseResponseBody = async (response: Response) => {
 
 const normalizeUser = (data: AuthResponse): AuthUser | null => {
   if (!data || typeof data !== 'object') return null;
+
+  const nested = data.data as Record<string, unknown> | undefined;
+
   const raw =
+    (nested?.user as Record<string, unknown> | undefined) ??
+    (nested?.profile as Record<string, unknown> | undefined) ??
     (data.user as Record<string, unknown> | undefined) ??
     (data.profile as Record<string, unknown> | undefined) ??
+    (typeof nested === 'object' && nested !== null ? nested : null) ??
     data;
   if (!raw || typeof raw !== 'object') return null;
 

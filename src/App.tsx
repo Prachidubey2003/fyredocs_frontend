@@ -9,6 +9,7 @@ import { AuthProvider } from "@/auth/authContext";
 import { ThemeProvider } from "next-themes";
 import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from "@/auth/authGuard";
 import { PageSkeleton } from "@/components/common/PageSkeleton";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { AnimatePresence, motion } from "framer-motion";
 
 const Index = lazy(() => import("./pages/Index"));
@@ -60,7 +61,7 @@ const AnimatedRoutes = () => {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={location.pathname}
         initial={{ opacity: 0 }}
@@ -133,9 +134,11 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <Suspense fallback={<PageSkeleton />}>
-              <AnimatedRoutes />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<PageSkeleton />}>
+                <AnimatedRoutes />
+              </Suspense>
+            </ErrorBoundary>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
