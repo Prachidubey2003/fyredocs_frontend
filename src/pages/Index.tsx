@@ -20,7 +20,7 @@ const Index = () => {
       <Hero />
 
       {/* All Tools Section */}
-      <section id="tools" className="py-16 md:py-24">
+      {/* <section id="tools" className="py-16 md:py-24">
         <div className="container">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -56,7 +56,7 @@ const Index = () => {
             </div>
           )}
         </div>
-      </section>
+      </section> */}
 
       {/* Features Section */}
       <FeaturesSection />
