@@ -35,6 +35,12 @@ const PdfToHtmlPage = lazy(() => import("./pages/PdfToHtmlPage"));
 const PdfToPdfaPage = lazy(() => import("./pages/PdfToPdfaPage"));
 const PowerpointToPdfPage = lazy(() => import("./pages/PowerpointToPdfPage"));
 const HtmlToPdfPage = lazy(() => import("./pages/HtmlToPdfPage"));
+const RepairPdfPage = lazy(() => import("./pages/RepairPdfPage"));
+const PdfToTextPage = lazy(() => import("./pages/PdfToTextPage"));
+const UnlockPage = lazy(() => import("./pages/UnlockPage"));
+const AddPageNumbersPage = lazy(() => import("./pages/AddPageNumbersPage"));
+const SignPdfPage = lazy(() => import("./pages/SignPdfPage"));
+const EditPdfPage = lazy(() => import("./pages/EditPdfPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
@@ -88,6 +94,12 @@ const AnimatedRoutes = () => {
             <Route path="/pdf-to-pdfa" element={<PdfToPdfaPage />} />
             <Route path="/powerpoint-to-pdf" element={<PowerpointToPdfPage />} />
             <Route path="/html-to-pdf" element={<HtmlToPdfPage />} />
+            <Route path="/repair-pdf" element={<RepairPdfPage />} />
+            <Route path="/pdf-to-text" element={<PdfToTextPage />} />
+            <Route path="/unlock" element={<UnlockPage />} />
+            <Route path="/add-page-numbers" element={<AddPageNumbersPage />} />
+            <Route path="/sign-pdf" element={<SignPdfPage />} />
+            <Route path="/edit-pdf" element={<EditPdfPage />} />
           </Route>
           <Route path="/all-tools" element={<AllToolsPage />} />
           <Route path="/about" element={<AboutPage />} />

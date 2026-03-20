@@ -35,6 +35,14 @@ const TOOL_API_CONFIG: Record<ToolId, ToolApiConfig> = {
   'powerpoint-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'powerpoint-to-pdf' },
   'html-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'html-to-pdf' },
 
+  // Security tools
+  'unlock-pdf': { basePath: '/api/convert-to-pdf', tool: 'unlock-pdf' },
+
+  // Edit PDF tools
+  'add-page-numbers': { basePath: '/api/convert-to-pdf', tool: 'add-page-numbers' },
+  'edit-pdf': { basePath: '/api/convert-to-pdf', tool: 'edit-pdf' },
+  'sign-pdf': { basePath: '/api/convert-to-pdf', tool: 'sign-pdf' },
+
   // Legacy tools (keeping for backward compatibility)
   rotate: { basePath: '/api/organize-pdf', tool: 'rotate-pdf' },
   watermark: { basePath: '/api/optimize-pdf', tool: 'watermark-pdf' },
