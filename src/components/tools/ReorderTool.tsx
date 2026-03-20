@@ -5,7 +5,7 @@ import { AnimatedSwitch } from '@/components/ui/animated';
 import { Button } from '@/components/ui/button';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
-import { ToolDefinition } from '@/types';
+import { ToolDefinition, ToolOptions } from '@/types';
 import { ArrowUpDown, GripVertical, FileText, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -93,7 +93,7 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
 
     createJob(tool.id, uploadIds, {
       pageOrder: pages.map((p) => p.id),
-    } as any);
+    } as ToolOptions);
   };
 
   const handleDownload = () => {

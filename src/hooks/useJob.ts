@@ -105,7 +105,7 @@ const parseProgress = (value: unknown, state: JobState) => {
   return state === 'completed' ? 100 : 0;
 };
 
-const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
+export const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
   if (!options) return undefined;
 
   switch (toolId) {
@@ -147,8 +147,9 @@ const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
       };
     }
     case 'scan-to-pdf': {
-      const ocr = (options as { ocr?: boolean }).ocr;
-      return ocr ? { ocr: true } : undefined;
+      const opts = options as { ocr?: boolean; language?: string };
+      if (!opts.ocr) return undefined;
+      return { ocr: true, ...(opts.language ? { language: opts.language } : {}) };
     }
     case 'password-protect': {
       const password = (options as { password?: string }).password;

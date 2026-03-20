@@ -11,7 +11,7 @@ import { AnimatedSwitch } from '@/components/ui/animated';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
 import { useBatchJob } from '@/hooks/useBatchJob';
-import { ToolDefinition } from '@/types';
+import { ToolDefinition, ToolOptions } from '@/types';
 import { RotateCw, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -88,10 +88,10 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
     const options = { rotation, applyToPages: applyTo };
 
     if (batchMode && files.length > 1) {
-      startBatch(tool.id, uploadedFiles, options as any);
+      startBatch(tool.id, uploadedFiles, options as ToolOptions);
     } else {
       const uploadIds = uploadedFiles.map((f) => f.serverFileId);
-      createJob(tool.id, uploadIds, options as any);
+      createJob(tool.id, uploadIds, options as ToolOptions);
     }
   };
 

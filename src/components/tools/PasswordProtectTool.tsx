@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
-import { ToolDefinition } from '@/types';
+import { ToolDefinition, ToolOptions } from '@/types';
 import { Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 interface PasswordProtectToolProps {
@@ -58,7 +58,7 @@ export const PasswordProtectTool = ({ tool }: PasswordProtectToolProps) => {
       password,
       confirmPassword,
       permissions: { allowPrint, allowCopy, allowEdit },
-    } as any);
+    } as ToolOptions);
   };
 
   const handleDownload = () => {

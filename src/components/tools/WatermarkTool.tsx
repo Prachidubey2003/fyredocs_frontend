@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
 import { useBatchJob } from '@/hooks/useBatchJob';
-import { ToolDefinition } from '@/types';
+import { ToolDefinition, ToolOptions } from '@/types';
 import { Stamp, Type, Image } from 'lucide-react';
 import { toast } from 'sonner';
 import { AnimatedSwitch } from '@/components/ui/animated';
@@ -102,10 +102,10 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
     };
 
     if (batchMode && files.length > 1) {
-      startBatch(tool.id, uploadedFiles, options as any);
+      startBatch(tool.id, uploadedFiles, options as ToolOptions);
     } else {
       const uploadIds = uploadedFiles.map((f) => f.serverFileId);
-      createJob(tool.id, uploadIds, options as any);
+      createJob(tool.id, uploadIds, options as ToolOptions);
     }
   };
 

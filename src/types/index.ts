@@ -194,7 +194,7 @@ export interface ReorderOptions {
 }
 
 export interface ConvertOptions {
-  format: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf';
+  format: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf' | 'pptx' | 'html';
   quality?: 'low' | 'medium' | 'high';
 }
 
@@ -208,6 +208,7 @@ export interface ExtractPagesOptions {
 
 export interface ScanToPdfOptions {
   ocr?: boolean; // Apply OCR to make text searchable
+  language?: string; // OCR language code
 }
 
 export type ToolOptions =
@@ -339,7 +340,7 @@ export interface JobStatusResponse {
     outputFilename?: string;
     fileSize?: number;
     progress?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
