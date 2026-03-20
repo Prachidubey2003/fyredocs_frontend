@@ -22,6 +22,7 @@ const categoryHeaderClasses: Record<string, string> = {
   security: 'from-tool-security/10 to-transparent',
   ocr: 'from-tool-ocr/10 to-transparent',
   watermark: 'from-tool-watermark/10 to-transparent',
+  edit: 'from-tool-edit/10 to-transparent',
 };
 
 export const ToolPageLayout = ({

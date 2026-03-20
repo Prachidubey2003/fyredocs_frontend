@@ -278,6 +278,62 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
   },
 
   // ============================================================================
+  // SECURITY TOOLS
+  // ============================================================================
+  'unlock-pdf': {
+    id: 'unlock-pdf',
+    name: 'Unlock PDF',
+    description: 'Remove password protection from PDF documents',
+    category: 'security',
+    icon: 'unlock',
+    acceptedFileTypes: ['.pdf', 'application/pdf'],
+    maxFiles: 10,
+    minFiles: 1,
+    maxFileSize: 50 * MB,
+    route: '/unlock',
+  },
+
+  // ============================================================================
+  // EDIT PDF TOOLS
+  // ============================================================================
+  'add-page-numbers': {
+    id: 'add-page-numbers',
+    name: 'Add Page Numbers',
+    description: 'Add page numbers to your PDF document',
+    category: 'edit',
+    icon: 'hash',
+    acceptedFileTypes: ['.pdf', 'application/pdf'],
+    maxFiles: 1,
+    minFiles: 1,
+    maxFileSize: 50 * MB,
+    route: '/add-page-numbers',
+  },
+  'edit-pdf': {
+    id: 'edit-pdf',
+    name: 'Edit PDF',
+    description: 'Add text annotations to your PDF documents',
+    category: 'edit',
+    icon: 'edit',
+    acceptedFileTypes: ['.pdf', 'application/pdf'],
+    maxFiles: 1,
+    minFiles: 1,
+    maxFileSize: 50 * MB,
+    route: '/edit-pdf',
+  },
+  'sign-pdf': {
+    id: 'sign-pdf',
+    name: 'Sign PDF',
+    description: 'Add your signature to PDF documents',
+    category: 'security',
+    icon: 'pen-tool',
+    acceptedFileTypes: ['.pdf', 'application/pdf'],
+    maxFiles: 1,
+    minFiles: 1,
+    maxFileSize: 50 * MB,
+    route: '/sign-pdf',
+  },
+
+  // ============================================================================
   // LEGACY TOOLS (kept for backward compatibility)
   // ============================================================================
   rotate: {
@@ -327,6 +383,7 @@ export const TOOL_CATEGORIES: Record<ToolCategory, { name: string; color: string
   security: { name: 'Security', color: 'tool-security' },
   ocr: { name: 'OCR', color: 'tool-ocr' },
   watermark: { name: 'Watermark', color: 'tool-watermark' },
+  edit: { name: 'Edit', color: 'tool-edit' },
 };
 
 export const getToolsByCategory = (category: ToolCategory): ToolDefinition[] => {

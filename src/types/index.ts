@@ -33,12 +33,18 @@ export type ToolId =
   | 'image-to-pdf'
   | 'powerpoint-to-pdf'
   | 'html-to-pdf'
+  // Edit PDF tools
+  | 'add-page-numbers'
+  | 'edit-pdf'
+  | 'sign-pdf'
+  // Security tools
+  | 'unlock-pdf'
   // Legacy tools
   | 'rotate'
   | 'watermark'
   | 'password-protect';
 
-export type ToolCategory = 'merge' | 'split' | 'compress' | 'convert' | 'organize' | 'security' | 'ocr' | 'watermark';
+export type ToolCategory = 'merge' | 'split' | 'compress' | 'convert' | 'organize' | 'security' | 'ocr' | 'watermark' | 'edit';
 
 export interface ToolDefinition {
   id: ToolId;
@@ -194,7 +200,7 @@ export interface ReorderOptions {
 }
 
 export interface ConvertOptions {
-  format: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf' | 'pptx' | 'html';
+  format: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf' | 'pptx' | 'html' | 'txt';
   quality?: 'low' | 'medium' | 'high';
 }
 
@@ -211,6 +217,35 @@ export interface ScanToPdfOptions {
   language?: string; // OCR language code
 }
 
+export interface UnlockPdfOptions {
+  password: string;
+}
+
+export interface AddPageNumbersOptions {
+  position: string;
+  startNumber: number;
+  fontSize: number;
+  format: string;
+}
+
+export interface SignPdfOptions {
+  page: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface EditPdfOptions {
+  annotations: Array<{
+    type: 'text';
+    x: number;
+    y: number;
+    content: string;
+    fontSize: number;
+  }>;
+}
+
 export type ToolOptions =
   | MergeOptions
   | SplitOptions
@@ -224,6 +259,10 @@ export type ToolOptions =
   | RemovePagesOptions
   | ExtractPagesOptions
   | ScanToPdfOptions
+  | UnlockPdfOptions
+  | AddPageNumbersOptions
+  | SignPdfOptions
+  | EditPdfOptions
   | Record<string, never>; // Empty options for simple tools
 
 // ============================================================================

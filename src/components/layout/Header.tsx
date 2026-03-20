@@ -37,10 +37,10 @@ const toolCategories: { title: string; color: string; tools: ToolItem[] }[] = [
     tools: [
       { name: 'Merge PDF', href: '/merge', icon: 'layers' },
       { name: 'Split PDF', href: '/split', icon: 'scissors' },
-      { name: 'Remove pages', href: '/remove-pages', icon: 'file-minus', comingSoon: true },
-      { name: 'Extract pages', href: '/extract-pages', icon: 'file-output', comingSoon: true },
+      { name: 'Remove pages', href: '/remove-pages', icon: 'file-minus' },
+      { name: 'Extract pages', href: '/extract-pages', icon: 'file-output' },
       { name: 'Organize PDF', href: '/reorder', icon: 'arrow-up-down' },
-      { name: 'Scan to PDF', href: '/scan-to-pdf', icon: 'scan', comingSoon: true },
+      { name: 'Scan to PDF', href: '/scan-to-pdf', icon: 'scan' },
     ],
   },
   {
@@ -48,7 +48,7 @@ const toolCategories: { title: string; color: string; tools: ToolItem[] }[] = [
     color: 'text-red-500',
     tools: [
       { name: 'Compress PDF', href: '/compress', icon: 'minimize-2' },
-      { name: 'Repair PDF', href: '/repair-pdf', icon: 'wrench', comingSoon: true },
+      { name: 'Repair PDF', href: '/repair-pdf', icon: 'wrench' },
       { name: 'OCR PDF', href: '/ocr', icon: 'scan-text' },
     ],
   },
@@ -58,9 +58,9 @@ const toolCategories: { title: string; color: string; tools: ToolItem[] }[] = [
     tools: [
       { name: 'JPG to PDF', href: '/image-to-pdf', icon: 'file-image' },
       { name: 'WORD to PDF', href: '/word-to-pdf', icon: 'file' },
-      { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation', comingSoon: true },
+      { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation' },
       { name: 'EXCEL to PDF', href: '/excel-to-pdf', icon: 'file-spreadsheet' },
-      { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code', comingSoon: true },
+      { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code' },
     ],
   },
   {
@@ -69,9 +69,10 @@ const toolCategories: { title: string; color: string; tools: ToolItem[] }[] = [
     tools: [
       { name: 'PDF to JPG', href: '/pdf-to-image', icon: 'image' },
       { name: 'PDF to WORD', href: '/pdf-to-word', icon: 'file-text' },
-      { name: 'PDF to POWERPOINT', href: '/pdf-to-ppt', icon: 'presentation', comingSoon: true },
+      { name: 'PDF to POWERPOINT', href: '/pdf-to-ppt', icon: 'presentation' },
       { name: 'PDF to EXCEL', href: '/pdf-to-excel', icon: 'table' },
-      { name: 'PDF to PDF/A', href: '/pdf-to-pdfa', icon: 'archive', comingSoon: true },
+      { name: 'PDF to Text', href: '/pdf-to-text', icon: 'file-type' },
+      { name: 'PDF to PDF/A', href: '/pdf-to-pdfa', icon: 'archive' },
     ],
   },
   {
@@ -79,18 +80,18 @@ const toolCategories: { title: string; color: string; tools: ToolItem[] }[] = [
     color: 'text-blue-500',
     tools: [
       { name: 'Rotate PDF', href: '/rotate', icon: 'rotate-cw' },
-      { name: 'Add page numbers', href: '/reorder', icon: 'hash', comingSoon: true },
+      { name: 'Add page numbers', href: '/add-page-numbers', icon: 'hash' },
       { name: 'Add watermark', href: '/watermark', icon: 'stamp' },
-      { name: 'Edit PDF', href: '/reorder', icon: 'edit', comingSoon: true },
+      { name: 'Edit PDF', href: '/edit-pdf', icon: 'edit' },
     ],
   },
   {
     title: 'PDF SECURITY',
     color: 'text-green-500',
     tools: [
-      { name: 'Unlock PDF', href: '/protect', icon: 'unlock' },
+      { name: 'Unlock PDF', href: '/unlock', icon: 'unlock' },
       { name: 'Protect PDF', href: '/protect', icon: 'lock' },
-      { name: 'Sign PDF', href: '/protect', icon: 'pen-tool' },
+      { name: 'Sign PDF', href: '/sign-pdf', icon: 'pen-tool' },
     ],
   },
 ];
@@ -104,17 +105,18 @@ const mainNavItems = [
 const convertToPdf: ToolItem[] = [
   { name: 'JPG to PDF', href: '/image-to-pdf', icon: 'file-image' },
   { name: 'WORD to PDF', href: '/word-to-pdf', icon: 'file' },
-  { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation', comingSoon: true },
+  { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation' },
   { name: 'EXCEL to PDF', href: '/excel-to-pdf', icon: 'file-spreadsheet' },
-  { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code', comingSoon: true },
+  { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code' },
 ];
 
 const convertFromPdf: ToolItem[] = [
   { name: 'PDF to JPG', href: '/pdf-to-image', icon: 'image' },
   { name: 'PDF to WORD', href: '/pdf-to-word', icon: 'file-text' },
-  { name: 'PDF to POWERPOINT', href: '/pdf-to-ppt', icon: 'presentation', comingSoon: true },
+  { name: 'PDF to POWERPOINT', href: '/pdf-to-ppt', icon: 'presentation' },
   { name: 'PDF to EXCEL', href: '/pdf-to-excel', icon: 'table' },
-  { name: 'PDF to PDF/A', href: '/pdf-to-pdfa', icon: 'archive', comingSoon: true },
+  { name: 'PDF to Text', href: '/pdf-to-text', icon: 'file-type' },
+  { name: 'PDF to PDF/A', href: '/pdf-to-pdfa', icon: 'archive' },
 ];
 
 const ComingSoonBadge = () => (
@@ -133,7 +135,7 @@ const ToolLink = ({
   className?: string;
 }) => {
   const baseClass = cn(
-    'flex items-center gap-2 px-1.5 py-1.5 text-xs rounded-md transition-all duration-150 group whitespace-nowrap',
+    'flex flex-start items-center gap-2 py-1.5 text-xs rounded-md transition-all duration-150 group whitespace-nowrap',
     item.comingSoon
       ? 'pointer-events-none opacity-50 text-muted-foreground'
       : 'text-muted-foreground hover:text-foreground hover:bg-muted/80',
@@ -331,7 +333,6 @@ export const Header = () => {
 
           {/* All PDF Tools Mega Menu - Hover */}
           <div
-            className="relative"
             ref={megaMenuRef}
             onMouseEnter={() => {
               setIsMegaMenuOpen(true);
@@ -349,35 +350,43 @@ export const Header = () => {
               <ChevronDown className={cn('w-4 h-4 transition-transform', isMegaMenuOpen && 'rotate-180')} />
             </button>
 
-            <AnimatedDropdown show={isMegaMenuOpen}>
-              <div className="fixed inset-x-0 top-full flex justify-center pt-2 z-50">
+            <AnimatePresence>
+              {isMegaMenuOpen && (
                 <div
-                  className="w-[960px] max-w-[calc(100vw-2rem)] rounded-2xl border bg-background shadow-2xl p-8"
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-0 pt-2 z-50"
                   onMouseEnter={() => setIsMegaMenuOpen(true)}
                   onMouseLeave={() => setIsMegaMenuOpen(false)}
                 >
-                  <div className="grid grid-cols-6 gap-6">
-                    {toolCategories.map((category) => (
-                      <div key={category.title} className="space-y-3">
-                        <h3 className={cn(
-                          'text-[10px] font-bold tracking-wider pb-1.5 border-b border-border/50',
-                          category.color
-                        )}>
-                          {category.title}
-                        </h3>
-                        <ul className="space-y-0.5">
-                          {category.tools.map((tool) => (
-                            <li key={tool.href + tool.name}>
-                              <ToolLink item={tool} onClick={() => setIsMegaMenuOpen(false)} />
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    className="w-[960px] max-w-[calc(100vw-2rem)] rounded-2xl border bg-background shadow-2xl p-8"
+                  >
+                    <div className="grid grid-cols-6 gap-6">
+                      {toolCategories.map((category) => (
+                        <div key={category.title} className="space-y-3">
+                          <h3 className={cn(
+                            'text-[10px] font-bold tracking-wider pb-1.5 border-b border-border/50',
+                            category.color
+                          )}>
+                            {category.title}
+                          </h3>
+                          <ul className="space-y-0.5">
+                            {category.tools.map((tool) => (
+                              <li key={tool.href + tool.name}>
+                                <ToolLink item={tool} onClick={() => setIsMegaMenuOpen(false)} />
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
                 </div>
-              </div>
-            </AnimatedDropdown>
+              )}
+            </AnimatePresence>
           </div>
         </nav>
 
