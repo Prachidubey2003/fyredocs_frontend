@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { AnimatedSwitch } from '@/components/ui/animated';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
 import { useBatchJob } from '@/hooks/useBatchJob';
@@ -131,144 +132,143 @@ export const OcrTool = ({ tool }: OcrToolProps) => {
   const hasFiles = files.length > 0;
   const isProcessing = job?.state === 'processing' || job?.state === 'queued';
   const showBatchProgress = batchMode && batchJobs.length > 0;
+  const viewKey = showBatchProgress ? 'batch' : job ? 'progress' : 'upload';
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {!job && !showBatchProgress && (
-        <>
-          <FileDropzone
-            tool={tool}
-            onFilesSelected={handleFilesSelected}
-            disabled={isUploading}
+      <AnimatedSwitch switchKey={viewKey}>
+        {showBatchProgress ? (
+          <BatchProgress
+            batchJobs={batchJobs}
+            isProcessing={isBatchProcessing}
+            completedCount={completedCount}
+            failedCount={failedCount}
+            totalCount={totalCount}
+            overallProgress={overallProgress}
+            onCancel={cancelBatch}
+            onRetryFailed={retryFailed}
+            onDownloadAll={handleDownloadAll}
+            onReset={handleStartOver}
           />
+        ) : job ? (
+          <div className="space-y-6">
+            <JobProgress
+              job={job}
+              onCancel={cancelJob}
+              onRetry={retryJob}
+              onDownload={handleDownload}
+            />
+            {(job.state === 'completed' || job.state === 'failed') && (
+              <Button variant="outline" className="w-full" onClick={handleStartOver}>
+                Start over with new files
+              </Button>
+            )}
+          </div>
+        ) : (
+          <>
+            <FileDropzone
+              tool={tool}
+              onFilesSelected={handleFilesSelected}
+              disabled={isUploading}
+            />
 
-          {hasFiles && (
-            <>
-              <FileList
-                files={files}
-                onRemove={removeFile}
-                onRetry={retryFileUpload}
-                onPause={pauseUpload}
-                onResume={resumeUpload}
-              />
+            {hasFiles && (
+              <>
+                <FileList
+                  files={files}
+                  onRemove={removeFile}
+                  onRetry={retryFileUpload}
+                  onPause={pauseUpload}
+                  onResume={resumeUpload}
+                />
 
-              <div className="flex justify-end mb-4">
-                <Button variant="outline" onClick={clearFiles} size="sm">
-                  Clear All
-                </Button>
-              </div>
-
-              <BatchModeToggle
-                enabled={batchMode}
-                onToggle={setBatchMode}
-                fileCount={files.length}
-                className="mb-6"
-              />
-
-              <div className="rounded-xl border bg-card p-6 space-y-6">
-                <h3 className="font-semibold text-lg flex items-center gap-2">
-                  <ScanText className="w-5 h-5" />
-                  OCR Settings
-                </h3>
-
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="language">Document Language</Label>
-                    <Select value={language} onValueChange={setLanguage}>
-                      <SelectTrigger id="language">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {languages.map((lang) => (
-                          <SelectItem key={lang.value} value={lang.value}>
-                            {lang.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      Select the primary language of your document
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="enhance">Enhance Scan Quality</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Improve contrast and remove noise
-                        </p>
-                      </div>
-                      <Switch
-                        id="enhance"
-                        checked={enhanceScan}
-                        onCheckedChange={setEnhanceScan}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="layout">Preserve Layout</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Maintain original document structure
-                        </p>
-                      </div>
-                      <Switch
-                        id="layout"
-                        checked={preserveLayout}
-                        onCheckedChange={setPreserveLayout}
-                      />
-                    </div>
-                  </div>
+                <div className="flex justify-end mb-4">
+                  <Button variant="outline" onClick={clearFiles} size="sm">
+                    Clear All
+                  </Button>
                 </div>
 
-                <Button
-                  onClick={handleProcess}
-                  disabled={!hasFiles || isProcessing || !canProceed}
-                  className="w-full bg-gradient-primary"
-                  size="lg"
-                >
-                  <ScanText className="w-5 h-5 mr-2" />
-                  {batchMode && files.length > 1
-                    ? `Process ${files.length} files with OCR`
-                    : 'Start OCR Processing'}
-                </Button>
-              </div>
-            </>
-          )}
-        </>
-      )}
+                <BatchModeToggle
+                  enabled={batchMode}
+                  onToggle={setBatchMode}
+                  fileCount={files.length}
+                  className="mb-6"
+                />
 
-      {job && !showBatchProgress && (
-        <div className="space-y-6">
-          <JobProgress
-            job={job}
-            onCancel={cancelJob}
-            onRetry={retryJob}
-            onDownload={handleDownload}
-          />
-          {(job.state === 'completed' || job.state === 'failed') && (
-            <Button variant="outline" className="w-full" onClick={handleStartOver}>
-              Start over with new files
-            </Button>
-          )}
-        </div>
-      )}
+                <div className="rounded-xl border bg-card p-6 space-y-6">
+                  <h3 className="font-semibold text-lg flex items-center gap-2">
+                    <ScanText className="w-5 h-5" />
+                    OCR Settings
+                  </h3>
 
-      {showBatchProgress && (
-        <BatchProgress
-          batchJobs={batchJobs}
-          isProcessing={isBatchProcessing}
-          completedCount={completedCount}
-          failedCount={failedCount}
-          totalCount={totalCount}
-          overallProgress={overallProgress}
-          onCancel={cancelBatch}
-          onRetryFailed={retryFailed}
-          onDownloadAll={handleDownloadAll}
-          onReset={handleStartOver}
-        />
-      )}
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="language">Document Language</Label>
+                      <Select value={language} onValueChange={setLanguage}>
+                        <SelectTrigger id="language">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {languages.map((lang) => (
+                            <SelectItem key={lang.value} value={lang.value}>
+                              {lang.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Select the primary language of your document
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="enhance">Enhance Scan Quality</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Improve contrast and remove noise
+                          </p>
+                        </div>
+                        <Switch
+                          id="enhance"
+                          checked={enhanceScan}
+                          onCheckedChange={setEnhanceScan}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="layout">Preserve Layout</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Maintain original document structure
+                          </p>
+                        </div>
+                        <Switch
+                          id="layout"
+                          checked={preserveLayout}
+                          onCheckedChange={setPreserveLayout}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleProcess}
+                    disabled={!hasFiles || isProcessing || !canProceed}
+                    className="w-full bg-gradient-primary"
+                    size="lg"
+                  >
+                    <ScanText className="w-5 h-5 mr-2" />
+                    {batchMode && files.length > 1
+                      ? `Process ${files.length} files with OCR`
+                      : 'Start OCR Processing'}
+                  </Button>
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </AnimatedSwitch>
     </div>
   );
 };
