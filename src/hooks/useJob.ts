@@ -132,7 +132,7 @@ export const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
         }
         return { mode: 'equal', range: String(span) };
       }
-      return { mode: 'all' };
+      return { mode: 'all', range: 'all' };
     }
     case 'reorder': {
       const order = (options as { order?: string }).order?.trim();
@@ -288,6 +288,7 @@ export const useJob = ({
   const [job, setJob] = useState<Job | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const pollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sseRef = useRef<EventSource | null>(null);
   const attemptsRef = useRef(0);
   const lastJobRef = useRef<{
     toolId: ToolId;
@@ -295,11 +296,16 @@ export const useJob = ({
     options: ToolOptions;
   } | null>(null);
   const maxProgressRef = useRef(0);
+  const sseTerminalRef = useRef(false);
 
   const stopPolling = useCallback(() => {
     if (pollingTimerRef.current) {
       clearTimeout(pollingTimerRef.current);
       pollingTimerRef.current = null;
+    }
+    if (sseRef.current) {
+      sseRef.current.close();
+      sseRef.current = null;
     }
     setIsPolling(false);
     attemptsRef.current = 0;
@@ -371,6 +377,153 @@ export const useJob = ({
     [maxPollingAttempts, onComplete, onError, pollingInterval, stopPolling]
   );
 
+  const startSSE = useCallback(
+    (toolId: ToolId, jobId: string, fileIds: string[], options: ToolOptions) => {
+      stopPolling();
+      sseTerminalRef.current = false;
+      setIsPolling(true);
+
+      const url = buildApiUrl(`/api/jobs/${jobId}/events`);
+      const es = new EventSource(url, { withCredentials: true });
+      sseRef.current = es;
+
+      es.addEventListener('job-update', (e: MessageEvent) => {
+        try {
+          const data = JSON.parse(e.data) as {
+            jobId: string;
+            status: string;
+            progress: number;
+            toolType: string;
+          };
+
+          const eventToStatus = (eventType: string): string => {
+            switch (eventType) {
+              case 'JobCompleted':
+                return 'completed';
+              case 'JobFailed':
+                return 'failed';
+              case 'JobQueued':
+                return 'queued';
+              default:
+                return 'processing';
+            }
+          };
+
+          const status = eventToStatus(data.status);
+          const state = mapStatus(status);
+          const progress = data.progress ?? 0;
+
+          setJob((prev) => {
+            if (!prev) return prev;
+
+            // Enforce monotonic progress
+            let pct = progress;
+            if (state === 'failed') {
+              maxProgressRef.current = 0;
+            } else if (pct < maxProgressRef.current) {
+              pct = maxProgressRef.current;
+            } else {
+              maxProgressRef.current = pct;
+            }
+
+            const totalSteps = 3;
+            const completedSteps =
+              state === 'completed'
+                ? totalSteps
+                : pct > 0
+                ? Math.max(1, Math.floor((pct / 100) * totalSteps))
+                : prev.progress.completedSteps;
+            const currentStep =
+              state === 'queued'
+                ? 'Queued'
+                : state === 'processing'
+                ? 'Processing'
+                : state === 'completed'
+                ? 'Completed'
+                : state === 'failed'
+                ? 'Failed'
+                : 'Pending';
+
+            const downloadUrl = buildApiUrl(buildDownloadPath(toolId, prev.id));
+
+            return {
+              ...prev,
+              state,
+              progress: {
+                currentStep,
+                totalSteps,
+                completedSteps,
+                percentage: state === 'completed' ? 100 : pct,
+              },
+              updatedAt: new Date(),
+              completedAt: state === 'completed' ? new Date() : prev.completedAt,
+              result:
+                state === 'completed'
+                  ? {
+                      downloadUrl,
+                      fileName: prev.result?.fileName ?? 'output.pdf',
+                      fileSize: prev.result?.fileSize ?? 0,
+                      expiresAt: prev.result?.expiresAt ?? new Date(),
+                    }
+                  : prev.result,
+              error:
+                state === 'failed'
+                  ? {
+                      code: 'FAILED',
+                      message: 'The job failed to complete.',
+                      isRetryable: true,
+                    }
+                  : prev.error,
+            };
+          });
+
+          if (status === 'completed') {
+            sseTerminalRef.current = true;
+            maxProgressRef.current = 0;
+            stopPolling();
+            // Notify completion with the current job state — the download URL
+            // is already set from the SSE event data above.
+            setJob((prev) => {
+              if (prev) onComplete?.(prev);
+              return prev;
+            });
+            return;
+          }
+
+          if (status === 'failed') {
+            sseTerminalRef.current = true;
+            stopPolling();
+            onError?.('The job failed to complete.');
+            return;
+          }
+        } catch {
+          // Ignore malformed SSE data
+        }
+      });
+
+      es.addEventListener('done', () => {
+        // Stream closed by server — job is in a terminal state.
+        // Final state was already handled by the job-update listener above.
+        if (sseRef.current) {
+          sseRef.current.close();
+          sseRef.current = null;
+        }
+      });
+
+      es.onerror = () => {
+        // If sseRef is already null, the connection was intentionally closed
+        // by the `done` handler or `stopPolling()` — don't fall back to polling.
+        if (!sseRef.current) return;
+        sseRef.current.close();
+        sseRef.current = null;
+        if (!sseTerminalRef.current) {
+          startPolling(toolId, jobId, fileIds, options);
+        }
+      };
+    },
+    [onComplete, onError, startPolling, stopPolling]
+  );
+
   const createJob = useCallback(
     (toolId: ToolId, fileIds: string[], options: ToolOptions) => {
       stopPolling();
@@ -423,7 +576,7 @@ export const useJob = ({
 
           const mappedJob = mapApiJob(apiResponse.data, toolId, normalizedIds, options);
           setJob(mappedJob);
-          startPolling(toolId, mappedJob.id, normalizedIds, options);
+          startSSE(toolId, mappedJob.id, normalizedIds, options);
         } catch (error) {
           const message =
             error instanceof Error ? error.message : 'Failed to create job.';
@@ -441,7 +594,7 @@ export const useJob = ({
         }
       })();
     },
-    [onError, startPolling, stopPolling]
+    [onError, startSSE, stopPolling]
   );
 
   const cancelJob = useCallback(() => {

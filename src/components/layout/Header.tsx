@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FileText, Menu, User, X, ChevronDown } from 'lucide-react';
+import { FileText, Menu, User, X, ChevronDown, Shield, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -9,7 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -298,6 +298,16 @@ export const Header = () => {
               )}
             </AnimatePresence>
           </div>
+
+          {user?.role === 'super-admin' && (
+            <Link
+              to="/admin/dashboard"
+              className="px-4 py-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5"
+            >
+              <Shield className="w-4 h-4" />
+              ADMIN
+            </Link>
+          )}
         </nav>
 
         {/* Theme Toggle & Auth & Mobile Menu Toggle */}
@@ -348,10 +358,10 @@ export const Header = () => {
                 <DropdownMenuContent
                   align="end"
                   sideOffset={10}
-                  className="w-64 max-w-[calc(100vw-2rem)] p-2"
+                  className="w-72 max-w-[calc(100vw-2rem)] p-1.5"
                 >
-                  <div className="flex items-center gap-3 rounded-lg border bg-muted/40 px-3 py-2">
-                    <Avatar className="h-9 w-9 border border-border">
+                  <div className="flex items-center gap-3 px-2 py-2.5">
+                    <Avatar className="h-9 w-9">
                       <AvatarImage
                         src={user?.image ? user.image : undefined}
                         alt={user?.fullName ?? user?.email ?? 'Profile'}
@@ -369,40 +379,23 @@ export const Header = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-2 rounded-lg border px-3 py-2">
-                    <DropdownMenuLabel className="px-0 pb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Profile details
-                    </DropdownMenuLabel>
-                    <div className="grid gap-1 text-sm">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">Country</span>
-                        <span className="font-medium text-foreground truncate">
-                          {formatValue(user?.country)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">Phone</span>
-                        <span className="font-medium text-foreground truncate">
-                          {formatValue(user?.phone)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">Role</span>
-                        <span className="font-medium text-foreground truncate">
-                          {formatValue(user?.role)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
                   {user?.role === 'super-admin' && (
-                    <DropdownMenuItem asChild className="mt-2">
-                      <Link to="/admin/dashboard">Admin Dashboard</Link>
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin/dashboard">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
                   )}
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    className="mt-2 justify-center rounded-md text-destructive focus:text-destructive"
+                    className="text-destructive focus:text-destructive"
                     onSelect={() => void handleLogout()}
                   >
+                    <LogOut className="mr-2 h-4 w-4" />
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>

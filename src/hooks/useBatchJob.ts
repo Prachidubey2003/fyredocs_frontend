@@ -212,6 +212,8 @@ export const useBatchJob = ({
   const [batchJobs, setBatchJobs] = useState<BatchJob[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const pollingTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const sseConnectionsRef = useRef<Map<string, EventSource>>(new Map());
+  const sseTerminalJobsRef = useRef<Set<string>>(new Set());
   const attemptsRef = useRef<Map<string, number>>(new Map());
   const lastBatchRef = useRef<{
     toolId: ToolId;
@@ -226,10 +228,17 @@ export const useBatchJob = ({
         clearTimeout(timer);
         pollingTimersRef.current.delete(batchId);
       }
+      const es = sseConnectionsRef.current.get(batchId);
+      if (es) {
+        es.close();
+        sseConnectionsRef.current.delete(batchId);
+      }
       attemptsRef.current.delete(batchId);
     } else {
       pollingTimersRef.current.forEach((timer) => clearTimeout(timer));
       pollingTimersRef.current.clear();
+      sseConnectionsRef.current.forEach((es) => es.close());
+      sseConnectionsRef.current.clear();
       attemptsRef.current.clear();
     }
   }, []);
@@ -323,6 +332,125 @@ export const useBatchJob = ({
     [checkAllComplete, maxPollingAttempts, onJobComplete, onJobError, pollingInterval, stopPolling]
   );
 
+  const startSSEForJob = useCallback(
+    (batchId: string, toolId: ToolId, jobId: string, fileId: string, options: ToolOptions) => {
+      const url = buildApiUrl(`/api/jobs/${jobId}/events`);
+      const es = new EventSource(url, { withCredentials: true });
+      sseConnectionsRef.current.set(batchId, es);
+
+      const eventToStatus = (eventType: string): string => {
+        switch (eventType) {
+          case 'JobCompleted':
+            return 'completed';
+          case 'JobFailed':
+            return 'failed';
+          case 'JobQueued':
+            return 'queued';
+          default:
+            return 'processing';
+        }
+      };
+
+      es.addEventListener('job-update', (e: MessageEvent) => {
+        try {
+          const data = JSON.parse(e.data) as {
+            jobId: string;
+            status: string;
+            progress: number;
+            toolType: string;
+          };
+
+          const status = eventToStatus(data.status);
+          const state = mapStatus(status);
+          const progress = data.progress ?? 0;
+
+          setBatchJobs((prev) =>
+            prev.map((bj) => {
+              if (bj.id !== batchId) return bj;
+              const prevJob = bj.job;
+              if (!prevJob) return bj;
+
+              const pct = state === 'completed' ? 100 : progress;
+              const totalSteps = 3;
+              const completedSteps =
+                state === 'completed'
+                  ? totalSteps
+                  : pct > 0
+                  ? Math.max(1, Math.floor((pct / 100) * totalSteps))
+                  : prevJob.progress.completedSteps;
+
+              return {
+                ...bj,
+                job: {
+                  ...prevJob,
+                  state,
+                  progress: {
+                    ...prevJob.progress,
+                    completedSteps,
+                    percentage: pct,
+                    currentStep: state === 'completed' ? 'Completed' : state === 'failed' ? 'Failed' : 'Processing',
+                  },
+                  updatedAt: new Date(),
+                },
+                status: state === 'completed' ? 'completed' : state === 'failed' ? 'failed' : 'processing',
+                error: state === 'failed' ? 'The job failed to complete.' : bj.error,
+              };
+            })
+          );
+
+          if (status === 'completed') {
+            sseTerminalJobsRef.current.add(batchId);
+            stopPolling(batchId);
+            setBatchJobs((prev) => {
+              const updated = prev.find((bj) => bj.id === batchId);
+              if (updated) onJobComplete?.({ ...updated, status: 'completed' });
+              return prev;
+            });
+            checkAllComplete();
+            return;
+          }
+
+          if (status === 'failed') {
+            sseTerminalJobsRef.current.add(batchId);
+            stopPolling(batchId);
+            const errorMsg = 'The job failed to complete.';
+            setBatchJobs((prev) => {
+              const updated = prev.find((bj) => bj.id === batchId);
+              if (updated) onJobError?.({ ...updated, status: 'failed' }, errorMsg);
+              return prev;
+            });
+            checkAllComplete();
+            return;
+          }
+        } catch {
+          // Ignore malformed SSE data
+        }
+      });
+
+      es.addEventListener('done', () => {
+        const conn = sseConnectionsRef.current.get(batchId);
+        if (conn) {
+          conn.close();
+          sseConnectionsRef.current.delete(batchId);
+        }
+      });
+
+      es.onerror = () => {
+        // If connection was already cleaned up by `done` handler or `stopPolling`, don't poll.
+        if (!sseConnectionsRef.current.has(batchId)) return;
+        const conn = sseConnectionsRef.current.get(batchId);
+        if (conn) {
+          conn.close();
+          sseConnectionsRef.current.delete(batchId);
+        }
+        if (!sseTerminalJobsRef.current.has(batchId)) {
+          startPolling(batchId, toolId, jobId, fileId, options);
+        }
+      };
+    },
+    [checkAllComplete, onJobComplete, onJobError, startPolling, stopPolling]
+  );
+
   const processFile = useCallback(
     async (
       batchId: string,
@@ -355,7 +483,7 @@ export const useBatchJob = ({
           )
         );
 
-        startPolling(batchId, toolId, mappedJob.id, serverFileId, options);
+        startSSEForJob(batchId, toolId, mappedJob.id, serverFileId, options);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to create job';
         setBatchJobs((prev) =>
@@ -368,7 +496,7 @@ export const useBatchJob = ({
         checkAllComplete();
       }
     },
-    [checkAllComplete, startPolling]
+    [checkAllComplete, startSSEForJob]
   );
 
   const startBatch = useCallback(
