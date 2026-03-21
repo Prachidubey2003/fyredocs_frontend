@@ -229,7 +229,7 @@ const mapApiJob = (
       ? 'Failed'
       : 'Pending';
 
-  const fileName = apiJob.fileName ?? apiJob.FileName ?? 'output.pdf';
+  const fileName = apiJob.outputFileName ?? apiJob.OutputFileName ?? apiJob.fileName ?? apiJob.FileName ?? 'output.pdf';
   const fileSize = parseFileSize(apiJob.fileSize ?? apiJob.FileSize);
   const downloadUrl = buildApiUrl(buildDownloadPath(toolId, id));
 
