@@ -48,7 +48,8 @@ const ApiPerformancePage = () => {
                   <XAxis type="number" tickLine={false} axisLine={false} fontSize={12} />
                   <YAxis type="category" dataKey="path" tickLine={false} axisLine={false} fontSize={11} width={120} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="p95LatencyMs" fill="var(--color-p95LatencyMs)" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="p95LatencyMs" fill="var(--color-p95LatencyMs)" radius={[0, 4, 4, 0]}
+                    isAnimationActive animationDuration={800} animationEasing="ease-out" />
                 </BarChart>
               </ChartContainer>
             )}
@@ -71,7 +72,8 @@ const ApiPerformancePage = () => {
                   <XAxis type="number" tickLine={false} axisLine={false} fontSize={12} unit="%" />
                   <YAxis type="category" dataKey="path" tickLine={false} axisLine={false} fontSize={11} width={120} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="errorRate" fill="var(--color-errorRate)" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="errorRate" fill="var(--color-errorRate)" radius={[0, 4, 4, 0]}
+                    isAnimationActive animationDuration={800} animationEasing="ease-out" />
                 </BarChart>
               </ChartContainer>
             </CardContent>

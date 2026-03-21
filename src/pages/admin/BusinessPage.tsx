@@ -1,6 +1,7 @@
 import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
+import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -103,6 +104,9 @@ const BusinessPage = () => {
                       fill="var(--color-signups)"
                       fillOpacity={0.2}
                       strokeWidth={2}
+                      isAnimationActive
+                      animationDuration={800}
+                      animationEasing="ease-out"
                     />
                   </AreaChart>
                 </ChartContainer>
@@ -131,8 +135,10 @@ const BusinessPage = () => {
                     />
                     <YAxis tickLine={false} axisLine={false} />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="upgrades" fill="var(--color-upgrades)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="downgrades" fill="var(--color-downgrades)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="upgrades" fill="var(--color-upgrades)" radius={[4, 4, 0, 0]}
+                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
+                    <Bar dataKey="downgrades" fill="var(--color-downgrades)" radius={[4, 4, 0, 0]}
+                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
                   </BarChart>
                 </ChartContainer>
               )}
@@ -160,19 +166,19 @@ const BusinessPage = () => {
                   <div className="flex items-center justify-between border-b pb-3">
                     <span className="text-sm text-muted-foreground">Churned Users</span>
                     <span className="text-lg font-semibold text-red-600">
-                      {d?.churn?.churned ?? 0}
+                      <AnimatedNumber value={d?.churn?.churned ?? 0} />
                     </span>
                   </div>
                   <div className="flex items-center justify-between border-b pb-3">
                     <span className="text-sm text-muted-foreground">Previous Active Users</span>
-                    <span className="text-lg font-semibold">{d?.churn?.previousActive ?? 0}</span>
+                    <span className="text-lg font-semibold"><AnimatedNumber value={d?.churn?.previousActive ?? 0} /></span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Churn Rate</span>
                     <span
                       className={`text-lg font-semibold ${churnRate > 0.1 ? 'text-red-600' : 'text-green-600'}`}
                     >
-                      {(churnRate * 100).toFixed(1)}%
+                      <AnimatedNumber value={churnRate * 100} decimals={1} suffix="%" />
                     </span>
                   </div>
                 </>

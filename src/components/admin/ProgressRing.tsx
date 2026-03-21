@@ -1,3 +1,5 @@
+import { AnimatedNumber } from './AnimatedNumber';
+
 interface ProgressRingProps {
   value: number;
   size?: number;
@@ -32,10 +34,12 @@ export function ProgressRing({ value, size = 64, strokeWidth = 6, color = 'hsl(v
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          className="transition-all duration-500"
+          className="transition-all duration-700"
         />
       </svg>
-      <span className="absolute text-xs font-semibold">{label ?? `${Math.round(value)}%`}</span>
+      <span className="absolute text-xs font-semibold">
+        {label ?? <AnimatedNumber value={Math.round(value)} suffix="%" />}
+      </span>
     </div>
   );
 }
