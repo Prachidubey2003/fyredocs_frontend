@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Job } from '@/types';
 import { CheckCircle2, Loader2, AlertCircle, Clock } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, FadeIn } from '@/components/ui/animated';
+import { toast } from 'sonner';
 
 interface JobProgressProps {
   job: Job;
@@ -53,9 +55,33 @@ export const JobProgress = ({
   onDownload,
   className,
 }: JobProgressProps) => {
+  const [isDownloading, setIsDownloading] = useState(false);
   const config = stateConfig[job.state];
   const Icon = config.icon;
   const isAnimating = job.state === 'processing' || job.state === 'pending';
+
+  const handleDownload = async () => {
+    if (!job.result?.downloadUrl || isDownloading) return;
+    setIsDownloading(true);
+    try {
+      const res = await fetch(job.result.downloadUrl, { credentials: 'include' });
+      if (!res.ok) {
+        toast.error('This download link has expired. Please try again with a new file.');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = job.result.fileName || 'download';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Download failed. Please try again.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const formatTime = (seconds?: number): string => {
     if (!seconds) return '';
@@ -139,8 +165,8 @@ export const JobProgress = ({
                     {(job.result.fileSize / (1024 * 1024)).toFixed(2)} MB
                   </p>
                 </div>
-                <Button onClick={onDownload} className="bg-gradient-primary">
-                  Download
+                <Button onClick={handleDownload} disabled={isDownloading} className="bg-gradient-primary">
+                  {isDownloading ? 'Downloading...' : 'Download'}
                 </Button>
               </div>
             </div>

@@ -118,7 +118,21 @@ export const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
         }
         return { mode: 'range', range };
       }
-      return { mode: 'all', range: 'all' };
+      if (opts.mode === 'extract') {
+        const span = opts.span;
+        if (!span || span < 1) {
+          throw new Error('Page count per chunk is required for extract.');
+        }
+        return { mode: 'extract', range: String(span) };
+      }
+      if (opts.mode === 'equal') {
+        const span = opts.span;
+        if (!span || span < 2) {
+          throw new Error('Number of parts is required for equal split.');
+        }
+        return { mode: 'equal', range: String(span) };
+      }
+      return { mode: 'all' };
     }
     case 'reorder': {
       const order = (options as { order?: string }).order?.trim();

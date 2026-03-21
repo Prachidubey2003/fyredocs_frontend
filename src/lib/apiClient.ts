@@ -37,8 +37,10 @@ const parseErrorMessage = async (response: Response) => {
 
   if (contentType.includes('application/json')) {
     const data = await response.json().catch(() => null);
-    // Handle new API error format: { error: { code: string, message: string } }
-    if (data?.error?.message) {
+    // Handle API error format: { error: { code: string, details: string }, message: string }
+    if (data?.error?.details) {
+      message = data.error.details;
+    } else if (data?.error?.message) {
       message = data.error.message;
     } else if (data?.error && typeof data.error === 'string') {
       message = data.error;
@@ -75,9 +77,7 @@ export const apiRequest = async <T>(
   // Handle 401/403 - notify app to navigate to sign-in (session expired or access denied)
   if ((response.status === 401 || response.status === 403) && !skipRefresh) {
     window.dispatchEvent(new CustomEvent('esydocs:unauthorized'));
-    throw new Error(
-      response.status === 403 ? 'Access denied.' : 'Session expired. Please log in again.'
-    );
+    throw new Error(await parseErrorMessage(response));
   }
 
   if (!response.ok) {
