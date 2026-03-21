@@ -1,77 +1,57 @@
 import { Layout } from '@/components/layout/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Progress } from '@/components/ui/progress';
+import { SummaryCard } from '@/components/admin/SummaryCard';
+import { ProgressRing } from '@/components/admin/ProgressRing';
+import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 import {
   useOverview,
-  useUserGrowth,
-  useToolUsage,
-  usePlanDistribution,
-  useRealtime,
+  useBusiness,
+  useGrowth,
+  useEngagement,
+  useReliability,
+  useSystem,
+  useServerPerformance,
+  useApiPerformance,
 } from '@/hooks/useAdminMetrics';
+import {
+  DollarSign,
+  TrendingUp,
+  MousePointerClick,
+  ShieldCheck,
+  Activity,
+  Server,
+  Gauge,
+} from 'lucide-react';
 
-const chartConfig = {
-  signups: { label: 'Signups', color: 'hsl(var(--chart-1))' },
-  dau: { label: 'DAU', color: 'hsl(var(--chart-2))' },
-} satisfies ChartConfig;
-
-function OverviewCards() {
+function QuickStats() {
   const { data, isLoading } = useOverview();
   const d = data?.data;
 
-  const cards = [
-    { title: 'Signups Today', value: d?.signups, color: 'text-green-600' },
-    { title: 'DAU', value: d?.dau, color: 'text-blue-600' },
-    { title: 'Jobs Created', value: d?.jobsCreated, color: 'text-purple-600' },
-    { title: 'Jobs Failed', value: d?.jobsFailed, color: 'text-red-600' },
-  ];
-
-  return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      {cards.map((card) => (
-        <Card key={card.title}>
-          <CardHeader className="pb-2">
-            <CardDescription>{card.title}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <p className={`text-3xl font-bold ${card.color}`}>{card.value ?? 0}</p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-function SecondaryStats() {
-  const { data, isLoading } = useOverview();
-  const d = data?.data;
-
-  const stats = [
+  const items = [
+    { label: 'Signups Today', value: d?.signups, color: 'text-green-600' },
+    { label: 'DAU', value: d?.dau, color: 'text-blue-600' },
+    { label: 'Jobs Created', value: d?.jobsCreated, color: 'text-purple-600' },
+    { label: 'Jobs Failed', value: d?.jobsFailed, color: 'text-red-600' },
     { label: 'Logins', value: d?.logins },
     { label: 'Guest Sessions', value: d?.guestSessions },
-    { label: 'Jobs Completed', value: d?.jobsCompleted },
-    { label: 'Plan Limit Hits', value: d?.planLimitHits },
+    { label: 'Jobs Completed', value: d?.jobsCompleted, color: 'text-emerald-600' },
+    { label: 'Plan Limit Hits', value: d?.planLimitHits, color: 'text-orange-600' },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      {stats.map((stat) => (
-        <Card key={stat.label}>
-          <CardHeader className="pb-2">
-            <CardDescription>{stat.label}</CardDescription>
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+      {items.map((item) => (
+        <Card key={item.label} className="text-center">
+          <CardHeader className="px-3 pb-1 pt-3">
+            <CardDescription className="text-xs">{item.label}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 pb-3">
             {isLoading ? (
-              <Skeleton className="h-6 w-12" />
+              <Skeleton className="mx-auto h-7 w-10" />
             ) : (
-              <p className="text-xl font-semibold">{stat.value ?? 0}</p>
+              <p className={`text-2xl font-bold ${item.color ?? ''}`}>{item.value ?? 0}</p>
             )}
           </CardContent>
         </Card>
@@ -80,197 +60,155 @@ function SecondaryStats() {
   );
 }
 
-function UserGrowthChart() {
-  const { data, isLoading } = useUserGrowth(90);
-  const rows = data?.data?.rows ?? [];
-
+function Sparkline({ data, dataKey, color }: { data: { [k: string]: unknown }[]; dataKey: string; color: string }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>User Growth</CardTitle>
-        <CardDescription>Signups and daily active users — last 90 days</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <Skeleton className="h-[300px] w-full" />
-        ) : rows.length === 0 ? (
-          <p className="py-12 text-center text-sm text-muted-foreground">No data yet</p>
-        ) : (
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
-            <AreaChart data={rows} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8}
-                tickFormatter={(v: string) => v.slice(5)} fontSize={12} />
-              <YAxis tickLine={false} axisLine={false} fontSize={12} width={40} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Area dataKey="signups" type="monotone" fill="var(--color-signups)" fillOpacity={0.2}
-                stroke="var(--color-signups)" strokeWidth={2} />
-              <Area dataKey="dau" type="monotone" fill="var(--color-dau)" fillOpacity={0.2}
-                stroke="var(--color-dau)" strokeWidth={2} />
-            </AreaChart>
-          </ChartContainer>
-        )}
-      </CardContent>
-    </Card>
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+        <Area type="monotone" dataKey={dataKey} stroke={color} fill={color} fillOpacity={0.15} strokeWidth={1.5} dot={false} />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }
 
-function ToolUsageTable() {
-  const { data, isLoading } = useToolUsage(30);
-  const rows = data?.data?.rows ?? [];
-
+function BusinessCard() {
+  const { data, isLoading } = useBusiness(30);
+  const d = data?.data;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Tool Usage</CardTitle>
-        <CardDescription>Last 30 days</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <Skeleton className="h-[200px] w-full" />
-        ) : rows.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">No data yet</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Tool</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-right">Completed</TableHead>
-                <TableHead className="text-right">Failed</TableHead>
-                <TableHead className="text-right">Success Rate</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => {
-                const rate = row.count > 0 ? Math.round((row.completed / row.count) * 100) : 0;
-                return (
-                  <TableRow key={row.toolType}>
-                    <TableCell className="font-medium">{row.toolType}</TableCell>
-                    <TableCell className="text-right">{row.count}</TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant="secondary">{row.completed}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {row.failed > 0 ? (
-                        <Badge variant="destructive">{row.failed}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground">0</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span className={rate >= 90 ? 'text-green-600' : rate >= 70 ? 'text-yellow-600' : 'text-red-600'}>
-                        {rate}%
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
+    <SummaryCard
+      title="Business"
+      icon={<DollarSign className="h-4 w-4 text-emerald-600" />}
+      to="/admin/business"
+      isLoading={isLoading}
+      stats={[
+        { label: 'Total Signups', value: d?.signups?.total ?? 0 },
+        { label: 'Churn Rate', value: `${((d?.churn?.churnRate ?? 0) * 100).toFixed(1)}%`, color: (d?.churn?.churnRate ?? 0) > 0.1 ? 'text-red-600' : 'text-green-600' },
+        { label: 'Conversion', value: `${((d?.conversionRate?.rate ?? 0) * 100).toFixed(1)}%` },
+      ]}
+      chart={d?.signups?.daily ? <Sparkline data={d.signups.daily} dataKey="signups" color="hsl(142, 71%, 45%)" /> : undefined}
+    />
   );
 }
 
-function PlanDistributionCard() {
-  const { data, isLoading } = usePlanDistribution(30);
-  const rows = data?.data?.rows ?? [];
-
+function GrowthCard() {
+  const { data, isLoading } = useGrowth(30);
+  const d = data?.data;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Plan Distribution</CardTitle>
-        <CardDescription>Last 30 days</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <Skeleton className="h-[150px] w-full" />
-        ) : rows.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">No data yet</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Plan</TableHead>
-                <TableHead className="text-right">Users</TableHead>
-                <TableHead className="text-right">Jobs</TableHead>
-                <TableHead className="text-right">Limit Hits</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.planName}>
-                  <TableCell className="font-medium capitalize">{row.planName}</TableCell>
-                  <TableCell className="text-right">{row.users}</TableCell>
-                  <TableCell className="text-right">{row.jobs}</TableCell>
-                  <TableCell className="text-right">
-                    {row.limitHits > 0 ? (
-                      <Badge variant="outline" className="border-orange-400 text-orange-600">
-                        {row.limitHits} (upgrade opportunity)
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground">0</span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
+    <SummaryCard
+      title="Growth"
+      icon={<TrendingUp className="h-4 w-4 text-blue-600" />}
+      to="/admin/growth"
+      isLoading={isLoading}
+      stats={[
+        { label: 'DAU', value: d?.dau ?? 0, color: 'text-blue-600' },
+        { label: 'WAU / MAU', value: `${d?.wau ?? 0} / ${d?.mau ?? 0}` },
+        { label: 'Stickiness', value: `${((d?.stickiness ?? 0) * 100).toFixed(1)}%` },
+      ]}
+      chart={d?.dauTrend ? <Sparkline data={d.dauTrend} dataKey="dau" color="hsl(217, 91%, 60%)" /> : undefined}
+    />
   );
 }
 
-function RealtimeFeed() {
-  const { data, isLoading } = useRealtime();
-  const rows = data?.data?.rows ?? [];
+function EngagementCard() {
+  const { data, isLoading } = useEngagement(30);
+  const d = data?.data;
+  return (
+    <SummaryCard
+      title="Engagement"
+      icon={<MousePointerClick className="h-4 w-4 text-purple-600" />}
+      to="/admin/engagement"
+      isLoading={isLoading}
+      stats={[
+        { label: 'Avg Jobs/User', value: (d?.jobsPerUser?.average ?? 0).toFixed(1) },
+        { label: 'Guest Ratio', value: `${((d?.guestVsRegistered?.guestRatio ?? 0) * 100).toFixed(0)}%` },
+        { label: 'Power Users', value: d?.powerUsers?.length ?? 0 },
+      ]}
+    />
+  );
+}
 
-  const eventLabels: Record<string, string> = {
-    'user.signup': 'Signups',
-    'user.login': 'Logins',
-    'job.created': 'Jobs Created',
-    'job.completed': 'Jobs Completed',
-    'job.failed': 'Jobs Failed',
-    'plan.limit_hit': 'Plan Limit Hits',
-  };
+function ReliabilityCard() {
+  const { data, isLoading } = useReliability(30);
+  const d = data?.data;
+  const rate = (d?.jobRate?.successRate ?? 0) * 100;
+  return (
+    <SummaryCard
+      title="Reliability"
+      icon={<ShieldCheck className="h-4 w-4 text-green-600" />}
+      to="/admin/reliability"
+      isLoading={isLoading}
+      stats={[
+        { label: 'Success Rate', value: `${rate.toFixed(1)}%`, color: rate >= 95 ? 'text-green-600' : rate >= 80 ? 'text-yellow-600' : 'text-red-600' },
+        { label: 'P95 Latency', value: `${(d?.processingTime?.p95Seconds ?? 0).toFixed(1)}s` },
+        { label: 'Failed Jobs', value: d?.jobRate?.failed ?? 0, color: 'text-red-600' },
+      ]}
+      chart={<ProgressRing value={rate} color={rate >= 95 ? 'hsl(142, 71%, 45%)' : rate >= 80 ? 'hsl(48, 96%, 53%)' : 'hsl(0, 84%, 60%)'} />}
+    />
+  );
+}
 
-  const eventVariants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-    'user.signup': 'default',
-    'user.login': 'secondary',
-    'job.created': 'outline',
-    'job.completed': 'default',
-    'job.failed': 'destructive',
-    'plan.limit_hit': 'outline',
-  };
+function SystemCard() {
+  const { data, isLoading } = useSystem();
+  const d = data?.data;
+  return (
+    <SummaryCard
+      title="System Health"
+      icon={<Activity className="h-4 w-4 text-cyan-600" />}
+      to="/admin/system"
+      isLoading={isLoading}
+      stats={[
+        { label: 'Events/Hour', value: d?.eventsLastHour ?? 0 },
+        { label: 'Active Now', value: d?.activeUsersNow ?? 0, color: 'text-green-600' },
+        { label: 'Avg Lag', value: `${(d?.processingLag?.avgSeconds ?? 0).toFixed(2)}s` },
+      ]}
+      chart={d?.ingestionRate ? <Sparkline data={d.ingestionRate} dataKey="count" color="hsl(187, 92%, 41%)" /> : undefined}
+    />
+  );
+}
+
+function ServerPerfCard() {
+  const { data, isLoading } = useServerPerformance();
+  const d = data?.data;
+  const cpu = d?.system?.cpu?.usagePercent ?? 0;
+  const mem = d?.system?.memory?.usagePercent ?? 0;
+  const disk = d?.system?.storage?.usagePercent ?? 0;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Realtime</CardTitle>
-        <CardDescription>Events in the last hour (auto-refreshes every 15s)</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <Skeleton className="h-[100px] w-full" />
-        ) : rows.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">No events in the last hour</p>
-        ) : (
-          <div className="flex flex-wrap gap-3">
-            {rows.map((row) => (
-              <div key={row.eventType} className="flex items-center gap-2">
-                <Badge variant={eventVariants[row.eventType] ?? 'secondary'}>
-                  {eventLabels[row.eventType] ?? row.eventType}
-                </Badge>
-                <span className="text-lg font-semibold">{row.count}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <SummaryCard
+      title="Server"
+      icon={<Server className="h-4 w-4 text-orange-600" />}
+      to="/admin/server-performance"
+      isLoading={isLoading}
+      stats={[
+        { label: 'CPU', value: `${cpu.toFixed(0)}%`, color: cpu > 80 ? 'text-red-600' : '' },
+        { label: 'Memory', value: `${mem.toFixed(0)}%`, color: mem > 80 ? 'text-red-600' : '' },
+        { label: 'Disk', value: `${disk.toFixed(0)}%`, color: disk > 80 ? 'text-red-600' : '' },
+      ]}
+      chart={
+        <div className="space-y-2">
+          <Progress value={cpu} className="h-1.5" />
+          <Progress value={mem} className="h-1.5" />
+          <Progress value={disk} className="h-1.5" />
+        </div>
+      }
+    />
+  );
+}
+
+function ApiPerfCard() {
+  const { data, isLoading } = useApiPerformance();
+  const d = data?.data;
+  return (
+    <SummaryCard
+      title="API"
+      icon={<Gauge className="h-4 w-4 text-indigo-600" />}
+      to="/admin/api-performance"
+      isLoading={isLoading}
+      stats={[
+        { label: 'Requests', value: d?.summary?.totalRequests ?? 0 },
+        { label: 'Avg Latency', value: `${(d?.summary?.avgLatencyMs ?? 0).toFixed(0)}ms` },
+        { label: 'Error Rate', value: `${((d?.summary?.errorRate ?? 0) * 100).toFixed(1)}%`, color: (d?.summary?.errorRate ?? 0) > 0.05 ? 'text-red-600' : 'text-green-600' },
+      ]}
+    />
   );
 }
 
@@ -280,19 +218,20 @@ const AdminDashboard = () => {
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Business metrics and platform health</p>
+          <p className="text-muted-foreground">Platform overview — click any card for details</p>
         </div>
 
-        <OverviewCards />
-        <SecondaryStats />
+        <QuickStats />
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <UserGrowthChart />
-          <RealtimeFeed />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <BusinessCard />
+          <GrowthCard />
+          <EngagementCard />
+          <ReliabilityCard />
+          <SystemCard />
+          <ServerPerfCard />
+          <ApiPerfCard />
         </div>
-
-        <ToolUsageTable />
-        <PlanDistributionCard />
       </div>
     </Layout>
   );

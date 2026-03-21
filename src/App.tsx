@@ -54,6 +54,13 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const SignIn = lazy(() => import("./pages/auth/SignIn"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const BusinessPage = lazy(() => import("./pages/admin/BusinessPage"));
+const GrowthPage = lazy(() => import("./pages/admin/GrowthPage"));
+const EngagementPage = lazy(() => import("./pages/admin/EngagementPage"));
+const ReliabilityPage = lazy(() => import("./pages/admin/ReliabilityPage"));
+const SystemPage = lazy(() => import("./pages/admin/SystemPage"));
+const ServerPerformancePage = lazy(() => import("./pages/admin/ServerPerformancePage"));
+const ApiPerformancePage = lazy(() => import("./pages/admin/ApiPerformancePage"));
 
 const queryClient = new QueryClient();
 
@@ -112,6 +119,13 @@ const AnimatedRoutes = () => {
           <Route path="/cookies" element={<CookiePage />} />
           <Route element={<RoleRoute allowedRoles={['super-admin']} />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/business" element={<BusinessPage />} />
+            <Route path="/admin/growth" element={<GrowthPage />} />
+            <Route path="/admin/engagement" element={<EngagementPage />} />
+            <Route path="/admin/reliability" element={<ReliabilityPage />} />
+            <Route path="/admin/system" element={<SystemPage />} />
+            <Route path="/admin/server-performance" element={<ServerPerformancePage />} />
+            <Route path="/admin/api-performance" element={<ApiPerformancePage />} />
           </Route>
           <Route element={<PublicOnlyRoute />}>
             <Route path="/signin" element={<SignIn />} />
