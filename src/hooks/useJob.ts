@@ -215,7 +215,7 @@ const mapApiJob = (
   const completedSteps =
     state === 'completed'
       ? totalSteps
-      : state === 'processing'
+      : progressValue > 0
       ? Math.max(1, Math.floor((progressValue / 100) * totalSteps))
       : 0;
   const currentStep =
@@ -294,6 +294,7 @@ export const useJob = ({
     fileIds: string[];
     options: ToolOptions;
   } | null>(null);
+  const maxProgressRef = useRef(0);
 
   const stopPolling = useCallback(() => {
     if (pollingTimerRef.current) {
@@ -313,6 +314,16 @@ export const useJob = ({
         try {
           const apiResponse = await apiRequest<{ data: ApiJob }>(buildJobPath(toolId, jobId));
           const mappedJob = mapApiJob(apiResponse.data, toolId, fileIds, options);
+
+          // Enforce monotonic progress — never show regression to the user.
+          if (mappedJob.state === 'failed') {
+            maxProgressRef.current = 0;
+          } else if (mappedJob.progress.percentage < maxProgressRef.current) {
+            mappedJob.progress.percentage = maxProgressRef.current;
+          } else {
+            maxProgressRef.current = mappedJob.progress.percentage;
+          }
+
           setJob(mappedJob);
 
           if (mappedJob.state === 'completed') {
@@ -363,6 +374,7 @@ export const useJob = ({
   const createJob = useCallback(
     (toolId: ToolId, fileIds: string[], options: ToolOptions) => {
       stopPolling();
+      maxProgressRef.current = 0;
       const normalizedIds = fileIds.filter(Boolean);
 
       if (normalizedIds.length === 0) {
@@ -459,6 +471,7 @@ export const useJob = ({
 
   const resetJob = useCallback(() => {
     stopPolling();
+    maxProgressRef.current = 0;
     setJob(null);
   }, [stopPolling]);
 
