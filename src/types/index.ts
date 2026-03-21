@@ -157,8 +157,9 @@ export interface MergeOptions {
 }
 
 export interface SplitOptions {
-  mode?: 'all' | 'range' | 'extract';
+  mode?: 'all' | 'range' | 'extract' | 'equal';
   range?: string; // e.g., "1-3,5,7-9"
+  span?: number; // pages per chunk for "extract" mode
 }
 
 export interface CompressOptions {

@@ -17,11 +17,13 @@ import { AnimatedSwitch, AnimatedCollapse } from '@/components/ui/animated';
 
 const tool = TOOLS.split;
 
-type SplitMode = 'all' | 'range' | 'extract';
+type SplitMode = 'all' | 'range' | 'extract' | 'equal';
 
 export const SplitTool = () => {
   const [splitMode, setSplitMode] = useState<SplitMode>('all');
   const [rangeInput, setRangeInput] = useState('');
+  const [extractCount, setExtractCount] = useState('2');
+  const [equalParts, setEqualParts] = useState('2');
 
   const {
     files,
@@ -60,6 +62,16 @@ export const SplitTool = () => {
       return;
     }
 
+    if (splitMode === 'extract' && (!extractCount.trim() || Number(extractCount) < 1)) {
+      toast.error('Please enter a valid page count per chunk');
+      return;
+    }
+
+    if (splitMode === 'equal' && (!equalParts.trim() || Number(equalParts) < 2)) {
+      toast.error('Please enter at least 2 parts');
+      return;
+    }
+
     const uploadIds = files
       .map((file) => file.serverFileId)
       .filter((id): id is string => Boolean(id));
@@ -72,6 +84,8 @@ export const SplitTool = () => {
     const options: SplitOptions = {
       mode: splitMode,
       range: rangeInput.trim(),
+      ...(splitMode === 'extract' ? { span: Number(extractCount) } : {}),
+      ...(splitMode === 'equal' ? { span: Number(equalParts) } : {}),
     };
 
     createJob(
@@ -86,6 +100,8 @@ export const SplitTool = () => {
     clearFiles();
     setSplitMode('all');
     setRangeInput('');
+    setExtractCount('2');
+    setEqualParts('2');
   };
 
   const hasFile = files.length > 0;
@@ -190,11 +206,43 @@ export const SplitTool = () => {
                         <RadioGroupItem value="extract" id="extract" className="mt-0.5" />
                         <div className="flex-1">
                           <Label htmlFor="extract" className="font-medium cursor-pointer">
-                            Extract every N pages
+                            Split by page count
                           </Label>
-                          <p className="text-sm text-muted-foreground">
-                            Split into multiple PDFs with fixed page count each
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Split into PDFs with a fixed number of pages each
                           </p>
+                          <AnimatedCollapse show={splitMode === 'extract'}>
+                            <Input
+                              type="number"
+                              min="1"
+                              placeholder="e.g., 3"
+                              value={extractCount}
+                              onChange={(e) => setExtractCount(e.target.value)}
+                              className="max-w-xs"
+                            />
+                          </AnimatedCollapse>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start space-x-3 p-4 rounded-lg border hover:border-primary/50 transition-colors cursor-pointer">
+                        <RadioGroupItem value="equal" id="equal" className="mt-0.5" />
+                        <div className="flex-1">
+                          <Label htmlFor="equal" className="font-medium cursor-pointer">
+                            Split into equal parts
+                          </Label>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Divide the PDF into a specified number of equal PDFs
+                          </p>
+                          <AnimatedCollapse show={splitMode === 'equal'}>
+                            <Input
+                              type="number"
+                              min="2"
+                              placeholder="e.g., 4"
+                              value={equalParts}
+                              onChange={(e) => setEqualParts(e.target.value)}
+                              className="max-w-xs"
+                            />
+                          </AnimatedCollapse>
                         </div>
                       </div>
                     </RadioGroup>
@@ -212,7 +260,7 @@ export const SplitTool = () => {
                     <Button
                       className="flex-1 bg-tool-split hover:bg-tool-split/90"
                       onClick={handleSplit}
-                      disabled={!canProceed || (splitMode === 'range' && !rangeInput.trim())}
+                      disabled={!canProceed || (splitMode === 'range' && !rangeInput.trim()) || (splitMode === 'extract' && (!extractCount.trim() || Number(extractCount) < 1)) || (splitMode === 'equal' && (!equalParts.trim() || Number(equalParts) < 2))}
                     >
                       <Scissors className="w-4 h-4 mr-2" />
                       Split PDF
