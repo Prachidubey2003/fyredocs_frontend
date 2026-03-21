@@ -181,11 +181,15 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
         let current = filesRef.current.find((item) => item.id === fileId);
         if (!current || !uploadId) return;
 
-        for (const chunk of current.chunks) {
-          if (chunk.uploaded) continue;
-          const blob = current.file.slice(chunk.start, chunk.end);
+        const MAX_PARALLEL_CHUNKS = 3;
+        const pendingChunks = current.chunks.filter((c) => !c.uploaded);
+
+        const uploadSingleChunk = async (chunk: ChunkInfo) => {
+          const latestFile = filesRef.current.find((item) => item.id === fileId);
+          if (!latestFile) return;
+          const blob = latestFile.file.slice(chunk.start, chunk.end);
           const formData = new FormData();
-          formData.append('chunk', blob, current.file.name);
+          formData.append('chunk', blob, latestFile.file.name);
 
           const response = await fetch(
             buildApiUrl(`/api/upload/${uploadId}/chunk?index=${chunk.index}`),
@@ -193,7 +197,7 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
               method: 'PUT',
               body: formData,
               signal: controller.signal,
-              credentials: 'include', // Cookie-based auth
+              credentials: 'include',
             }
           );
 
@@ -203,9 +207,21 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
           }
 
           markChunkUploaded(fileId, chunk.index);
-          current = filesRef.current.find((item) => item.id === fileId);
-          if (!current) return;
-        }
+        };
+
+        // Upload chunks with limited concurrency
+        let i = 0;
+        const executeNext = async (): Promise<void> => {
+          if (i >= pendingChunks.length) return;
+          const chunk = pendingChunks[i++];
+          await uploadSingleChunk(chunk);
+          await executeNext();
+        };
+        const workers = Array.from(
+          { length: Math.min(MAX_PARALLEL_CHUNKS, pendingChunks.length) },
+          () => executeNext()
+        );
+        await Promise.all(workers);
 
         await apiJson(`/api/upload/${uploadId}/complete`, {
           method: 'POST',

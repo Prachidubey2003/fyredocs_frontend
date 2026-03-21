@@ -19,14 +19,14 @@ const features = [
 
 export const Hero = () => {
   return (
-    <section className="relative overflow-hidden bg-gradient-hero">
+    <section className="relative overflow-hidden bg-gradient-hero min-h-[calc(100vh-4rem)] flex flex-col justify-center">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-1/2 -right-1/4 w-[800px] h-[800px] rounded-full bg-primary/5 blur-3xl" />
         <div className="absolute -bottom-1/2 -left-1/4 w-[600px] h-[600px] rounded-full bg-primary/3 blur-3xl" />
       </div>
 
-      <div className="container relative py-14 md:py-20">
+      <div className="container relative py-8">
         <div className="max-w-3xl mx-auto text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 animate-fade-in">
