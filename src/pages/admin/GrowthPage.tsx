@@ -1,6 +1,7 @@
 import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
+import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -102,6 +103,9 @@ const GrowthPage = () => {
                     fill="var(--color-dau)"
                     fillOpacity={0.2}
                     strokeWidth={2}
+                    isAnimationActive
+                    animationDuration={800}
+                    animationEasing="ease-out"
                   />
                 </AreaChart>
               </ChartContainer>
@@ -129,18 +133,18 @@ const GrowthPage = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Total Signups</span>
-                    <span className="text-lg font-semibold">{d.activationRate.signups}</span>
+                    <span className="text-lg font-semibold"><AnimatedNumber value={d.activationRate.signups} /></span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Activated</span>
                     <span className="text-lg font-semibold text-green-600">
-                      {d.activationRate.activated}
+                      <AnimatedNumber value={d.activationRate.activated} />
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Activation Rate</span>
                     <span className="text-3xl font-bold text-blue-600">
-                      {(d.activationRate.rate * 100).toFixed(1)}%
+                      <AnimatedNumber value={d.activationRate.rate * 100} decimals={1} suffix="%" />
                     </span>
                   </div>
                 </div>
@@ -181,7 +185,8 @@ const GrowthPage = () => {
                       width={75}
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="value" fill="var(--color-value)" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="value" fill="var(--color-value)" radius={[0, 4, 4, 0]}
+                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
                   </BarChart>
                 </ChartContainer>
               ) : (

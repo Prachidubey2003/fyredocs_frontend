@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { SummaryCard } from '@/components/admin/SummaryCard';
 import { ProgressRing } from '@/components/admin/ProgressRing';
+import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 import {
   useOverview,
@@ -51,7 +52,7 @@ function QuickStats() {
             {isLoading ? (
               <Skeleton className="mx-auto h-7 w-10" />
             ) : (
-              <p className={`text-2xl font-bold ${item.color ?? ''}`}>{item.value ?? 0}</p>
+              <p className={`text-2xl font-bold ${item.color ?? ''}`}><AnimatedNumber value={item.value ?? 0} /></p>
             )}
           </CardContent>
         </Card>
@@ -64,7 +65,8 @@ function Sparkline({ data, dataKey, color }: { data: { [k: string]: unknown }[];
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-        <Area type="monotone" dataKey={dataKey} stroke={color} fill={color} fillOpacity={0.15} strokeWidth={1.5} dot={false} />
+        <Area type="monotone" dataKey={dataKey} stroke={color} fill={color} fillOpacity={0.15} strokeWidth={1.5} dot={false}
+          isAnimationActive animationDuration={800} animationEasing="ease-out" />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -185,9 +187,9 @@ function ServerPerfCard() {
       ]}
       chart={
         <div className="space-y-2">
-          <Progress value={cpu} className="h-1.5" />
-          <Progress value={mem} className="h-1.5" />
-          <Progress value={disk} className="h-1.5" />
+          <Progress value={cpu} className="h-1.5 transition-all duration-700" />
+          <Progress value={mem} className="h-1.5 transition-all duration-700" />
+          <Progress value={disk} className="h-1.5 transition-all duration-700" />
         </div>
       }
     />

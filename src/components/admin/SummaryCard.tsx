@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface SummaryCardProps {
   title: string;
@@ -12,6 +13,27 @@ interface SummaryCardProps {
   stats: { label: string; value: string | number; color?: string }[];
   chart?: ReactNode;
   isLoading?: boolean;
+}
+
+function parseNumericValue(value: string | number): {
+  num: number;
+  decimals: number;
+  prefix: string;
+  suffix: string;
+} | null {
+  if (typeof value === 'number') {
+    return { num: value, decimals: 0, prefix: '', suffix: '' };
+  }
+  const clean = value.replace(/,/g, '');
+  const match = clean.match(/^([^0-9\-.]*)([-]?\d+(?:\.\d+)?)(.*)$/);
+  if (!match) return null;
+  const num = parseFloat(match[2]);
+  if (isNaN(num)) return null;
+  const prefix = match[1];
+  const suffix = match[3];
+  const dotIdx = match[2].indexOf('.');
+  const decimals = dotIdx === -1 ? 0 : match[2].length - dotIdx - 1;
+  return { num, decimals, prefix, suffix };
 }
 
 export function SummaryCard({ title, icon, to, stats, chart, isLoading }: SummaryCardProps) {
@@ -33,12 +55,26 @@ export function SummaryCard({ title, icon, to, stats, chart, isLoading }: Summar
         ) : (
           <>
             <div className="space-y-1">
-              {stats.map((s) => (
-                <div key={s.label} className="flex items-baseline justify-between gap-2">
-                  <span className="text-sm text-muted-foreground">{s.label}</span>
-                  <span className={`text-lg font-semibold ${s.color ?? ''}`}>{s.value}</span>
-                </div>
-              ))}
+              {stats.map((s) => {
+                const parsed = parseNumericValue(s.value);
+                return (
+                  <div key={s.label} className="flex items-baseline justify-between gap-2">
+                    <span className="text-sm text-muted-foreground">{s.label}</span>
+                    <span className={`text-lg font-semibold ${s.color ?? ''}`}>
+                      {parsed ? (
+                        <AnimatedNumber
+                          value={parsed.num}
+                          decimals={parsed.decimals}
+                          prefix={parsed.prefix}
+                          suffix={parsed.suffix}
+                        />
+                      ) : (
+                        s.value
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
             {chart && <div className="h-16">{chart}</div>}
           </>

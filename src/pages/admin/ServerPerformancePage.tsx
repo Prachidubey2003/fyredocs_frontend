@@ -2,6 +2,7 @@ import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
 import { ProgressRing } from '@/components/admin/ProgressRing';
+import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -9,15 +10,28 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useServerPerformance } from '@/hooks/useAdminMetrics';
 
 const ServerPerformancePage = () => {
-  const { data, isLoading } = useServerPerformance();
+  const { data, isLoading, dataUpdatedAt } = useServerPerformance();
   const d = data?.data;
   const sys = d?.system;
   const avail = d?.availability;
 
+  const lastUpdated = dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : null;
+
   return (
     <Layout>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
-        <AdminPageHeader title="Server Performance" description="CPU, memory, storage, and service availability" />
+        <div className="flex items-start justify-between gap-4">
+          <AdminPageHeader title="Server Performance" description="CPU, memory, storage, and service availability" />
+          <div className="flex items-center gap-2 shrink-0 mt-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Live{lastUpdated ? ` \u00b7 ${lastUpdated}` : ''}
+            </span>
+          </div>
+        </div>
 
         {isLoading ? (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -39,7 +53,7 @@ const ServerPerformancePage = () => {
                 <ProgressRing value={sys?.memory?.usagePercent ?? 0} size={72} strokeWidth={7}
                   color={(sys?.memory?.usagePercent ?? 0) > 80 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)'} />
                 <span className="text-xs text-muted-foreground">
-                  {((sys?.memory?.usedMB ?? 0) / 1024).toFixed(1)} / {((sys?.memory?.totalMB ?? 0) / 1024).toFixed(1)} GB
+                  <AnimatedNumber value={(sys?.memory?.usedMB ?? 0) / 1024} decimals={1} /> / <AnimatedNumber value={(sys?.memory?.totalMB ?? 0) / 1024} decimals={1} /> GB
                 </span>
               </Card>
               <Card className="flex flex-col items-center justify-center gap-2 p-4">
@@ -47,7 +61,7 @@ const ServerPerformancePage = () => {
                 <ProgressRing value={sys?.storage?.usagePercent ?? 0} size={72} strokeWidth={7}
                   color={(sys?.storage?.usagePercent ?? 0) > 80 ? 'hsl(0, 84%, 60%)' : 'hsl(262, 83%, 58%)'} />
                 <span className="text-xs text-muted-foreground">
-                  {(sys?.storage?.usedGB ?? 0).toFixed(1)} / {(sys?.storage?.totalGB ?? 0).toFixed(1)} GB
+                  <AnimatedNumber value={sys?.storage?.usedGB ?? 0} decimals={1} /> / <AnimatedNumber value={sys?.storage?.totalGB ?? 0} decimals={1} /> GB
                 </span>
               </Card>
             </div>
@@ -61,15 +75,15 @@ const ServerPerformancePage = () => {
                 <div className="flex gap-8">
                   <div>
                     <p className="text-sm text-muted-foreground">1 min</p>
-                    <p className="text-2xl font-bold">{(sys?.cpu?.loadAvg1m ?? 0).toFixed(2)}</p>
+                    <p className="text-2xl font-bold"><AnimatedNumber value={sys?.cpu?.loadAvg1m ?? 0} decimals={2} /></p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">5 min</p>
-                    <p className="text-2xl font-bold">{(sys?.cpu?.loadAvg5m ?? 0).toFixed(2)}</p>
+                    <p className="text-2xl font-bold"><AnimatedNumber value={sys?.cpu?.loadAvg5m ?? 0} decimals={2} /></p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">15 min</p>
-                    <p className="text-2xl font-bold">{(sys?.cpu?.loadAvg15m ?? 0).toFixed(2)}</p>
+                    <p className="text-2xl font-bold"><AnimatedNumber value={sys?.cpu?.loadAvg15m ?? 0} decimals={2} /></p>
                   </div>
                 </div>
               </CardContent>
@@ -83,21 +97,21 @@ const ServerPerformancePage = () => {
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <span>Used</span>
-                  <span className="font-medium">{((sys?.memory?.usedMB ?? 0) / 1024).toFixed(2)} GB</span>
+                  <span className="font-medium"><AnimatedNumber value={(sys?.memory?.usedMB ?? 0) / 1024} decimals={2} suffix=" GB" /></span>
                 </div>
-                <Progress value={sys?.memory?.usagePercent ?? 0} />
+                <Progress value={sys?.memory?.usagePercent ?? 0} className="transition-all duration-700" />
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Total</p>
-                    <p className="font-medium">{((sys?.memory?.totalMB ?? 0) / 1024).toFixed(2)} GB</p>
+                    <p className="font-medium"><AnimatedNumber value={(sys?.memory?.totalMB ?? 0) / 1024} decimals={2} suffix=" GB" /></p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Free</p>
-                    <p className="font-medium">{((sys?.memory?.freeMB ?? 0) / 1024).toFixed(2)} GB</p>
+                    <p className="font-medium"><AnimatedNumber value={(sys?.memory?.freeMB ?? 0) / 1024} decimals={2} suffix=" GB" /></p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Available</p>
-                    <p className="font-medium">{((sys?.memory?.availableMB ?? 0) / 1024).toFixed(2)} GB</p>
+                    <p className="font-medium"><AnimatedNumber value={(sys?.memory?.availableMB ?? 0) / 1024} decimals={2} suffix=" GB" /></p>
                   </div>
                 </div>
               </CardContent>
@@ -123,8 +137,8 @@ const ServerPerformancePage = () => {
                       </div>
                       {svc.status === 'healthy' ? (
                         <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-                          {svc.goroutines != null && <p>Goroutines: <span className="font-medium text-foreground">{svc.goroutines}</span></p>}
-                          {svc.memory && <p>Heap: <span className="font-medium text-foreground">{svc.memory.heapAllocMB?.toFixed(1)} MB</span></p>}
+                          {svc.goroutines != null && <p>Goroutines: <AnimatedNumber value={svc.goroutines} className="font-medium text-foreground" /></p>}
+                          {svc.memory && <p>Heap: <AnimatedNumber value={svc.memory.heapAllocMB ?? 0} decimals={1} suffix=" MB" className="font-medium text-foreground" /></p>}
                           {svc.uptime && <p>Uptime: <span className="font-medium text-foreground">{svc.uptime}</span></p>}
                           {svc.goVersion && <p>Go: <span className="font-medium text-foreground">{svc.goVersion}</span></p>}
                         </div>

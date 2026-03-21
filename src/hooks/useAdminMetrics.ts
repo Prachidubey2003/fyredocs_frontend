@@ -88,7 +88,7 @@ export const useServerPerformance = () =>
   useQuery({
     queryKey: ['admin', 'serverPerformance'],
     queryFn: fetchServerPerformance,
-    refetchInterval: 30_000,
+    refetchInterval: 10_000,
   });
 
 export const useApiPerformance = () =>

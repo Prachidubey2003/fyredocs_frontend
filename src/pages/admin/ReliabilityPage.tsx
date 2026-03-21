@@ -55,8 +55,10 @@ const ReliabilityPage = () => {
                   <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v: string) => v.slice(5)} fontSize={12} />
                   <YAxis tickLine={false} axisLine={false} fontSize={12} width={40} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area dataKey="total" type="monotone" fill="var(--color-total)" fillOpacity={0.1} stroke="var(--color-total)" strokeWidth={2} />
-                  <Area dataKey="failures" type="monotone" fill="var(--color-failures)" fillOpacity={0.3} stroke="var(--color-failures)" strokeWidth={2} />
+                  <Area dataKey="total" type="monotone" fill="var(--color-total)" fillOpacity={0.1} stroke="var(--color-total)" strokeWidth={2}
+                    isAnimationActive animationDuration={800} animationEasing="ease-out" />
+                  <Area dataKey="failures" type="monotone" fill="var(--color-failures)" fillOpacity={0.3} stroke="var(--color-failures)" strokeWidth={2}
+                    isAnimationActive animationDuration={800} animationEasing="ease-out" />
                 </AreaChart>
               </ChartContainer>
             )}
@@ -76,8 +78,10 @@ const ReliabilityPage = () => {
                   <XAxis type="number" tickLine={false} axisLine={false} fontSize={12} />
                   <YAxis type="category" dataKey="toolType" tickLine={false} axisLine={false} fontSize={11} width={80} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="completed" fill="var(--color-completed)" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="failed" fill="var(--color-failed)" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="completed" fill="var(--color-completed)" radius={[0, 4, 4, 0]}
+                    isAnimationActive animationDuration={800} animationEasing="ease-out" />
+                  <Bar dataKey="failed" fill="var(--color-failed)" radius={[0, 4, 4, 0]}
+                    isAnimationActive animationDuration={800} animationEasing="ease-out" />
                 </BarChart>
               </ChartContainer>
             )}

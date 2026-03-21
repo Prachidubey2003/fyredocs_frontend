@@ -121,7 +121,8 @@ const EngagementPage = () => {
                     <XAxis dataKey="bucket" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                     <YAxis tickLine={false} axisLine={false} />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="count" fill="var(--color-count)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="count" fill="var(--color-count)" radius={[4, 4, 0, 0]}
+                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
                   </BarChart>
                 </ChartContainer>
               )}
@@ -150,6 +151,9 @@ const EngagementPage = () => {
                       innerRadius={60}
                       outerRadius={100}
                       paddingAngle={4}
+                      isAnimationActive
+                      animationDuration={800}
+                      animationEasing="ease-out"
                     >
                       {pieData.map((_entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

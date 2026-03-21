@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Area, AreaChart, Pie, PieChart, Cell, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
 import { useSystem } from '@/hooks/useAdminMetrics';
 
 const ingestionConfig = {
@@ -50,7 +51,8 @@ const SystemPage = () => {
                     tickFormatter={(v: string) => new Date(v).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} fontSize={12} />
                   <YAxis tickLine={false} axisLine={false} fontSize={12} width={40} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area dataKey="count" type="monotone" fill="var(--color-count)" fillOpacity={0.2} stroke="var(--color-count)" strokeWidth={2} />
+                  <Area dataKey="count" type="monotone" fill="var(--color-count)" fillOpacity={0.2} stroke="var(--color-count)" strokeWidth={2}
+                    isAnimationActive animationDuration={800} animationEasing="ease-out" />
                 </AreaChart>
               </ChartContainer>
             )}
@@ -66,7 +68,8 @@ const SystemPage = () => {
             {isLoading ? <Skeleton className="h-[250px] w-[250px] rounded-full" /> : (
               <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-8">
                 <PieChart width={250} height={250}>
-                  <Pie data={d?.eventsByType ?? []} dataKey="count" nameKey="eventType" cx="50%" cy="50%" outerRadius={100} innerRadius={50} paddingAngle={2}>
+                  <Pie data={d?.eventsByType ?? []} dataKey="count" nameKey="eventType" cx="50%" cy="50%" outerRadius={100} innerRadius={50} paddingAngle={2}
+                    isAnimationActive animationDuration={800} animationEasing="ease-out">
                     {(d?.eventsByType ?? []).map((_, i) => (
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
@@ -77,7 +80,7 @@ const SystemPage = () => {
                     <div key={row.eventType} className="flex items-center gap-2 text-sm">
                       <div className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                       <span className="text-muted-foreground">{row.eventType}</span>
-                      <span className="font-semibold">{row.count}</span>
+                      <span className="font-semibold"><AnimatedNumber value={row.count} /></span>
                     </div>
                   ))}
                 </div>
