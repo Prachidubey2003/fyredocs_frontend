@@ -43,6 +43,11 @@ export function SummaryCard({ title, icon, to, stats, chart, isLoading }: Summar
         <CardTitle className="flex items-center gap-2 text-base">
           {icon}
           {title}
+          <Button variant="outline" size="icon" asChild className="ml-auto h-7 w-7">
+            <Link to={to}>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col justify-between gap-4">
@@ -53,7 +58,7 @@ export function SummaryCard({ title, icon, to, stats, chart, isLoading }: Summar
             <Skeleton className="h-4 w-28" />
           </div>
         ) : (
-          <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1">
               {stats.map((s) => {
                 const parsed = parseNumericValue(s.value);
@@ -76,14 +81,9 @@ export function SummaryCard({ title, icon, to, stats, chart, isLoading }: Summar
                 );
               })}
             </div>
-            {chart && <div className="h-16">{chart}</div>}
-          </>
+            {chart && <div className="flex h-24 items-center justify-center">{chart}</div>}
+          </div>
         )}
-        <Button variant="ghost" size="sm" asChild className="mt-auto w-full justify-between">
-          <Link to={to}>
-            View Details <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
       </CardContent>
     </Card>
   );

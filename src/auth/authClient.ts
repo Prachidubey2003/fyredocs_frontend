@@ -84,6 +84,13 @@ const normalizeUser = (data: AuthResponse): AuthUser | null => {
   };
 };
 
+const extractAccessExpiresAt = (data: AuthResponse): number | null => {
+  if (!data || typeof data !== 'object') return null;
+  const nested = data.data as Record<string, unknown> | undefined;
+  const ms = (nested?.accessExpiresAt ?? data.accessExpiresAt) as number | undefined;
+  return typeof ms === 'number' && ms > 0 ? ms : null;
+};
+
 const authRequest = async (
   path: string,
   options: RequestInit = {}
@@ -118,7 +125,8 @@ export const login = async (credentials: AuthCredentials) => {
     throw new AuthError('SERVER_ERROR', 'Invalid user data returned from server.');
   }
 
-  return { user };
+  const accessExpiresAt = extractAccessExpiresAt(data);
+  return { user, accessExpiresAt };
 };
 
 export const signup = async (credentials: AuthSignupCredentials) => {
@@ -132,7 +140,8 @@ export const signup = async (credentials: AuthSignupCredentials) => {
     throw new AuthError('SERVER_ERROR', 'Invalid user data returned from server.');
   }
 
-  return { user };
+  const accessExpiresAt = extractAccessExpiresAt(data);
+  return { user, accessExpiresAt };
 };
 
 export const getProfile = async () => {
@@ -153,9 +162,11 @@ export const getMe = async () => {
   return user;
 };
 
-export const refreshSession = async (): Promise<AuthUser | null> => {
+export const refreshSession = async (): Promise<{ user: AuthUser; accessExpiresAt: number | null } | null> => {
   const data = await authRequest('/auth/refresh', { method: 'POST' });
-  return normalizeUser(data);
+  const user = normalizeUser(data);
+  if (!user) return null;
+  return { user, accessExpiresAt: extractAccessExpiresAt(data) };
 };
 
 export const logout = async () => {

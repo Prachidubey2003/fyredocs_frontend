@@ -20,6 +20,9 @@ export type RealtimeRow = { eventType: string; count: number };
 
 type ApiResponse<T> = { success: boolean; message: string; data: T };
 
+export type PaginationMeta = { page: number; limit: number; total: number };
+export type ApiResponseWithMeta<T> = { success: boolean; message: string; data: T; meta?: PaginationMeta };
+
 const unwrap = async <T>(promise: Promise<ApiResponse<T>>): Promise<T> => {
   const res = await promise;
   return res.data;
@@ -165,5 +168,25 @@ export type ApiPerformanceData = {
   highestErrorEndpoints: ApiPerformanceEndpoint[];
 };
 
-export const fetchApiPerformance = () =>
-  unwrap(apiRequest<ApiResponse<ApiPerformanceData>>('/admin/metrics/api-performance'));
+export interface EndpointQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  method?: string;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+}
+
+export const fetchApiPerformance = async (params?: EndpointQueryParams): Promise<{ data: ApiPerformanceData; meta?: PaginationMeta }> => {
+  const q = new URLSearchParams();
+  if (params?.page) q.set('page', String(params.page));
+  if (params?.limit) q.set('limit', String(params.limit));
+  if (params?.search) q.set('search', params.search);
+  if (params?.method) q.set('method', params.method);
+  if (params?.sortBy) q.set('sortBy', params.sortBy);
+  if (params?.sortDir) q.set('sortDir', params.sortDir);
+  const qs = q.toString();
+  const url = `/admin/metrics/api-performance${qs ? '?' + qs : ''}`;
+  const resp = await apiRequest<ApiResponseWithMeta<ApiPerformanceData>>(url);
+  return { data: resp.data, meta: resp.meta };
+};
