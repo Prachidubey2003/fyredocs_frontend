@@ -107,8 +107,6 @@ const authRequest = async (
   return parseResponseBody(response);
 };
 
-// Cookie-based authentication: No token refresh needed on client side
-
 export const login = async (credentials: AuthCredentials) => {
   const data = await authRequest('/auth/login', {
     method: 'POST',
@@ -155,7 +153,12 @@ export const getMe = async () => {
   return user;
 };
 
+export const refreshSession = async (): Promise<AuthUser | null> => {
+  const data = await authRequest('/auth/refresh', { method: 'POST' });
+  return normalizeUser(data);
+};
+
 export const logout = async () => {
-  // Server will clear the cookie
+  // Server will clear the cookies
   await authRequest('/auth/logout', { method: 'POST' });
 };
