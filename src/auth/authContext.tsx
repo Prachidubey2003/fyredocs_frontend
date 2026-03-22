@@ -8,6 +8,7 @@ import {
   getMe,
   login,
   logout,
+  refreshSession,
   signup,
 } from '@/auth/authClient';
 
@@ -55,7 +56,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setPlan((me.planName as string | undefined) ?? 'free');
       setIsAuthenticated(true);
     } catch {
-      // Session cookie is invalid or expired
+      // Access token may be expired — try refreshing before giving up
+      try {
+        const refreshed = await refreshSession();
+        if (refreshed) {
+          setUser(refreshed);
+          setRole(refreshed.role ?? null);
+          setPlan((refreshed.planName as string | undefined) ?? 'free');
+          setIsAuthenticated(true);
+          return;
+        }
+      } catch { /* refresh also failed */ }
       setUser(null);
       setRole(null);
       setPlan('anonymous');

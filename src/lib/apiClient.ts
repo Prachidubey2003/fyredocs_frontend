@@ -61,6 +61,21 @@ const buildHeaders = (headers?: HeadersInit): Headers => {
   return new Headers(headers);
 };
 
+// Shared refresh lock — prevents multiple concurrent refresh calls
+let refreshPromise: Promise<boolean> | null = null;
+
+const attemptRefresh = async (): Promise<boolean> => {
+  try {
+    const res = await fetch(buildApiUrl('/auth/refresh'), {
+      method: 'POST',
+      credentials: 'include',
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+};
+
 export const apiRequest = async <T>(
   path: string,
   options: ApiRequestOptions = {}
@@ -74,8 +89,21 @@ export const apiRequest = async <T>(
     headers,
   });
 
-  // Handle 401/403 - notify app to navigate to sign-in (session expired or access denied)
-  if ((response.status === 401 || response.status === 403) && !skipRefresh) {
+  // On 401: try to refresh the access token, then retry the original request
+  if (response.status === 401 && !skipRefresh) {
+    if (!refreshPromise) {
+      refreshPromise = attemptRefresh().finally(() => { refreshPromise = null; });
+    }
+    const refreshed = await refreshPromise;
+    if (refreshed) {
+      return apiRequest<T>(path, { ...options, skipRefresh: true });
+    }
+    window.dispatchEvent(new CustomEvent('esydocs:unauthorized'));
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  // 403 = forbidden (not an expired token issue)
+  if (response.status === 403 && !skipRefresh) {
     window.dispatchEvent(new CustomEvent('esydocs:unauthorized'));
     throw new Error(await parseErrorMessage(response));
   }
