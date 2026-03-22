@@ -28,7 +28,7 @@ import {
 
 function QuickStats() {
   const { data, isLoading } = useOverview();
-  const d = data?.data;
+  const d = data;
 
   const items = [
     { label: 'Signups Today', value: d?.signups, color: 'text-green-600' },
@@ -74,7 +74,7 @@ function Sparkline({ data, dataKey, color }: { data: { [k: string]: unknown }[];
 
 function BusinessCard() {
   const { data, isLoading } = useBusiness(30);
-  const d = data?.data;
+  const d = data;
   return (
     <SummaryCard
       title="Business"
@@ -93,7 +93,7 @@ function BusinessCard() {
 
 function GrowthCard() {
   const { data, isLoading } = useGrowth(30);
-  const d = data?.data;
+  const d = data;
   return (
     <SummaryCard
       title="Growth"
@@ -112,7 +112,7 @@ function GrowthCard() {
 
 function EngagementCard() {
   const { data, isLoading } = useEngagement(30);
-  const d = data?.data;
+  const d = data;
   return (
     <SummaryCard
       title="Engagement"
@@ -130,7 +130,7 @@ function EngagementCard() {
 
 function ReliabilityCard() {
   const { data, isLoading } = useReliability(30);
-  const d = data?.data;
+  const d = data;
   const rate = (d?.jobRate?.successRate ?? 0) * 100;
   return (
     <SummaryCard
@@ -150,7 +150,7 @@ function ReliabilityCard() {
 
 function SystemCard() {
   const { data, isLoading } = useSystem();
-  const d = data?.data;
+  const d = data;
   return (
     <SummaryCard
       title="System Health"
@@ -169,7 +169,7 @@ function SystemCard() {
 
 function ServerPerfCard() {
   const { data, isLoading } = useServerPerformance();
-  const d = data?.data;
+  const d = data;
   const cpu = d?.system?.cpu?.usagePercent ?? 0;
   const mem = d?.system?.memory?.usagePercent ?? 0;
   const disk = d?.system?.storage?.usagePercent ?? 0;
@@ -198,7 +198,7 @@ function ServerPerfCard() {
 
 function ApiPerfCard() {
   const { data, isLoading } = useApiPerformance();
-  const d = data?.data;
+  const d = data;
   return (
     <SummaryCard
       title="API"

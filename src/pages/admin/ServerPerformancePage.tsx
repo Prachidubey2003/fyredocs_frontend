@@ -11,7 +11,7 @@ import { useServerPerformance } from '@/hooks/useAdminMetrics';
 
 const ServerPerformancePage = () => {
   const { data, isLoading, dataUpdatedAt } = useServerPerformance();
-  const d = data?.data;
+  const d = data;
   const sys = d?.system;
   const avail = d?.availability;
 

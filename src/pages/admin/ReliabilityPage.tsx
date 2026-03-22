@@ -21,7 +21,7 @@ const toolErrorConfig = {
 
 const ReliabilityPage = () => {
   const { data, isLoading } = useReliability(30);
-  const d = data?.data;
+  const d = data;
   const rate = (d?.jobRate?.successRate ?? 0) * 100;
 
   return (

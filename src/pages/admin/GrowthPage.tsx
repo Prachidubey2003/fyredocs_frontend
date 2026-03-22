@@ -44,7 +44,7 @@ function retentionBadgeVariant(value: number): 'default' | 'secondary' | 'destru
 
 const GrowthPage = () => {
   const { data, isLoading } = useGrowth(30);
-  const d = data?.data;
+  const d = data;
 
   return (
     <Layout>

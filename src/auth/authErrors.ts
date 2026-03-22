@@ -90,10 +90,12 @@ const parseResponseBody = async (response: Response) => {
 export const parseAuthError = async (response: Response) => {
   const details = await parseResponseBody(response);
 
-  // Handle new API error format: { error: { code, message } }
-  if (details?.error?.message && details?.error?.code) {
-    const code = details.error.code as AuthErrorCode;
-    const message = userSafeMessage(code, details.error.message);
+  // Handle new API error format: { error: { code, message | details } }
+  const errorPayload = details?.error;
+  if (errorPayload?.code && (errorPayload?.message || errorPayload?.details)) {
+    const code = errorPayload.code as AuthErrorCode;
+    const fallback = errorPayload.message ?? errorPayload.details;
+    const message = userSafeMessage(code, fallback);
     return new AuthError(code, message, response.status, details);
   }
 
