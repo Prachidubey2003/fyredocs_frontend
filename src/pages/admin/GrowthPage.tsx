@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
@@ -43,6 +45,8 @@ function retentionBadgeVariant(value: number): 'default' | 'secondary' | 'destru
 }
 
 const GrowthPage = () => {
+  const queryClient = useQueryClient();
+  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'growth'] }), [queryClient]);
   const { data, isLoading } = useGrowth(30);
   const d = data;
 
@@ -52,6 +56,7 @@ const GrowthPage = () => {
         <AdminPageHeader
           title="Growth Metrics"
           description="DAU/WAU/MAU, activation, retention, and conversion funnel"
+          onRefresh={handleRefresh}
         />
 
         {/* Stat Cards */}

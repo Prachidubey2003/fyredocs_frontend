@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
@@ -54,6 +56,8 @@ const pieChartConfig: ChartConfig = {
 };
 
 const EngagementPage = () => {
+  const queryClient = useQueryClient();
+  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'engagement'] }), [queryClient]);
   const { data, isLoading } = useEngagement(30);
   const d = data;
 
@@ -77,6 +81,7 @@ const EngagementPage = () => {
         <AdminPageHeader
           title="Engagement Metrics"
           description="Tool adoption, usage patterns, and power users"
+          onRefresh={handleRefresh}
         />
 
         {/* Stat Cards */}

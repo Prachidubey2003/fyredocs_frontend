@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
@@ -20,6 +22,8 @@ const toolErrorConfig = {
 } satisfies ChartConfig;
 
 const ReliabilityPage = () => {
+  const queryClient = useQueryClient();
+  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'reliability'] }), [queryClient]);
   const { data, isLoading } = useReliability(30);
   const d = data;
   const rate = (d?.jobRate?.successRate ?? 0) * 100;
@@ -27,7 +31,7 @@ const ReliabilityPage = () => {
   return (
     <Layout>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
-        <AdminPageHeader title="Reliability Metrics" description="Job success rates, processing time, and error analysis" />
+        <AdminPageHeader title="Reliability Metrics" description="Job success rates, processing time, and error analysis" onRefresh={handleRefresh} />
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
           <Card className="flex items-center justify-center p-6">

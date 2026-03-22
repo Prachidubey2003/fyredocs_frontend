@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
@@ -18,6 +20,8 @@ const COLORS = [
 ];
 
 const SystemPage = () => {
+  const queryClient = useQueryClient();
+  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'system'] }), [queryClient]);
   const { data, isLoading } = useSystem();
   const d = data;
 
@@ -27,7 +31,7 @@ const SystemPage = () => {
   return (
     <Layout>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
-        <AdminPageHeader title="System Health" description="Event ingestion, processing lag, and live activity" />
+        <AdminPageHeader title="System Health" description="Event ingestion, processing lag, and live activity" onRefresh={handleRefresh} />
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
           <StatCard label="Active Users Now" value={d?.activeUsersNow} color="text-green-600" isLoading={isLoading} />

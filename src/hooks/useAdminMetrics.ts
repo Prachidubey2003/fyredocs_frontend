@@ -12,6 +12,7 @@ import {
   fetchSystem,
   fetchServerPerformance,
   fetchApiPerformance,
+  type EndpointQueryParams,
 } from '@/lib/adminApi';
 
 export const useOverview = () =>
@@ -91,9 +92,9 @@ export const useServerPerformance = () =>
     refetchInterval: 10_000,
   });
 
-export const useApiPerformance = () =>
+export const useApiPerformance = (params?: EndpointQueryParams) =>
   useQuery({
-    queryKey: ['admin', 'apiPerformance'],
-    queryFn: fetchApiPerformance,
+    queryKey: ['admin', 'apiPerformance', params],
+    queryFn: () => fetchApiPerformance(params),
     staleTime: 60_000,
   });

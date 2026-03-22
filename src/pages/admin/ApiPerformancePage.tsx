@@ -1,3 +1,5 @@
+import { useCallback, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
@@ -5,8 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useApiPerformance } from '@/hooks/useAdminMetrics';
+import { DataTable, type Column } from '@/components/admin/DataTable';
+import { useServerDataTable } from '@/hooks/useDataTable';
+import type { ApiPerformanceEndpoint } from '@/lib/adminApi';
 
 const latencyConfig = {
   p95LatencyMs: { label: 'P95 Latency (ms)', color: 'hsl(24, 95%, 53%)' },
@@ -16,14 +20,52 @@ const errorConfig = {
   errorRate: { label: 'Error Rate', color: 'hsl(0, 84%, 60%)' },
 } satisfies ChartConfig;
 
+const PAGE_SIZE = 10;
+
+const endpointColumns: Column<ApiPerformanceEndpoint>[] = [
+  { key: 'method', label: 'Method', sortable: true, className: 'font-mono text-xs' },
+  { key: 'path', label: 'Path', sortable: true, truncate: 30, className: 'font-mono text-xs' },
+  { key: 'requests', label: 'Requests', sortable: true, align: 'right', render: (v) => (v as number).toLocaleString() },
+  { key: 'avgLatencyMs', label: 'Avg (ms)', sortable: true, align: 'right', render: (v) => (v as number).toFixed(0) },
+  { key: 'p50LatencyMs', label: 'P50 (ms)', sortable: true, align: 'right', render: (v) => (v as number).toFixed(0) },
+  { key: 'p95LatencyMs', label: 'P95 (ms)', sortable: true, align: 'right', render: (v) => (v as number).toFixed(0) },
+  { key: 'p99LatencyMs', label: 'P99 (ms)', sortable: true, align: 'right', render: (v) => (v as number).toFixed(0) },
+  {
+    key: 'errorRate', label: 'Error %', sortable: true, align: 'right',
+    render: (_v, row) => (
+      <span className={row.errorRate > 0.05 ? 'text-red-600' : row.errorRate > 0.01 ? 'text-yellow-600' : 'text-green-600'}>
+        {(row.errorRate * 100).toFixed(1)}%
+      </span>
+    ),
+  },
+];
+
 const ApiPerformancePage = () => {
-  const { data, isLoading } = useApiPerformance();
-  const d = data;
+  const queryClient = useQueryClient();
+  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'apiPerformance'] }), [queryClient]);
+  const table = useServerDataTable<ApiPerformanceEndpoint>({
+    pageSize: PAGE_SIZE,
+    defaultSort: { key: 'requests', desc: true },
+  });
+
+  const queryParams = useMemo(() => ({
+    page: table.page,
+    limit: PAGE_SIZE,
+    search: table.search || undefined,
+    sortBy: table.sortKey ? String(table.sortKey) : undefined,
+    sortDir: (table.sortKey ? (table.sortDesc ? 'desc' : 'asc') : undefined) as 'asc' | 'desc' | undefined,
+  }), [table.page, table.search, table.sortKey, table.sortDesc]);
+
+  const { data: resp, isLoading } = useApiPerformance(queryParams);
+  const d = resp?.data;
+  const meta = resp?.meta;
+  const totalRows = Number(meta?.total ?? 0);
+  const pageCount = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
 
   return (
     <Layout>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
-        <AdminPageHeader title="API Performance" description="Request latency, throughput, and error rates per endpoint" />
+        <AdminPageHeader title="API Performance" description="Request latency, throughput, and error rates per endpoint" onRefresh={handleRefresh} />
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
           <StatCard label="Total Requests" value={d?.summary?.totalRequests?.toLocaleString()} isLoading={isLoading} />
@@ -87,44 +129,22 @@ const ApiPerformancePage = () => {
             <CardDescription>Sorted by request count</CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? <Skeleton className="h-[300px] w-full" /> : (d?.endpoints?.length ?? 0) === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">No endpoint data available</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Method</TableHead>
-                      <TableHead>Path</TableHead>
-                      <TableHead className="text-right">Requests</TableHead>
-                      <TableHead className="text-right">Avg (ms)</TableHead>
-                      <TableHead className="text-right">P50 (ms)</TableHead>
-                      <TableHead className="text-right">P95 (ms)</TableHead>
-                      <TableHead className="text-right">P99 (ms)</TableHead>
-                      <TableHead className="text-right">Error %</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {d?.endpoints?.map((ep, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="font-mono text-xs">{ep.method}</TableCell>
-                        <TableCell className="font-mono text-xs">{ep.path}</TableCell>
-                        <TableCell className="text-right">{ep.requests.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">{ep.avgLatencyMs.toFixed(0)}</TableCell>
-                        <TableCell className="text-right">{ep.p50LatencyMs.toFixed(0)}</TableCell>
-                        <TableCell className="text-right">{ep.p95LatencyMs.toFixed(0)}</TableCell>
-                        <TableCell className="text-right">{ep.p99LatencyMs.toFixed(0)}</TableCell>
-                        <TableCell className="text-right">
-                          <span className={ep.errorRate > 0.05 ? 'text-red-600' : ep.errorRate > 0.01 ? 'text-yellow-600' : 'text-green-600'}>
-                            {(ep.errorRate * 100).toFixed(1)}%
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
+            <DataTable<ApiPerformanceEndpoint>
+              serverSide
+              data={d?.endpoints ?? []}
+              columns={endpointColumns}
+              isLoading={isLoading}
+              emptyMessage="No endpoint data available"
+              search={table.search}
+              onSearchChange={table.setSearch}
+              sortKey={table.sortKey}
+              sortDesc={table.sortDesc}
+              onSortChange={table.toggleSort}
+              page={table.page}
+              onPageChange={table.setPage}
+              pageCount={pageCount}
+              totalRows={totalRows}
+            />
           </CardContent>
         </Card>
       </div>

@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
@@ -10,6 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useServerPerformance } from '@/hooks/useAdminMetrics';
 
 const ServerPerformancePage = () => {
+  const queryClient = useQueryClient();
+  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'serverPerformance'] }), [queryClient]);
   const { data, isLoading, dataUpdatedAt } = useServerPerformance();
   const d = data;
   const sys = d?.system;
@@ -21,7 +25,7 @@ const ServerPerformancePage = () => {
     <Layout>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
         <div className="flex items-start justify-between gap-4">
-          <AdminPageHeader title="Server Performance" description="CPU, memory, storage, and service availability" />
+          <AdminPageHeader title="Server Performance" description="CPU, memory, storage, and service availability" onRefresh={handleRefresh} />
           <div className="flex items-center gap-2 shrink-0 mt-2">
             <span className="relative flex h-2.5 w-2.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />

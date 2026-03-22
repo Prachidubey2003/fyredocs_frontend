@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
@@ -34,6 +36,8 @@ const planChangesChartConfig = {
 } satisfies ChartConfig;
 
 const BusinessPage = () => {
+  const queryClient = useQueryClient();
+  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'business'] }), [queryClient]);
   const { data, isLoading } = useBusiness(30);
   const d = data;
 
@@ -46,6 +50,7 @@ const BusinessPage = () => {
         <AdminPageHeader
           title="Business Metrics"
           description="Signups, plan changes, churn, and conversion"
+          onRefresh={handleRefresh}
         />
 
         {/* Stat Cards */}
