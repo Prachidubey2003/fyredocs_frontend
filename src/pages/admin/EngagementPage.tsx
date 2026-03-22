@@ -55,7 +55,7 @@ const pieChartConfig: ChartConfig = {
 
 const EngagementPage = () => {
   const { data, isLoading } = useEngagement(30);
-  const d = data?.data;
+  const d = data;
 
   const fileSizeData = (d?.fileSizeDistribution ?? []).map(
     (item: { bucket: string; count: number }) => ({

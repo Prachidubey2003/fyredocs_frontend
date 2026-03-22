@@ -18,7 +18,7 @@ const errorConfig = {
 
 const ApiPerformancePage = () => {
   const { data, isLoading } = useApiPerformance();
-  const d = data?.data;
+  const d = data;
 
   return (
     <Layout>

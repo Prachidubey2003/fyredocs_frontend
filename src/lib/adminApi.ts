@@ -20,33 +20,38 @@ export type RealtimeRow = { eventType: string; count: number };
 
 type ApiResponse<T> = { success: boolean; message: string; data: T };
 
+const unwrap = async <T>(promise: Promise<ApiResponse<T>>): Promise<T> => {
+  const res = await promise;
+  return res.data;
+};
+
 export const fetchOverview = () =>
-  apiRequest<ApiResponse<OverviewData>>('/admin/metrics/overview');
+  unwrap(apiRequest<ApiResponse<OverviewData>>('/admin/metrics/overview'));
 
 export const fetchDaily = (from: string, to: string) =>
-  apiRequest<ApiResponse<{ from: string; to: string; rows: DailyRow[] }>>(
+  unwrap(apiRequest<ApiResponse<{ from: string; to: string; rows: DailyRow[] }>>(
     `/admin/metrics/daily?from=${from}&to=${to}`
-  );
+  ));
 
 export const fetchUserGrowth = (days = 90) =>
-  apiRequest<ApiResponse<{ days: number; rows: UserGrowthRow[] }>>(
+  unwrap(apiRequest<ApiResponse<{ days: number; rows: UserGrowthRow[] }>>(
     `/admin/metrics/users?days=${days}`
-  );
+  ));
 
 export const fetchToolUsage = (days = 30) =>
-  apiRequest<ApiResponse<{ days: number; rows: ToolUsageRow[] }>>(
+  unwrap(apiRequest<ApiResponse<{ days: number; rows: ToolUsageRow[] }>>(
     `/admin/metrics/tools?days=${days}`
-  );
+  ));
 
 export const fetchPlanDistribution = (days = 30) =>
-  apiRequest<ApiResponse<{ days: number; rows: PlanRow[] }>>(
+  unwrap(apiRequest<ApiResponse<{ days: number; rows: PlanRow[] }>>(
     `/admin/metrics/plans?days=${days}`
-  );
+  ));
 
 export const fetchRealtime = () =>
-  apiRequest<ApiResponse<{ since: string; rows: RealtimeRow[] }>>(
+  unwrap(apiRequest<ApiResponse<{ since: string; rows: RealtimeRow[] }>>(
     '/admin/metrics/realtime'
-  );
+  ));
 
 // --- Business Metrics ---
 export type BusinessData = {
@@ -60,7 +65,7 @@ export type BusinessData = {
 };
 
 export const fetchBusiness = (days = 30) =>
-  apiRequest<ApiResponse<BusinessData>>(`/admin/metrics/business?days=${days}`);
+  unwrap(apiRequest<ApiResponse<BusinessData>>(`/admin/metrics/business?days=${days}`));
 
 // --- Growth Metrics ---
 export type GrowthData = {
@@ -76,7 +81,7 @@ export type GrowthData = {
 };
 
 export const fetchGrowth = (days = 30) =>
-  apiRequest<ApiResponse<GrowthData>>(`/admin/metrics/growth?days=${days}`);
+  unwrap(apiRequest<ApiResponse<GrowthData>>(`/admin/metrics/growth?days=${days}`));
 
 // --- Engagement Metrics ---
 export type EngagementData = {
@@ -89,7 +94,7 @@ export type EngagementData = {
 };
 
 export const fetchEngagement = (days = 30) =>
-  apiRequest<ApiResponse<EngagementData>>(`/admin/metrics/engagement?days=${days}`);
+  unwrap(apiRequest<ApiResponse<EngagementData>>(`/admin/metrics/engagement?days=${days}`));
 
 // --- Reliability Metrics ---
 export type ReliabilityData = {
@@ -102,7 +107,7 @@ export type ReliabilityData = {
 };
 
 export const fetchReliability = (days = 30) =>
-  apiRequest<ApiResponse<ReliabilityData>>(`/admin/metrics/reliability?days=${days}`);
+  unwrap(apiRequest<ApiResponse<ReliabilityData>>(`/admin/metrics/reliability?days=${days}`));
 
 // --- System Health ---
 export type SystemData = {
@@ -117,7 +122,7 @@ export type SystemData = {
 };
 
 export const fetchSystem = () =>
-  apiRequest<ApiResponse<SystemData>>('/admin/metrics/system');
+  unwrap(apiRequest<ApiResponse<SystemData>>('/admin/metrics/system'));
 
 // --- Server Performance ---
 export type ServerPerformanceData = {
@@ -139,7 +144,7 @@ export type ServerPerformanceData = {
 };
 
 export const fetchServerPerformance = () =>
-  apiRequest<ApiResponse<ServerPerformanceData>>('/admin/metrics/server-performance');
+  unwrap(apiRequest<ApiResponse<ServerPerformanceData>>('/admin/metrics/server-performance'));
 
 // --- API Performance ---
 export type ApiPerformanceEndpoint = {
@@ -161,4 +166,4 @@ export type ApiPerformanceData = {
 };
 
 export const fetchApiPerformance = () =>
-  apiRequest<ApiResponse<ApiPerformanceData>>('/admin/metrics/api-performance');
+  unwrap(apiRequest<ApiResponse<ApiPerformanceData>>('/admin/metrics/api-performance'));

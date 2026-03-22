@@ -19,7 +19,7 @@ const COLORS = [
 
 const SystemPage = () => {
   const { data, isLoading } = useSystem();
-  const d = data?.data;
+  const d = data;
 
   const lagColor = (d?.processingLag?.avgSeconds ?? 0) > 5 ? 'text-red-600' :
     (d?.processingLag?.avgSeconds ?? 0) > 1 ? 'text-yellow-600' : 'text-green-600';

@@ -35,7 +35,7 @@ const planChangesChartConfig = {
 
 const BusinessPage = () => {
   const { data, isLoading } = useBusiness(30);
-  const d = data?.data;
+  const d = data;
 
   const churnRate = d?.churn?.churnRate ?? 0;
   const conversionRate = d?.conversionRate?.rate ?? 0;
