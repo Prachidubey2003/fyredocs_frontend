@@ -17,7 +17,7 @@ export const Layout = ({ children, showFooter = true }: LayoutProps) => {
         Skip to content
       </a>
       <Header />
-      <main id="main-content" className="flex-1">
+      <main id="main-content" className="flex-1 bg-gradient-hero">
         <div className="grid min-h-full grid-cols-1 lg:grid-cols-[1fr_2fr_1fr]">
           <div />
           <div>{children}</div>
