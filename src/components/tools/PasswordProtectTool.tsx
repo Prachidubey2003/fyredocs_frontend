@@ -36,7 +36,12 @@ export const PasswordProtectTool = ({ tool }: PasswordProtectToolProps) => {
     retryUpload: retryFileUpload,
   } = useFileUpload({ tool });
 
-  const { job, createJob, cancelJob, retryJob } = useJob();
+  const { job, createJob, cancelJob, retryJob, resetJob } = useJob();
+
+  const handleStartOver = () => {
+    resetJob();
+    clearFiles();
+  };
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     addFiles(selectedFiles);
@@ -80,6 +85,7 @@ export const PasswordProtectTool = ({ tool }: PasswordProtectToolProps) => {
             onCancel={cancelJob}
             onRetry={retryJob}
             onDownload={handleDownload}
+            onReset={handleStartOver}
           />
         ) : (
           <>
