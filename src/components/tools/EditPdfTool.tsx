@@ -40,7 +40,12 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
     retryUpload: retryFileUpload,
   } = useFileUpload({ tool });
 
-  const { job, createJob, cancelJob, retryJob } = useJob();
+  const { job, createJob, cancelJob, retryJob, resetJob } = useJob();
+
+  const handleStartOver = () => {
+    resetJob();
+    clearFiles();
+  };
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     addFiles(selectedFiles);
@@ -108,6 +113,7 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
             onCancel={cancelJob}
             onRetry={retryJob}
             onDownload={handleDownload}
+            onReset={handleStartOver}
           />
         ) : (
           <>

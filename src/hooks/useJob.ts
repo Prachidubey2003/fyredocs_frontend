@@ -387,7 +387,7 @@ export const useJob = ({
       const es = new EventSource(url, { withCredentials: true });
       sseRef.current = es;
 
-      es.addEventListener('job-update', (e: MessageEvent) => {
+      es.addEventListener('job-update', async (e: MessageEvent) => {
         try {
           const data = JSON.parse(e.data) as {
             jobId: string;
@@ -481,12 +481,19 @@ export const useJob = ({
             sseTerminalRef.current = true;
             maxProgressRef.current = 0;
             stopPolling();
-            // Notify completion with the current job state — the download URL
-            // is already set from the SSE event data above.
-            setJob((prev) => {
-              if (prev) onComplete?.(prev);
-              return prev;
-            });
+            // Fetch full job data to get file metadata (size, name)
+            try {
+              const apiResponse = await apiRequest<{ data: ApiJob }>(buildJobPath(toolId, jobId));
+              const finalJob = mapApiJob(apiResponse.data, toolId, fileIds, options);
+              setJob(finalJob);
+              onComplete?.(finalJob);
+            } catch {
+              // Fallback: use the SSE-derived state
+              setJob((prev) => {
+                if (prev) onComplete?.(prev);
+                return prev;
+              });
+            }
             return;
           }
 

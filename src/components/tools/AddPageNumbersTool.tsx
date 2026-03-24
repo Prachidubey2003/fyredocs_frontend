@@ -34,7 +34,12 @@ export const AddPageNumbersTool = ({ tool }: AddPageNumbersToolProps) => {
     retryUpload: retryFileUpload,
   } = useFileUpload({ tool });
 
-  const { job, createJob, cancelJob, retryJob } = useJob();
+  const { job, createJob, cancelJob, retryJob, resetJob } = useJob();
+
+  const handleStartOver = () => {
+    resetJob();
+    clearFiles();
+  };
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     addFiles(selectedFiles);
@@ -76,6 +81,7 @@ export const AddPageNumbersTool = ({ tool }: AddPageNumbersToolProps) => {
             onCancel={cancelJob}
             onRetry={retryJob}
             onDownload={handleDownload}
+            onReset={handleStartOver}
           />
         ) : (
           <>
