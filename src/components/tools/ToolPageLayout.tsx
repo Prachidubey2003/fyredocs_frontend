@@ -31,7 +31,7 @@ export const ToolPageLayout = ({
   className,
 }: ToolPageLayoutProps) => {
   return (
-    <Layout showFooter={false}>
+    <Layout>
       <Helmet>
         <title>{tool.name} — Esydocs</title>
         <meta name="description" content={tool.description} />

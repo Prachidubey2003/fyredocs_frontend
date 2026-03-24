@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Job, JobState, SplitOptions, ToolId, ToolOptions } from '@/types';
+import { Job, JobState, SplitOptions, WatermarkOptions, ToolId, ToolOptions } from '@/types';
 import { apiJson, apiRequest, buildApiUrl } from '@/lib/apiClient';
 import { buildDownloadPath, buildJobPath } from '@/lib/toolApi';
 
@@ -178,6 +178,22 @@ export const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
         throw new Error('Rotation angle is required.');
       }
       return { rotation: opts.rotation, applyToPages: opts.applyToPages || 'all' };
+    }
+    case 'watermark': {
+      const opts = options as WatermarkOptions;
+      if (opts.type === 'text' && !opts.text?.trim()) {
+        throw new Error('Watermark text is required.');
+      }
+      if (opts.type === 'image' && !opts.imageData) {
+        throw new Error('Watermark image is required.');
+      }
+      return {
+        type: opts.type,
+        ...(opts.type === 'text' ? { text: opts.text, fontSize: opts.fontSize, color: opts.color } : {}),
+        ...(opts.type === 'image' ? { imageData: opts.imageData, scale: opts.scale } : {}),
+        position: opts.position,
+        opacity: opts.opacity,
+      };
     }
     // Tools with no options
     case 'merge':
