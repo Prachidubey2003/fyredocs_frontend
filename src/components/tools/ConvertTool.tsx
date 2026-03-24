@@ -86,28 +86,17 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
       <div className="max-w-3xl mx-auto">
         <AnimatedSwitch switchKey={viewKey}>
           {job ? (
-            <div className="space-y-6">
-              <JobProgress
-                job={job}
-                onCancel={cancelJob}
-                onRetry={retryJob}
-                onDownload={() => {
-                  if (job.result?.downloadUrl) {
-                    window.open(job.result.downloadUrl, '_blank');
-                  }
-                }}
-              />
-
-              {(isComplete || job.state === 'failed') && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleStartOver}
-                >
-                  Start over with new files
-                </Button>
-              )}
-            </div>
+            <JobProgress
+              job={job}
+              onCancel={cancelJob}
+              onRetry={retryJob}
+              onDownload={() => {
+                if (job.result?.downloadUrl) {
+                  window.open(job.result.downloadUrl, '_blank');
+                }
+              }}
+              onReset={handleStartOver}
+            />
           ) : (
             <>
               <FileDropzone

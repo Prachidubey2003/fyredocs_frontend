@@ -157,7 +157,7 @@ export const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
       const opts = options as { language?: string; dpi?: string };
       return {
         language: opts.language || 'eng',
-        dpi: opts.dpi || '300',
+        ...(opts.dpi ? { dpi: opts.dpi } : {}),
       };
     }
     case 'scan-to-pdf': {

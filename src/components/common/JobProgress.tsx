@@ -10,6 +10,7 @@ interface JobProgressProps {
   onCancel?: () => void;
   onRetry?: () => void;
   onDownload?: () => void;
+  onReset?: () => void;
   className?: string;
 }
 
@@ -51,6 +52,7 @@ export const JobProgress = ({
   onCancel,
   onRetry,
   onDownload,
+  onReset,
   className,
 }: JobProgressProps) => {
   const config = stateConfig[job.state];
@@ -177,6 +179,14 @@ export const JobProgress = ({
                 Retry
               </Button>
             </div>
+          </FadeIn>
+        )}
+
+        {(job.state === 'completed' || job.state === 'failed') && onReset && (
+          <FadeIn motionKey="reset-action">
+            <Button variant="outline" className="w-full" onClick={onReset}>
+              Start over with new file
+            </Button>
           </FadeIn>
         )}
       </AnimatePresence>
