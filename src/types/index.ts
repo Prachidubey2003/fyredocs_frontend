@@ -169,10 +169,11 @@ export interface CompressOptions {
 export interface WatermarkOptions {
   type: 'text' | 'image';
   text?: string;
-  imageFileId?: string;
+  imageData?: string;
   position: 'center' | 'diagonal' | 'tiled';
   opacity: number;
   fontSize?: number;
+  scale?: number;
   color?: string;
 }
 

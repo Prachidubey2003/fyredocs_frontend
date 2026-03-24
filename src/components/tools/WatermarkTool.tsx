@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { FileDropzone } from '@/components/common/FileDropzone';
 import { FileList } from '@/components/common/FileList';
 import { JobProgress } from '@/components/common/JobProgress';
@@ -14,7 +14,7 @@ import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
 import { useBatchJob } from '@/hooks/useBatchJob';
 import { ToolDefinition, ToolOptions } from '@/types';
-import { Stamp, Type, Image } from 'lucide-react';
+import { Stamp, Type, Image, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { AnimatedSwitch } from '@/components/ui/animated';
 
@@ -32,6 +32,9 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
   const [fontSize, setFontSize] = useState([48]);
   const [color, setColor] = useState('#6366f1');
   const [batchMode, setBatchMode] = useState(false);
+  const [scale, setScale] = useState([30]);
+  const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const {
     files,
@@ -76,6 +79,23 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
     addFiles(selectedFiles);
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageDataUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearWatermarkImage = () => {
+    setImageDataUrl(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
+    }
+  };
+
   const handleProcess = () => {
     if (files.length === 0) return;
 
@@ -95,10 +115,12 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
     const options = {
       type: watermarkType,
       text: watermarkType === 'text' ? text : undefined,
+      imageData: watermarkType === 'image' ? imageDataUrl : undefined,
       position,
       opacity: opacity[0],
-      fontSize: fontSize[0],
-      color,
+      fontSize: watermarkType === 'text' ? fontSize[0] : undefined,
+      scale: watermarkType === 'image' ? scale[0] : undefined,
+      color: watermarkType === 'text' ? color : undefined,
     };
 
     if (batchMode && files.length > 1) {
@@ -128,6 +150,7 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
     resetBatch();
     clearFiles();
     setBatchMode(false);
+    clearWatermarkImage();
   };
 
   const hasFiles = files.length > 0;
@@ -219,16 +242,18 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
                         />
                       </div>
 
-                      <div className="grid sm:grid-cols-2 gap-6">
+                      <div className="grid sm:grid-cols-2 gap-6 items-end">
                         <div className="space-y-2">
                           <Label>Font Size: {fontSize[0]}px</Label>
-                          <Slider
-                            value={fontSize}
-                            onValueChange={setFontSize}
-                            min={12}
-                            max={120}
-                            step={4}
-                          />
+                          <div className="flex items-center h-10">
+                            <Slider
+                              value={fontSize}
+                              onValueChange={setFontSize}
+                              min={12}
+                              max={120}
+                              step={4}
+                            />
+                          </div>
                         </div>
 
                         <div className="space-y-2">
@@ -252,13 +277,60 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
                     </TabsContent>
 
                     <TabsContent value="image" className="mt-6">
-                      <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                        <Image className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground mb-2">
-                          Upload an image to use as watermark
-                        </p>
-                        <Button variant="outline">Choose Image</Button>
-                      </div>
+                      <input
+                        ref={imageInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={handleImageSelect}
+                      />
+                      {imageDataUrl ? (
+                        <div className="space-y-6">
+                          <div className="border-2 border-dashed rounded-lg p-6">
+                            <div className="flex items-center justify-between mb-4">
+                              <p className="text-sm font-medium">Watermark Image</p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={clearWatermarkImage}
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                Remove
+                              </Button>
+                            </div>
+                            <div className="flex justify-center">
+                              <img
+                                src={imageDataUrl}
+                                alt="Watermark preview"
+                                className="max-h-40 max-w-full object-contain rounded border bg-muted/30 p-2"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Image Size: {scale[0]}%</Label>
+                            <Slider
+                              value={scale}
+                              onValueChange={setScale}
+                              min={10}
+                              max={100}
+                              step={5}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="border-2 border-dashed rounded-lg p-8 text-center">
+                          <Image className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground mb-2">
+                            Upload an image to use as watermark
+                          </p>
+                          <Button
+                            variant="outline"
+                            onClick={() => imageInputRef.current?.click()}
+                          >
+                            Choose Image
+                          </Button>
+                        </div>
+                      )}
                     </TabsContent>
                   </Tabs>
 
@@ -318,7 +390,7 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
 
                   <Button
                     onClick={handleProcess}
-                    disabled={!hasFiles || isProcessing || !canProceed || (watermarkType === 'text' && !text.trim())}
+                    disabled={!hasFiles || isProcessing || !canProceed || (watermarkType === 'text' && !text.trim()) || (watermarkType === 'image' && !imageDataUrl)}
                     className="w-full bg-gradient-primary"
                     size="lg"
                   >
