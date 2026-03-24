@@ -105,6 +105,7 @@ const authRequest = async (
     credentials: 'include', // Always include cookies for authentication
     ...options,
     headers,
+    signal: options.signal ?? AbortSignal.timeout(5000),
   });
 
   if (!response.ok) {

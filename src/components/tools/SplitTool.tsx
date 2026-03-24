@@ -114,28 +114,17 @@ export const SplitTool = () => {
         <AnimatedSwitch switchKey={viewKey}>
           {job ? (
             /* Job progress */
-            <div className="space-y-6">
-              <JobProgress
-                job={job}
-                onCancel={cancelJob}
-                onRetry={retryJob}
-                onDownload={() => {
-                  if (job.result?.downloadUrl) {
-                    window.open(job.result.downloadUrl, '_blank');
-                  }
-                }}
-              />
-
-              {(isComplete || job.state === 'failed') && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleStartOver}
-                >
-                  Start over with new file
-                </Button>
-              )}
-            </div>
+            <JobProgress
+              job={job}
+              onCancel={cancelJob}
+              onRetry={retryJob}
+              onDownload={() => {
+                if (job.result?.downloadUrl) {
+                  window.open(job.result.downloadUrl, '_blank');
+                }
+              }}
+              onReset={handleStartOver}
+            />
           ) : (
             /* Upload section */
             <>

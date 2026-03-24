@@ -151,25 +151,20 @@ export const OcrTool = ({ tool }: OcrToolProps) => {
             onReset={handleStartOver}
           />
         ) : job ? (
-          <div className="space-y-6">
-            <JobProgress
-              job={job}
-              onCancel={cancelJob}
-              onRetry={retryJob}
-              onDownload={handleDownload}
-            />
-            {(job.state === 'completed' || job.state === 'failed') && (
-              <Button variant="outline" className="w-full" onClick={handleStartOver}>
-                Start over with new files
-              </Button>
-            )}
-          </div>
+          <JobProgress
+            job={job}
+            onCancel={cancelJob}
+            onRetry={retryJob}
+            onDownload={handleDownload}
+            onReset={handleStartOver}
+          />
         ) : (
           <>
             <FileDropzone
               tool={tool}
               onFilesSelected={handleFilesSelected}
               disabled={isUploading}
+              compact={hasFiles}
             />
 
             {hasFiles && (

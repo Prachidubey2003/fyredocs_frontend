@@ -31,7 +31,7 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
     canProceed,
   } = useFileUpload({ tool });
 
-  const { job, createJob, cancelJob, retryJob } = useJob();
+  const { job, createJob, cancelJob, retryJob, resetJob } = useJob();
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     addFiles(selectedFiles);
@@ -92,8 +92,14 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
     if (uploadIds.length !== files.length) return;
 
     createJob(tool.id, uploadIds, {
-      pageOrder: pages.map((p) => p.id),
+      order: pages.map((p) => p.id).join(','),
     } as ToolOptions);
+  };
+
+  const handleStartOver = () => {
+    resetJob();
+    clearFiles();
+    setPages([]);
   };
 
   const handleDownload = () => {
@@ -115,6 +121,7 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
             onCancel={cancelJob}
             onRetry={retryJob}
             onDownload={handleDownload}
+            onReset={handleStartOver}
           />
         ) : (
           <>

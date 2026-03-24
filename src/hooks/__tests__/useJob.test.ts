@@ -86,9 +86,9 @@ describe('normalizeOptions', () => {
       expect(result).toEqual({ language: 'fr', dpi: '600' });
     });
 
-    it('defaults to eng and 300 dpi', () => {
+    it('defaults to eng with no dpi when not specified', () => {
       const result = normalizeOptions('ocr', {});
-      expect(result).toEqual({ language: 'eng', dpi: '300' });
+      expect(result).toEqual({ language: 'eng' });
     });
   });
 
