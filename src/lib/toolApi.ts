@@ -45,8 +45,8 @@ const TOOL_API_CONFIG: Record<ToolId, ToolApiConfig> = {
 
   // Legacy tools (keeping for backward compatibility)
   rotate: { basePath: '/api/organize-pdf', tool: 'rotate-pdf' },
-  watermark: { basePath: '/api/optimize-pdf', tool: 'watermark-pdf' },
-  'password-protect': { basePath: '/api/optimize-pdf', tool: 'protect-pdf' },
+  watermark: { basePath: '/api/convert-to-pdf', tool: 'watermark-pdf' },
+  'password-protect': { basePath: '/api/convert-to-pdf', tool: 'protect-pdf' },
 };
 
 export const getToolApiConfig = (toolId: ToolId) => TOOL_API_CONFIG[toolId];

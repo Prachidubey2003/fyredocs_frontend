@@ -194,7 +194,7 @@ export interface OcrOptions {
 
 export interface RotateOptions {
   rotation: 90 | 180 | 270;
-  applyToPages: 'all' | number[];
+  applyToPages: 'all' | 'odd' | 'even' | number[];
 }
 
 export interface ReorderOptions {
@@ -232,18 +232,16 @@ export interface AddPageNumbersOptions {
 
 export interface SignPdfOptions {
   page: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  position: string;
+  signatureData: string;
 }
 
 export interface EditPdfOptions {
   annotations: Array<{
     type: 'text';
-    x: number;
-    y: number;
     content: string;
+    page: number;
+    position: string;
     fontSize: number;
   }>;
 }

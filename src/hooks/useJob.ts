@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Job, JobState, SplitOptions, WatermarkOptions, ToolId, ToolOptions } from '@/types';
 import { apiJson, apiRequest, buildApiUrl } from '@/lib/apiClient';
 import { buildDownloadPath, buildJobPath } from '@/lib/toolApi';
+import { setGuestToken } from '@/lib/guestToken';
 
 interface UseJobOptions {
   pollingInterval?: number;
@@ -410,6 +411,7 @@ export const useJob = ({
             status: string;
             progress: number;
             toolType: string;
+            fileSize?: number;
           };
 
           const eventToStatus = (eventType: string): string => {
@@ -478,7 +480,7 @@ export const useJob = ({
                   ? {
                       downloadUrl,
                       fileName: prev.result?.fileName ?? 'output.pdf',
-                      fileSize: prev.result?.fileSize ?? 0,
+                      fileSize: data.fileSize || prev.result?.fileSize || 0,
                       expiresAt: prev.result?.expiresAt ?? new Date(),
                     }
                   : prev.result,
@@ -592,10 +594,14 @@ export const useJob = ({
             payload.options = normalizedOptions;
           }
 
-          const apiResponse = await apiJson<{ data: ApiJob }>(buildJobPath(toolId), {
+          const apiResponse = await apiJson<{ data: ApiJob & { guestToken?: string } }>(buildJobPath(toolId), {
             method: 'POST',
             body: JSON.stringify(payload),
           });
+
+          if (apiResponse.data.guestToken) {
+            setGuestToken(apiResponse.data.guestToken);
+          }
 
           const mappedJob = mapApiJob(apiResponse.data, toolId, normalizedIds, options);
           setJob(mappedJob);

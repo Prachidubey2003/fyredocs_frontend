@@ -1,3 +1,5 @@
+import { getGuestToken } from '@/lib/guestToken';
+
 type ApiRequestOptions = RequestInit & {
   skipRefresh?: boolean;
 };
@@ -58,7 +60,12 @@ const parseErrorMessage = async (response: Response) => {
 };
 
 const buildHeaders = (headers?: HeadersInit): Headers => {
-  return new Headers(headers);
+  const h = new Headers(headers);
+  const token = getGuestToken();
+  if (token) {
+    h.set('X-Guest-Token', token);
+  }
+  return h;
 };
 
 // Shared refresh lock — prevents multiple concurrent refresh calls
