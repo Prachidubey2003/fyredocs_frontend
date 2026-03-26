@@ -119,7 +119,7 @@ export const SignPdfTool = ({ tool }: SignPdfToolProps) => {
       page: page === 'last' ? -1 : parseInt(page) || 1,
       position,
       signatureData: signatureDataUrl,
-    } as unknown as ToolOptions);
+    });
   };
 
   const handleDownload = () => {

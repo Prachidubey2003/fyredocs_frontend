@@ -7,7 +7,6 @@ import { BatchModeToggle } from '@/components/common/BatchModeToggle';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { AnimatedSwitch } from '@/components/ui/animated';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
@@ -35,8 +34,6 @@ const languages = [
 
 export const OcrTool = ({ tool }: OcrToolProps) => {
   const [language, setLanguage] = useState('en');
-  const [enhanceScan, setEnhanceScan] = useState(true);
-  const [preserveLayout, setPreserveLayout] = useState(true);
   const [batchMode, setBatchMode] = useState(false);
 
   const {
@@ -98,7 +95,7 @@ export const OcrTool = ({ tool }: OcrToolProps) => {
       return;
     }
 
-    const options = { language, enhanceScans: enhanceScan };
+    const options = { language };
 
     if (batchMode && files.length > 1) {
       startBatch(tool.id, uploadedFiles, options);
@@ -217,33 +214,6 @@ export const OcrTool = ({ tool }: OcrToolProps) => {
                     </div>
 
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="enhance">Enhance Scan Quality</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Improve contrast and remove noise
-                          </p>
-                        </div>
-                        <Switch
-                          id="enhance"
-                          checked={enhanceScan}
-                          onCheckedChange={setEnhanceScan}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="layout">Preserve Layout</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Maintain original document structure
-                          </p>
-                        </div>
-                        <Switch
-                          id="layout"
-                          checked={preserveLayout}
-                          onCheckedChange={setPreserveLayout}
-                        />
-                      </div>
                     </div>
                   </div>
 

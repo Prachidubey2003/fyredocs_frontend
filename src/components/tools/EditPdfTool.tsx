@@ -90,7 +90,7 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
         position,
         fontSize,
       })),
-    } as unknown as ToolOptions);
+    });
   };
 
   const handleDownload = () => {

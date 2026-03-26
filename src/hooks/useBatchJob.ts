@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Job, JobState, ToolId, ToolOptions } from '@/types';
 import { apiJson, apiRequest, buildApiUrl } from '@/lib/apiClient';
 import { buildDownloadPath, buildJobPath } from '@/lib/toolApi';
+import { setGuestToken } from '@/lib/guestToken';
 
 export interface BatchJob {
   id: string;
@@ -358,6 +359,7 @@ export const useBatchJob = ({
             status: string;
             progress: number;
             toolType: string;
+            fileSize?: number;
           };
 
           const status = eventToStatus(data.status);
@@ -468,10 +470,14 @@ export const useBatchJob = ({
           payload.options = options as Record<string, unknown>;
         }
 
-        const apiResponse = await apiJson<{ data: ApiJob }>(buildJobPath(toolId), {
+        const apiResponse = await apiJson<{ data: ApiJob & { guestToken?: string } }>(buildJobPath(toolId), {
           method: 'POST',
           body: JSON.stringify(payload),
         });
+
+        if (apiResponse.data.guestToken) {
+          setGuestToken(apiResponse.data.guestToken);
+        }
 
         const mappedJob = mapApiJob(apiResponse.data, toolId, [serverFileId], options);
 
