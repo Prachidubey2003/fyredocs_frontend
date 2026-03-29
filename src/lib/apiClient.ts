@@ -1,14 +1,10 @@
-import { getGuestToken } from '@/lib/guestToken';
-
 type ApiRequestOptions = RequestInit & {
   skipRefresh?: boolean;
 };
 
-const DEFAULT_API_BASE_URL = 'http://localhost:8080';
-
 const getBaseUrl = () => {
   const envUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
-  return envUrl.trim().length > 0 ? envUrl : DEFAULT_API_BASE_URL;
+  return envUrl.trim().length > 0 ? envUrl : '';
 };
 
 const normalizeBaseUrl = (baseUrl: string) =>
@@ -60,12 +56,7 @@ const parseErrorMessage = async (response: Response) => {
 };
 
 const buildHeaders = (headers?: HeadersInit): Headers => {
-  const h = new Headers(headers);
-  const token = getGuestToken();
-  if (token) {
-    h.set('X-Guest-Token', token);
-  }
-  return h;
+  return new Headers(headers);
 };
 
 // Shared refresh lock — prevents multiple concurrent refresh calls

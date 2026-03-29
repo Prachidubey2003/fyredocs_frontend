@@ -1,17 +1,10 @@
-const STORAGE_KEY = 'esydocs_guest_token';
+// Guest token is now handled via httpOnly cookie set by the backend.
+// These are no-ops kept for backwards compatibility during the transition.
 
 export function getGuestToken(): string | null {
-  try {
-    return localStorage.getItem(STORAGE_KEY);
-  } catch {
-    return null;
-  }
+  return null;
 }
 
-export function setGuestToken(token: string): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, token);
-  } catch {
-    // localStorage unavailable (private browsing, etc.)
-  }
+export function setGuestToken(_token: string): void {
+  // no-op: cookie is set by the backend response automatically
 }
