@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TOOLS } from '@/config/tools';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
+import { usePdfPageCount } from '@/hooks/usePdfPageCount';
 import { RemovePagesOptions, ExtractPagesOptions, ToolId } from '@/types';
 import { ToolPageLayout } from './ToolPageLayout';
 import { FileDropzone } from '@/components/common/FileDropzone';
@@ -57,8 +58,13 @@ export const PageSpecificationTool = ({
     },
   });
 
-  const handleFilesSelected = (selectedFiles: File[]) => {
+  const { pageCount, readPageCount, reset: resetPageCount } = usePdfPageCount();
+
+  const handleFilesSelected = async (selectedFiles: File[]) => {
     addFiles(selectedFiles);
+    if (selectedFiles.length > 0) {
+      await readPageCount(selectedFiles[0]);
+    }
   };
 
   const handleProcess = () => {
@@ -92,6 +98,7 @@ export const PageSpecificationTool = ({
     resetJob();
     clearFiles();
     setPagesInput('');
+    resetPageCount();
   };
 
   const hasFile = files.length > 0;
@@ -151,6 +158,7 @@ export const PageSpecificationTool = ({
                       />
                       <p className="text-xs text-muted-foreground">
                         Enter page numbers and/or ranges separated by commas
+                        {pageCount !== null && ` (your PDF has ${pageCount} pages)`}
                       </p>
                     </div>
                   </div>

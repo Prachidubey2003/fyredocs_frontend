@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TOOLS } from '@/config/tools';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
+import { usePdfPageCount } from '@/hooks/usePdfPageCount';
 import { SplitOptions } from '@/types';
 import { ToolPageLayout } from './ToolPageLayout';
 import { FileDropzone } from '@/components/common/FileDropzone';
@@ -47,8 +48,13 @@ export const SplitTool = () => {
     },
   });
 
-  const handleFilesSelected = (selectedFiles: File[]) => {
+  const { pageCount, readPageCount, reset: resetPageCount } = usePdfPageCount();
+
+  const handleFilesSelected = async (selectedFiles: File[]) => {
     addFiles(selectedFiles);
+    if (selectedFiles.length > 0) {
+      await readPageCount(selectedFiles[0]);
+    }
   };
 
   const handleSplit = () => {
@@ -102,6 +108,7 @@ export const SplitTool = () => {
     setRangeInput('');
     setExtractCount('2');
     setEqualParts('2');
+    resetPageCount();
   };
 
   const hasFile = files.length > 0;
@@ -149,10 +156,17 @@ export const SplitTool = () => {
 
                   {/* Split options */}
                   <div className="p-6 rounded-xl border bg-card mb-6">
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <Scissors className="w-5 h-5 text-tool-split" />
-                      Split Options
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <Scissors className="w-5 h-5 text-tool-split" />
+                        Split Options
+                      </h3>
+                      {pageCount !== null && (
+                        <span className="text-sm text-muted-foreground">
+                          {pageCount} {pageCount === 1 ? 'page' : 'pages'}
+                        </span>
+                      )}
+                    </div>
 
                     <RadioGroup
                       value={splitMode}
