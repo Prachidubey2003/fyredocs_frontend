@@ -39,6 +39,10 @@ export const AddPageNumbersTool = ({ tool }: AddPageNumbersToolProps) => {
   const handleStartOver = () => {
     resetJob();
     clearFiles();
+    setPosition('bc');
+    setStartNumber(1);
+    setFontSize(12);
+    setFormat('{n}');
   };
 
   const handleFilesSelected = (selectedFiles: File[]) => {

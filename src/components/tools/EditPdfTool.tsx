@@ -45,6 +45,7 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
   const handleStartOver = () => {
     resetJob();
     clearFiles();
+    setAnnotations([]);
   };
 
   const handleFilesSelected = (selectedFiles: File[]) => {
