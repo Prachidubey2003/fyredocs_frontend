@@ -23,7 +23,7 @@ const toolErrorConfig = {
 
 const ReliabilityPage = () => {
   const queryClient = useQueryClient();
-  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'reliability'] }), [queryClient]);
+  const handleRefresh = useCallback(() => queryClient.resetQueries({ queryKey: ['admin', 'reliability'] }), [queryClient]);
   const { data, isLoading } = useReliability(30);
   const d = data;
   const rate = (d?.jobRate?.successRate ?? 0) * 100;

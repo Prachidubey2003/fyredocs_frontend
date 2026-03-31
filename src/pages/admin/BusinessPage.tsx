@@ -37,7 +37,7 @@ const planChangesChartConfig = {
 
 const BusinessPage = () => {
   const queryClient = useQueryClient();
-  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'business'] }), [queryClient]);
+  const handleRefresh = useCallback(() => queryClient.resetQueries({ queryKey: ['admin', 'business'] }), [queryClient]);
   const { data, isLoading } = useBusiness(30);
   const d = data;
 

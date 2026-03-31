@@ -5,9 +5,16 @@ import { ToolCategory } from '@/types';
 interface ToolGridProps {
   category?: ToolCategory;
   limit?: number;
+  columns?: 2 | 3 | 4;
 }
 
-export const ToolGrid = ({ category, limit }: ToolGridProps) => {
+const gridColsClass: Record<number, string> = {
+  2: 'grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6',
+  3: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6',
+  4: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6',
+};
+
+export const ToolGrid = ({ category, limit, columns = 4 }: ToolGridProps) => {
   let tools = getAllTools();
 
   if (category) {
@@ -19,7 +26,7 @@ export const ToolGrid = ({ category, limit }: ToolGridProps) => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+    <div className={gridColsClass[columns]}>
       {tools.map((tool) => (
         <ToolCard key={tool.id} tool={tool} />
       ))}

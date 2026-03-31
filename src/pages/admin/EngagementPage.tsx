@@ -57,7 +57,7 @@ const pieChartConfig: ChartConfig = {
 
 const EngagementPage = () => {
   const queryClient = useQueryClient();
-  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'engagement'] }), [queryClient]);
+  const handleRefresh = useCallback(() => queryClient.resetQueries({ queryKey: ['admin', 'engagement'] }), [queryClient]);
   const { data, isLoading } = useEngagement(30);
   const d = data;
 
