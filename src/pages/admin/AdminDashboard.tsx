@@ -27,6 +27,14 @@ import {
   Server,
   Gauge,
   RefreshCw,
+  UserPlus,
+  Users,
+  Briefcase,
+  AlertTriangle,
+  LogIn,
+  UserCircle,
+  CheckCircle2,
+  Zap,
 } from 'lucide-react';
 
 function QuickStats() {
@@ -34,32 +42,40 @@ function QuickStats() {
   const d = data;
 
   const items = [
-    { label: 'Signups Today', value: d?.signups, color: 'text-green-600' },
-    { label: 'DAU', value: d?.dau, color: 'text-blue-600' },
-    { label: 'Jobs Created', value: d?.jobsCreated, color: 'text-purple-600' },
-    { label: 'Jobs Failed', value: d?.jobsFailed, color: 'text-red-600' },
-    { label: 'Logins', value: d?.logins },
-    { label: 'Guest Sessions', value: d?.guestSessions },
-    { label: 'Jobs Completed', value: d?.jobsCompleted, color: 'text-emerald-600' },
-    { label: 'Plan Limit Hits', value: d?.planLimitHits, color: 'text-orange-600' },
+    { label: 'Signups Today', value: d?.signups, color: 'text-green-600', bg: 'bg-green-500/10', icon: UserPlus },
+    { label: 'DAU', value: d?.dau, color: 'text-blue-600', bg: 'bg-blue-500/10', icon: Users },
+    { label: 'Jobs Created', value: d?.jobsCreated, color: 'text-purple-600', bg: 'bg-purple-500/10', icon: Briefcase },
+    { label: 'Jobs Failed', value: d?.jobsFailed, color: 'text-red-600', bg: 'bg-red-500/10', icon: AlertTriangle },
+    { label: 'Logins', value: d?.logins, color: 'text-sky-600', bg: 'bg-sky-500/10', icon: LogIn },
+    { label: 'Guest Sessions', value: d?.guestSessions, color: 'text-slate-600', bg: 'bg-slate-500/10', icon: UserCircle },
+    { label: 'Jobs Completed', value: d?.jobsCompleted, color: 'text-emerald-600', bg: 'bg-emerald-500/10', icon: CheckCircle2 },
+    { label: 'Plan Limit Hits', value: d?.planLimitHits, color: 'text-orange-600', bg: 'bg-orange-500/10', icon: Zap },
   ];
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {items.map((item) => (
-        <Card key={item.label} className="text-center">
-          <CardHeader className="px-3 pb-1 pt-3">
-            <CardDescription className="text-xs">{item.label}</CardDescription>
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            {isLoading ? (
-              <Skeleton className="mx-auto h-7 w-10" />
-            ) : (
-              <p className={`text-2xl font-bold ${item.color ?? ''}`}><AnimatedNumber value={item.value ?? 0} /></p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
+      {items.map((item) => {
+        const Icon = item.icon;
+        return (
+          <Card key={item.label} className="relative overflow-hidden">
+            <CardHeader className="flex flex-row items-center gap-3 px-4 pb-1 pt-4">
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${item.bg}`}>
+                <Icon className={`h-4 w-4 ${item.color}`} />
+              </div>
+              <CardDescription className="text-xs leading-tight">{item.label}</CardDescription>
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              {isLoading ? (
+                <Skeleton className="h-7 w-14" />
+              ) : (
+                <p className={`text-2xl font-bold ${item.color}`}>
+                  <AnimatedNumber value={item.value ?? 0} />
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

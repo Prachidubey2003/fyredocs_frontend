@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
 import { useEngagement } from '@/hooks/useAdminMetrics';
 
 const COLORS = ['hsl(24, 95%, 53%)', 'hsl(217, 91%, 60%)'];
@@ -144,28 +145,44 @@ const EngagementPage = () => {
               {isLoading ? (
                 <Skeleton className="h-[300px] w-full" />
               ) : (
-                <ChartContainer config={pieChartConfig} className="h-[300px] w-full">
-                  <PieChart>
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Pie
-                      data={pieData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={4}
-                      isAnimationActive
-                      animationDuration={800}
-                      animationEasing="ease-out"
-                    >
-                      {pieData.map((_entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ChartContainer>
+                <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-8 h-[300px] justify-center">
+                  <ChartContainer config={pieChartConfig} className="h-[250px] w-[250px]">
+                    <PieChart>
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Pie
+                        data={pieData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={4}
+                        isAnimationActive
+                        animationDuration={800}
+                        animationEasing="ease-out"
+                      >
+                        {pieData.map((_entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ChartContainer>
+                  <div className="space-y-3">
+                    {pieData.map((entry, i) => (
+                      <div key={entry.name} className="flex items-center gap-2 text-sm">
+                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                        <span className="text-muted-foreground">{entry.name}</span>
+                        <span className="font-semibold"><AnimatedNumber value={entry.value} /></span>
+                      </div>
+                    ))}
+                    {d?.guestVsRegistered && (
+                      <div className="text-xs text-muted-foreground pt-1 border-t">
+                        Guest ratio: {((d.guestVsRegistered.guestRatio ?? 0) * 100).toFixed(0)}%
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -188,6 +205,7 @@ const EngagementPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12">#</TableHead>
                     <TableHead>User ID</TableHead>
                     <TableHead className="text-right">Job Count</TableHead>
                   </TableRow>
@@ -196,6 +214,7 @@ const EngagementPage = () => {
                   {(d?.powerUsers ?? []).slice(0, 20).map(
                     (user: { userId: string; jobCount: number }, index: number) => (
                       <TableRow key={index}>
+                        <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
                         <TableCell className="font-mono text-sm">
                           {user.userId.length > 12
                             ? `${user.userId.slice(0, 8)}...${user.userId.slice(-4)}`

@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Area, AreaChart, Pie, PieChart, Cell, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
+import { Progress } from '@/components/ui/progress';
 import { useSystem } from '@/hooks/useAdminMetrics';
 
 const ingestionConfig = {
@@ -40,6 +41,39 @@ const SystemPage = () => {
           <StatCard label="Avg Lag" value={`${(d?.processingLag?.avgSeconds ?? 0).toFixed(2)}s`} color={lagColor} isLoading={isLoading} />
           <StatCard label="Total Events" value={d?.totalEvents?.toLocaleString()} isLoading={isLoading} />
         </div>
+
+        {/* Processing Lag Detail */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Processing Lag</CardTitle>
+            <CardDescription>Average time between job creation and processing start</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? <Skeleton className="h-12 w-full" /> : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Current Avg Lag</span>
+                  <span className={`text-2xl font-bold ${lagColor}`}>
+                    <AnimatedNumber value={d?.processingLag?.avgSeconds ?? 0} decimals={2} suffix="s" />
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(((d?.processingLag?.avgSeconds ?? 0) / 10) * 100, 100)}
+                  className={`h-3 transition-all duration-700 ${
+                    (d?.processingLag?.avgSeconds ?? 0) > 5 ? '[&>div]:bg-red-500' :
+                    (d?.processingLag?.avgSeconds ?? 0) > 1 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-green-500'
+                  }`}
+                />
+                <div className="flex justify-between text-[10px] text-muted-foreground">
+                  <span>0s</span>
+                  <span>1s (good)</span>
+                  <span>5s (warn)</span>
+                  <span>10s+</span>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

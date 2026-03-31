@@ -24,6 +24,8 @@ import {
   PieChart,
   Cell,
 } from 'recharts';
+import { ProgressRing } from '@/components/admin/ProgressRing';
+import { DollarSign } from 'lucide-react';
 import { useBusiness } from '@/hooks/useAdminMetrics';
 
 const signupsChartConfig = {
@@ -159,34 +161,42 @@ const BusinessPage = () => {
               <CardTitle>Churn Details</CardTitle>
               <CardDescription>User churn breakdown for the period</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               {isLoading ? (
-                <>
+                <div className="space-y-4">
                   <Skeleton className="h-6 w-48" />
                   <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-6 w-48" />
-                </>
+                  <Skeleton className="h-16 w-16 mx-auto rounded-full" />
+                </div>
               ) : (
-                <>
-                  <div className="flex items-center justify-between border-b pb-3">
-                    <span className="text-sm text-muted-foreground">Churned Users</span>
-                    <span className="text-lg font-semibold text-red-600">
-                      <AnimatedNumber value={d?.churn?.churned ?? 0} />
-                    </span>
+                <div className="flex items-center gap-6">
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center justify-between border-b pb-3">
+                      <span className="text-sm text-muted-foreground">Churned Users</span>
+                      <span className="text-lg font-semibold text-red-600">
+                        <AnimatedNumber value={d?.churn?.churned ?? 0} />
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between border-b pb-3">
+                      <span className="text-sm text-muted-foreground">Previous Active</span>
+                      <span className="text-lg font-semibold"><AnimatedNumber value={d?.churn?.previousActive ?? 0} /></span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Churn Rate</span>
+                      <span className={`text-lg font-semibold ${churnRate > 0.1 ? 'text-red-600' : 'text-green-600'}`}>
+                        <AnimatedNumber value={churnRate * 100} decimals={1} suffix="%" />
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between border-b pb-3">
-                    <span className="text-sm text-muted-foreground">Previous Active Users</span>
-                    <span className="text-lg font-semibold"><AnimatedNumber value={d?.churn?.previousActive ?? 0} /></span>
+                  <div className="shrink-0">
+                    <ProgressRing
+                      value={churnRate * 100}
+                      size={80}
+                      strokeWidth={8}
+                      color={churnRate > 0.1 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)'}
+                    />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Churn Rate</span>
-                    <span
-                      className={`text-lg font-semibold ${churnRate > 0.1 ? 'text-red-600' : 'text-green-600'}`}
-                    >
-                      <AnimatedNumber value={churnRate * 100} decimals={1} suffix="%" />
-                    </span>
-                  </div>
-                </>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -201,9 +211,14 @@ const BusinessPage = () => {
               {isLoading ? (
                 <Skeleton className="h-20 w-full" />
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  {d?.revenue?.note ?? 'Revenue tracking is not yet available.'}
-                </p>
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-3">
+                    <DollarSign className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {d?.revenue?.note ?? 'Revenue tracking is not yet available.'}
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
