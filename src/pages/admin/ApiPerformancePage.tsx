@@ -69,7 +69,9 @@ const ApiPerformancePage = () => {
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
           <StatCard label="Total Requests" value={d?.summary?.totalRequests?.toLocaleString()} isLoading={isLoading} />
-          <StatCard label="Avg Latency" value={`${(d?.summary?.avgLatencyMs ?? 0).toFixed(0)}ms`} isLoading={isLoading} />
+          <StatCard label="Avg Latency" value={`${(d?.summary?.avgLatencyMs ?? 0).toFixed(0)}ms`}
+            color={(d?.summary?.avgLatencyMs ?? 0) > 500 ? 'text-red-600' : (d?.summary?.avgLatencyMs ?? 0) > 100 ? 'text-yellow-600' : 'text-green-600'}
+            isLoading={isLoading} />
           <StatCard label="P95 Latency" value={`${(d?.summary?.p95LatencyMs ?? 0).toFixed(0)}ms`} color="text-orange-600" isLoading={isLoading} />
           <StatCard label="P99 Latency" value={`${(d?.summary?.p99LatencyMs ?? 0).toFixed(0)}ms`} color="text-red-600" isLoading={isLoading} />
           <StatCard label="Error Rate" value={`${((d?.summary?.errorRate ?? 0) * 100).toFixed(2)}%`}

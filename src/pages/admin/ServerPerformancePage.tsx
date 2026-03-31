@@ -76,19 +76,23 @@ const ServerPerformancePage = () => {
                 <CardTitle>Load Averages</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-8">
-                  <div>
-                    <p className="text-sm text-muted-foreground">1 min</p>
-                    <p className="text-2xl font-bold"><AnimatedNumber value={sys?.cpu?.loadAvg1m ?? 0} decimals={2} /></p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">5 min</p>
-                    <p className="text-2xl font-bold"><AnimatedNumber value={sys?.cpu?.loadAvg5m ?? 0} decimals={2} /></p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">15 min</p>
-                    <p className="text-2xl font-bold"><AnimatedNumber value={sys?.cpu?.loadAvg15m ?? 0} decimals={2} /></p>
-                  </div>
+                <div className="flex items-center justify-around gap-4">
+                  {[
+                    { label: '1 min', value: sys?.cpu?.loadAvg1m ?? 0 },
+                    { label: '5 min', value: sys?.cpu?.loadAvg5m ?? 0 },
+                    { label: '15 min', value: sys?.cpu?.loadAvg15m ?? 0 },
+                  ].map((item) => {
+                    const cores = sys?.cpu?.count ?? 1;
+                    const pct = Math.min((item.value / cores) * 100, 100);
+                    const color = pct > 80 ? 'hsl(0, 84%, 60%)' : pct > 50 ? 'hsl(48, 96%, 53%)' : 'hsl(142, 71%, 45%)';
+                    return (
+                      <div key={item.label} className="flex flex-col items-center gap-2">
+                        <ProgressRing value={pct} size={72} strokeWidth={7} color={color}
+                          label={item.value.toFixed(2)} />
+                        <span className="text-xs text-muted-foreground">{item.label}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -130,27 +134,59 @@ const ServerPerformancePage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {d?.services && Object.entries(d.services).map(([name, svc]) => (
-                    <Card key={name} className="p-4">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm">{name}</span>
-                        <Badge variant={svc.status === 'healthy' ? 'default' : 'destructive'}>
-                          {svc.status}
-                        </Badge>
-                      </div>
-                      {svc.status === 'healthy' ? (
-                        <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-                          {svc.goroutines != null && <p>Goroutines: <AnimatedNumber value={svc.goroutines} className="font-medium text-foreground" /></p>}
-                          {svc.memory && <p>Heap: <AnimatedNumber value={svc.memory.heapAllocMB ?? 0} decimals={1} suffix=" MB" className="font-medium text-foreground" /></p>}
-                          {svc.uptime && <p>Uptime: <span className="font-medium text-foreground">{svc.uptime}</span></p>}
-                          {svc.goVersion && <p>Go: <span className="font-medium text-foreground">{svc.goVersion}</span></p>}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {d?.services && Object.entries(d.services).map(([name, svc]) => {
+                    const healthy = svc.status === 'healthy';
+                    const heapMB = svc.memory?.heapAllocMB ?? 0;
+                    const heapPct = Math.min((heapMB / 20) * 100, 100);
+                    return (
+                      <Card key={name} className={`p-4 border-l-4 ${healthy ? 'border-l-green-500' : 'border-l-red-500'}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className={`h-2 w-2 rounded-full ${healthy ? 'bg-green-500' : 'bg-red-500'}`} />
+                            <span className="font-medium text-sm">{name}</span>
+                          </div>
+                          <Badge variant={healthy ? 'default' : 'destructive'} className="text-[10px] px-1.5 py-0">
+                            {svc.status}
+                          </Badge>
                         </div>
-                      ) : (
-                        <p className="mt-2 text-xs text-red-600">{svc.error}</p>
-                      )}
-                    </Card>
-                  ))}
+                        {healthy ? (
+                          <div className="mt-3 space-y-2.5">
+                            {svc.goroutines != null && (
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-muted-foreground">Goroutines</span>
+                                <Badge variant="secondary" className="text-[10px] font-mono px-1.5 py-0">
+                                  <AnimatedNumber value={svc.goroutines} />
+                                </Badge>
+                              </div>
+                            )}
+                            {svc.memory && (
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="text-muted-foreground">Heap</span>
+                                  <span className="font-medium text-xs"><AnimatedNumber value={heapMB} decimals={1} suffix=" MB" /></span>
+                                </div>
+                                <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                                  <div
+                                    className={`h-full rounded-full transition-all duration-700 ${heapPct > 80 ? 'bg-red-500' : heapPct > 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                                    style={{ width: `${heapPct}%` }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            {(svc.uptime || svc.goVersion) && (
+                              <div className="flex items-center gap-3 text-[10px] text-muted-foreground pt-1 border-t">
+                                {svc.uptime && <span>{svc.uptime}</span>}
+                                {svc.goVersion && <span className="font-mono">{svc.goVersion}</span>}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="mt-2 text-xs text-red-600">{svc.error}</p>
+                        )}
+                      </Card>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
