@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
+import { usePdfPageCount } from '@/hooks/usePdfPageCount';
 import { ToolDefinition, ToolOptions } from '@/types';
 import { Hash } from 'lucide-react';
 
@@ -35,6 +36,7 @@ export const AddPageNumbersTool = ({ tool }: AddPageNumbersToolProps) => {
   } = useFileUpload({ tool });
 
   const { job, createJob, cancelJob, retryJob, resetJob } = useJob();
+  const { pageCount, readPageCount, reset: resetPageCount } = usePdfPageCount();
 
   const handleStartOver = () => {
     resetJob();
@@ -43,10 +45,14 @@ export const AddPageNumbersTool = ({ tool }: AddPageNumbersToolProps) => {
     setStartNumber(1);
     setFontSize(12);
     setFormat('{n}');
+    resetPageCount();
   };
 
-  const handleFilesSelected = (selectedFiles: File[]) => {
+  const handleFilesSelected = async (selectedFiles: File[]) => {
     addFiles(selectedFiles);
+    if (selectedFiles.length > 0) {
+      await readPageCount(selectedFiles[0]);
+    }
   };
 
   const handleProcess = () => {
@@ -112,10 +118,17 @@ export const AddPageNumbersTool = ({ tool }: AddPageNumbersToolProps) => {
                 </div>
 
                 <div className="rounded-xl border bg-card p-6 space-y-6">
-                  <h3 className="font-semibold text-lg flex items-center gap-2">
-                    <Hash className="w-5 h-5" />
-                    Page Number Options
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-lg flex items-center gap-2">
+                      <Hash className="w-5 h-5" />
+                      Page Number Options
+                    </h3>
+                    {pageCount !== null && (
+                      <span className="text-sm text-muted-foreground">
+                        {pageCount} {pageCount === 1 ? 'page' : 'pages'}
+                      </span>
+                    )}
+                  </div>
 
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">

@@ -11,6 +11,7 @@ import { AnimatedSwitch } from '@/components/ui/animated';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
 import { useBatchJob } from '@/hooks/useBatchJob';
+import { usePdfPageCount } from '@/hooks/usePdfPageCount';
 import { ToolDefinition, ToolOptions } from '@/types';
 import { RotateCw, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -65,8 +66,13 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
     },
   });
 
-  const handleFilesSelected = (selectedFiles: File[]) => {
+  const { pageCount, readPageCount, reset: resetPageCount } = usePdfPageCount();
+
+  const handleFilesSelected = async (selectedFiles: File[]) => {
     addFiles(selectedFiles);
+    if (selectedFiles.length > 0) {
+      await readPageCount(selectedFiles[0]);
+    }
   };
 
   const handleProcess = () => {
@@ -114,6 +120,7 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
     resetBatch();
     clearFiles();
     setBatchMode(false);
+    resetPageCount();
   };
 
   const hasFiles = files.length > 0;
@@ -177,10 +184,17 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
                 />
 
                 <div className="rounded-xl border bg-card p-6 space-y-6">
-                  <h3 className="font-semibold text-lg flex items-center gap-2">
-                    <RotateCw className="w-5 h-5" />
-                    Rotation Settings
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-lg flex items-center gap-2">
+                      <RotateCw className="w-5 h-5" />
+                      Rotation Settings
+                    </h3>
+                    {pageCount !== null && (
+                      <span className="text-sm text-muted-foreground">
+                        {pageCount} {pageCount === 1 ? 'page' : 'pages'}
+                      </span>
+                    )}
+                  </div>
 
                   <div className="space-y-4">
                     <Label>Rotation Angle</Label>

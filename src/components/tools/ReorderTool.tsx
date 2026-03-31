@@ -1,13 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { FileDropzone } from '@/components/common/FileDropzone';
 import { JobProgress } from '@/components/common/JobProgress';
 import { AnimatedSwitch } from '@/components/ui/animated';
 import { Button } from '@/components/ui/button';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
+import { usePdfPageCount } from '@/hooks/usePdfPageCount';
 import { ToolDefinition, ToolOptions } from '@/types';
 import { ArrowUpDown, GripVertical, FileText, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface ReorderToolProps {
   tool: ToolDefinition;
@@ -32,15 +34,24 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
   } = useFileUpload({ tool });
 
   const { job, createJob, cancelJob, retryJob, resetJob } = useJob();
+  const { readPageCount, reset: resetPageCount } = usePdfPageCount();
 
-  const handleFilesSelected = (selectedFiles: File[]) => {
+  const handleFilesSelected = async (selectedFiles: File[]) => {
     addFiles(selectedFiles);
-    // Simulate extracting pages from PDF (in production, this would come from backend)
-    const simulatedPages: PageItem[] = Array.from({ length: 8 }, (_, i) => ({
-      id: i + 1,
-      label: `Page ${i + 1}`,
-    }));
-    setPages(simulatedPages);
+    if (selectedFiles.length > 0) {
+      const count = await readPageCount(selectedFiles[0]);
+      if (count !== null) {
+        setPages(
+          Array.from({ length: count }, (_, i) => ({
+            id: i + 1,
+            label: `Page ${i + 1}`,
+          }))
+        );
+      } else {
+        toast.error('Could not read PDF pages');
+        setPages([]);
+      }
+    }
   };
 
   const handleDragStart = (pageId: number) => {
@@ -100,6 +111,7 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
     resetJob();
     clearFiles();
     setPages([]);
+    resetPageCount();
   };
 
   const handleDownload = () => {
