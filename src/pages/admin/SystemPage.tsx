@@ -21,7 +21,7 @@ const COLORS = [
 
 const SystemPage = () => {
   const queryClient = useQueryClient();
-  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'system'] }), [queryClient]);
+  const handleRefresh = useCallback(() => queryClient.resetQueries({ queryKey: ['admin', 'system'] }), [queryClient]);
   const { data, isLoading } = useSystem();
   const d = data;
 

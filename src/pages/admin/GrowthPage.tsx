@@ -46,7 +46,7 @@ function retentionBadgeVariant(value: number): 'default' | 'secondary' | 'destru
 
 const GrowthPage = () => {
   const queryClient = useQueryClient();
-  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'growth'] }), [queryClient]);
+  const handleRefresh = useCallback(() => queryClient.resetQueries({ queryKey: ['admin', 'growth'] }), [queryClient]);
   const { data, isLoading } = useGrowth(30);
   const d = data;
 

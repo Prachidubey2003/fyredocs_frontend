@@ -13,7 +13,7 @@ import { useServerPerformance } from '@/hooks/useAdminMetrics';
 
 const ServerPerformancePage = () => {
   const queryClient = useQueryClient();
-  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'serverPerformance'] }), [queryClient]);
+  const handleRefresh = useCallback(() => queryClient.resetQueries({ queryKey: ['admin', 'serverPerformance'] }), [queryClient]);
   const { data, isLoading, dataUpdatedAt } = useServerPerformance();
   const d = data;
   const sys = d?.system;

@@ -42,7 +42,7 @@ const endpointColumns: Column<ApiPerformanceEndpoint>[] = [
 
 const ApiPerformancePage = () => {
   const queryClient = useQueryClient();
-  const handleRefresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['admin', 'apiPerformance'] }), [queryClient]);
+  const handleRefresh = useCallback(() => queryClient.resetQueries({ queryKey: ['admin', 'apiPerformance'] }), [queryClient]);
   const table = useServerDataTable<ApiPerformanceEndpoint>({
     pageSize: PAGE_SIZE,
     defaultSort: { key: 'requests', desc: true },

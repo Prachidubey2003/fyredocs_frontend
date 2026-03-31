@@ -336,7 +336,7 @@ const AdminDashboard = () => {
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
-    queryClient.invalidateQueries({ queryKey: ['admin'] });
+    queryClient.resetQueries({ queryKey: ['admin'] });
     setTimeout(() => setIsRefreshing(false), 1000);
   }, [queryClient]);
 
