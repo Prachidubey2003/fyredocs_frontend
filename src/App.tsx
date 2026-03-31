@@ -50,6 +50,10 @@ const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const CookiePage = lazy(() => import("./pages/CookiePage"));
 const AllToolsPage = lazy(() => import("./pages/AllToolsPage"));
+const DocsIndexPage = lazy(() => import("./pages/docs/DocsIndexPage"));
+const DocsPage = lazy(() => import("./pages/docs/DocsPage"));
+const DevDocsIndexPage = lazy(() => import("./pages/docs/DevDocsIndexPage"));
+const DevDocsPage = lazy(() => import("./pages/docs/DevDocsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SignIn = lazy(() => import("./pages/auth/SignIn"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
@@ -110,6 +114,8 @@ const AnimatedRoutes = () => {
             <Route path="/edit-pdf" element={<EditPdfPage />} />
           </Route>
           <Route path="/all-tools" element={<AllToolsPage />} />
+          <Route path="/docs" element={<DocsIndexPage />} />
+          <Route path="/docs/:slug" element={<DocsPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/pricing" element={<PricingPage />} />
@@ -118,6 +124,8 @@ const AnimatedRoutes = () => {
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/cookies" element={<CookiePage />} />
           <Route element={<RoleRoute allowedRoles={['super-admin']} />}>
+            <Route path="/dev-docs" element={<DevDocsIndexPage />} />
+            <Route path="/dev-docs/:slug" element={<DevDocsPage />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/business" element={<BusinessPage />} />
             <Route path="/admin/growth" element={<GrowthPage />} />

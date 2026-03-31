@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FileText, Menu, User, X, ChevronDown, Shield, LogOut } from 'lucide-react';
+import { FileText, Menu, User, X, ChevronDown, Shield, LogOut, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,7 @@ const mainNavItems = [
   { label: 'MERGE PDF', href: '/merge' },
   { label: 'SPLIT PDF', href: '/split' },
   { label: 'COMPRESS PDF', href: '/compress' },
+  { label: 'DOCS', href: '/docs' },
 ];
 
 const ComingSoonBadge = () => (
@@ -300,6 +301,14 @@ export const Header = () => {
           </div>
 
           {user?.role === 'super-admin' && (
+            <>
+            <Link
+              to="/dev-docs"
+              className="px-4 py-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5"
+            >
+              <BookOpen className="w-4 h-4" />
+              DEV DOCS
+            </Link>
             <Link
               to="/admin/dashboard"
               className="px-4 py-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5"
@@ -307,6 +316,7 @@ export const Header = () => {
               <Shield className="w-4 h-4" />
               ADMIN
             </Link>
+            </>
           )}
         </nav>
 
@@ -518,11 +528,18 @@ export const Header = () => {
           {!isLoading && isAuthenticated && (
             <div className="mt-3 grid gap-2">
               {user?.role === 'super-admin' && (
+                <>
+                <Button variant="outline" asChild>
+                  <Link to="/dev-docs" onClick={closeMobileMenu}>
+                    Developer Docs
+                  </Link>
+                </Button>
                 <Button variant="outline" asChild>
                   <Link to="/admin/dashboard" onClick={closeMobileMenu}>
                     Admin Dashboard
                   </Link>
                 </Button>
+                </>
               )}
               <Button variant="outline" onClick={handleLogout}>
                 Log out
