@@ -42,6 +42,10 @@ export const SignPdfTool = ({ tool }: SignPdfToolProps) => {
   const handleStartOver = () => {
     resetJob();
     clearFiles();
+    clearCanvas();
+    setSignatureFile(null);
+    setPage('last');
+    setPosition('br');
   };
 
   const handleFilesSelected = (selectedFiles: File[]) => {

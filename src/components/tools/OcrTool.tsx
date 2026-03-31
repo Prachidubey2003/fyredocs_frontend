@@ -123,6 +123,7 @@ export const OcrTool = ({ tool }: OcrToolProps) => {
     resetJob();
     resetBatch();
     clearFiles();
+    setLanguage('en');
     setBatchMode(false);
   };
 

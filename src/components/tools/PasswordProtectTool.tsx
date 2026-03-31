@@ -41,6 +41,12 @@ export const PasswordProtectTool = ({ tool }: PasswordProtectToolProps) => {
   const handleStartOver = () => {
     resetJob();
     clearFiles();
+    setPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+    setAllowPrint(true);
+    setAllowCopy(false);
+    setAllowEdit(false);
   };
 
   const handleFilesSelected = (selectedFiles: File[]) => {
