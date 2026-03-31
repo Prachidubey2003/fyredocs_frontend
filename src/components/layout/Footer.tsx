@@ -5,6 +5,7 @@ import { toolCategories } from '@/config/toolCategories';
 
 const companyLinks = [
   { label: 'About', href: '/about' },
+  { label: 'Documentation', href: '/docs' },
   { label: 'Blog', href: '/blog' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Contact', href: '/contact' },
