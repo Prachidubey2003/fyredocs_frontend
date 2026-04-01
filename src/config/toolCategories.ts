@@ -36,6 +36,9 @@ export const toolCategories: { title: string; color: string; tools: ToolItem[] }
       { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation' },
       { name: 'EXCEL to PDF', href: '/excel-to-pdf', icon: 'file-spreadsheet' },
       { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code' },
+      { name: 'ODT to PDF', href: '/odt-to-pdf', icon: 'file' },
+      { name: 'ODS to PDF', href: '/ods-to-pdf', icon: 'file-spreadsheet' },
+      { name: 'ODP to PDF', href: '/odp-to-pdf', icon: 'presentation' },
     ],
   },
   {
@@ -48,6 +51,18 @@ export const toolCategories: { title: string; color: string; tools: ToolItem[] }
       { name: 'PDF to EXCEL', href: '/pdf-to-excel', icon: 'table' },
       { name: 'PDF to Text', href: '/pdf-to-text', icon: 'file-type' },
       { name: 'PDF to PDF/A', href: '/pdf-to-pdfa', icon: 'archive' },
+    ],
+  },
+  {
+    title: 'CONVERT TO LIBREOFFICE',
+    color: 'text-teal-500',
+    tools: [
+      { name: 'PDF to ODT', href: '/pdf-to-odt', icon: 'file-text' },
+      { name: 'PDF to ODS', href: '/pdf-to-ods', icon: 'table' },
+      { name: 'PDF to ODP', href: '/pdf-to-odp', icon: 'presentation' },
+      { name: 'Word to ODT', href: '/word-to-odt', icon: 'file' },
+      { name: 'Excel to ODS', href: '/excel-to-ods', icon: 'file-spreadsheet' },
+      { name: 'PowerPoint to ODP', href: '/powerpoint-to-odp', icon: 'presentation' },
     ],
   },
   {

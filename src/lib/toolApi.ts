@@ -35,6 +35,21 @@ const TOOL_API_CONFIG: Record<ToolId, ToolApiConfig> = {
   'pdf-to-text': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-text' },
   'pdf-to-pdfa': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-pdfa' },
 
+  // Convert to LibreOffice tools (PDF → ODF)
+  'pdf-to-odt': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-odt' },
+  'pdf-to-ods': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-ods' },
+  'pdf-to-odp': { basePath: '/api/convert-from-pdf', tool: 'pdf-to-odp' },
+
+  // Convert to LibreOffice tools (Office → ODF)
+  'word-to-odt': { basePath: '/api/convert-to-pdf', tool: 'word-to-odt' },
+  'excel-to-ods': { basePath: '/api/convert-to-pdf', tool: 'excel-to-ods' },
+  'powerpoint-to-odp': { basePath: '/api/convert-to-pdf', tool: 'powerpoint-to-odp' },
+
+  // Convert LibreOffice to PDF tools (ODF → PDF)
+  'odt-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'odt-to-pdf' },
+  'ods-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'ods-to-pdf' },
+  'odp-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'odp-to-pdf' },
+
   // Convert To PDF tools (office/image → PDF, LibreOffice-heavy)
   'word-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'word-to-pdf' },
   'excel-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'excel-to-pdf' },

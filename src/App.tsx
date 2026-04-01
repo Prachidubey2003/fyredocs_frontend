@@ -38,6 +38,15 @@ const PowerpointToPdfPage = lazy(() => import("./pages/PowerpointToPdfPage"));
 const HtmlToPdfPage = lazy(() => import("./pages/HtmlToPdfPage"));
 const RepairPdfPage = lazy(() => import("./pages/RepairPdfPage"));
 const PdfToTextPage = lazy(() => import("./pages/PdfToTextPage"));
+const PdfToOdtPage = lazy(() => import("./pages/PdfToOdtPage"));
+const PdfToOdsPage = lazy(() => import("./pages/PdfToOdsPage"));
+const PdfToOdpPage = lazy(() => import("./pages/PdfToOdpPage"));
+const WordToOdtPage = lazy(() => import("./pages/WordToOdtPage"));
+const ExcelToOdsPage = lazy(() => import("./pages/ExcelToOdsPage"));
+const PowerpointToOdpPage = lazy(() => import("./pages/PowerpointToOdpPage"));
+const OdtToPdfPage = lazy(() => import("./pages/OdtToPdfPage"));
+const OdsToPdfPage = lazy(() => import("./pages/OdsToPdfPage"));
+const OdpToPdfPage = lazy(() => import("./pages/OdpToPdfPage"));
 const UnlockPage = lazy(() => import("./pages/UnlockPage"));
 const AddPageNumbersPage = lazy(() => import("./pages/AddPageNumbersPage"));
 const SignPdfPage = lazy(() => import("./pages/SignPdfPage"));
@@ -112,6 +121,15 @@ const AnimatedRoutes = () => {
             <Route path="/add-page-numbers" element={<AddPageNumbersPage />} />
             <Route path="/sign-pdf" element={<SignPdfPage />} />
             <Route path="/edit-pdf" element={<EditPdfPage />} />
+            <Route path="/pdf-to-odt" element={<PdfToOdtPage />} />
+            <Route path="/pdf-to-ods" element={<PdfToOdsPage />} />
+            <Route path="/pdf-to-odp" element={<PdfToOdpPage />} />
+            <Route path="/word-to-odt" element={<WordToOdtPage />} />
+            <Route path="/excel-to-ods" element={<ExcelToOdsPage />} />
+            <Route path="/powerpoint-to-odp" element={<PowerpointToOdpPage />} />
+            <Route path="/odt-to-pdf" element={<OdtToPdfPage />} />
+            <Route path="/ods-to-pdf" element={<OdsToPdfPage />} />
+            <Route path="/odp-to-pdf" element={<OdpToPdfPage />} />
           </Route>
           <Route path="/all-tools" element={<AllToolsPage />} />
           <Route path="/docs" element={<DocsIndexPage />} />
