@@ -80,6 +80,12 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 300 95% 41%;
+
+    /* Docs panels - dark background even in light mode */
+    --docs-panel: 222 47% 11%;
+    --docs-panel-foreground: 210 40% 98%;
+    --docs-panel-muted: 217 33% 17%;
+    --docs-panel-border: 217 33% 20%;
   }
 
   .dark {
@@ -119,6 +125,12 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 300 95% 55%;
+
+    /* Docs panels - darker in dark mode */
+    --docs-panel: 222 47% 6%;
+    --docs-panel-foreground: 210 40% 98%;
+    --docs-panel-muted: 217 33% 12%;
+    --docs-panel-border: 217 33% 15%;
   }
 }
 

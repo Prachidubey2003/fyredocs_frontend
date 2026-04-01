@@ -1,5 +1,11 @@
+import { lazy, Suspense } from 'react';
 import type { DocSection } from '@/config/docs';
 import { Lightbulb, AlertTriangle } from 'lucide-react';
+import { CodeBlock } from './CodeBlock';
+
+const SectionMermaid = lazy(() =>
+  import('./SectionMermaid').then((mod) => ({ default: mod.SectionMermaid })),
+);
 
 interface DocsContentProps {
   sections: DocSection[];
@@ -74,18 +80,6 @@ const SectionWarning = ({ content }: { content: string }) => (
   </div>
 );
 
-const SectionCode = ({ content, language }: { content: string; language?: string }) => (
-  <div className="rounded-lg border bg-muted/50 overflow-hidden">
-    {language && (
-      <div className="px-4 py-1.5 border-b bg-muted/80 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-        {language}
-      </div>
-    )}
-    <pre className="p-4 overflow-x-auto">
-      <code className="text-sm font-mono text-foreground leading-relaxed whitespace-pre">{content}</code>
-    </pre>
-  </div>
-);
 
 export const DocsContent = ({ sections }: DocsContentProps) => {
   return (
@@ -101,8 +95,13 @@ export const DocsContent = ({ sections }: DocsContentProps) => {
           {section.type === 'table' && section.tableData && <SectionTable tableData={section.tableData} />}
           {section.type === 'tip' && <SectionTip content={section.content} />}
           {section.type === 'warning' && <SectionWarning content={section.content} />}
-          {section.type === 'code' && <SectionCode content={section.content} language={section.language} />}
+          {section.type === 'code' && <CodeBlock content={section.content} language={section.language} />}
           {section.type === 'formats' && section.content && <SectionParagraph content={section.content} />}
+          {section.type === 'mermaid' && (
+            <Suspense fallback={<div className="h-48 rounded-lg border bg-muted/50 animate-pulse" />}>
+              <SectionMermaid content={section.content} />
+            </Suspense>
+          )}
         </div>
       ))}
     </div>

@@ -9,7 +9,7 @@ export type DocCategory = 'getting-started' | 'tool-guide' | 'concept' | 'faq';
 export interface DocSection {
   heading?: string;
   content: string;
-  type: 'paragraph' | 'steps' | 'table' | 'tip' | 'formats' | 'code' | 'warning' | 'list';
+  type: 'paragraph' | 'steps' | 'table' | 'tip' | 'formats' | 'code' | 'warning' | 'list' | 'mermaid';
   items?: string[];
   tableData?: { headers: string[]; rows: string[][] };
   language?: string;

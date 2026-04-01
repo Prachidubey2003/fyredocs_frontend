@@ -1,4 +1,13 @@
 import type { DocSection } from '@/config/docs';
+import { mermaidDiagrams } from '@/config/mermaidDiagrams';
+
+/** Convert mermaid diagram entries into DocSection objects */
+const getMermaidSections = (slug: string): DocSection[] =>
+  (mermaidDiagrams[slug] ?? []).map(({ heading, content }) => ({
+    heading,
+    content,
+    type: 'mermaid' as const,
+  }));
 
 // ============================================================================
 // DEVELOPER DOCS - Super-admin only
@@ -19,7 +28,8 @@ export type DevDocCategory =
   | 'architecture'
   | 'guides'
   | 'frontend'
-  | 'howto';
+  | 'howto'
+  | 'flows';
 
 export interface DevDocNavGroup {
   title: string;
@@ -35,6 +45,22 @@ export const devDocNavGroups: DevDocNavGroup[] = [
       { slug: 'architecture', title: 'Architecture Overview' },
       { slug: 'getting-started', title: 'Local Setup' },
       { slug: 'request-flow', title: 'Request Flow' },
+    ],
+  },
+  {
+    title: 'Service Flows',
+    color: 'text-rose-500',
+    items: [
+      { slug: 'flow-overview', title: 'System Overview' },
+      { slug: 'flow-api-gateway', title: 'API Gateway Flow' },
+      { slug: 'flow-auth', title: 'Auth Service Flow' },
+      { slug: 'flow-job', title: 'Job Service Flow' },
+      { slug: 'flow-convert-to-pdf', title: 'Convert to PDF Flow' },
+      { slug: 'flow-convert-from-pdf', title: 'Convert from PDF Flow' },
+      { slug: 'flow-organize-pdf', title: 'Organize PDF Flow' },
+      { slug: 'flow-optimize-pdf', title: 'Optimize PDF Flow' },
+      { slug: 'flow-analytics', title: 'Analytics Flow' },
+      { slug: 'flow-cleanup', title: 'Cleanup Worker Flow' },
     ],
   },
   {
@@ -2396,6 +2422,1241 @@ export const developerDocs: DevDocEntry[] = [
           'Deleted or renamed functions MUST have their old tests removed or updated',
           'Missing or broken tests are treated as an incomplete task',
         ],
+      },
+    ],
+  },
+
+  // ==========================================================================
+  // SERVICE FLOWS — Visual architecture & sequence diagrams per service
+  // ==========================================================================
+
+  {
+    slug: 'flow-overview',
+    title: 'System Overview',
+    description: 'High-level system topology, data flow, NATS streams, and authentication flow.',
+    category: 'flows',
+    sections: [
+      {
+        heading: 'About These Diagrams',
+        content: 'These diagrams show how the EsyDocs platform is structured at the system level — the service topology, how data flows from upload to download, NATS JetStream stream architecture, and the authentication flow. Use these to orient yourself before diving into individual service flows.',
+        type: 'paragraph',
+      },
+
+      // ── Service Topology ──────────────────────────────────────────────
+      {
+        heading: 'Why a Microservice Topology?',
+        content: 'EsyDocs is decomposed into single-responsibility services so that each conversion format (PDF-to-X, X-to-PDF) can scale independently based on actual workload. The API Gateway is the only internet-facing service — every other component sits behind it, communicating over an internal Docker network. This means you can horizontally scale a hot path like Convert-to-PDF without touching Auth or Analytics.',
+        type: 'paragraph',
+      },
+      getMermaidSections('architecture')[0],
+      {
+        heading: 'Topology Takeaways',
+        content: 'Notice that Redis and PostgreSQL are shared infrastructure, not per-service databases. Redis handles ephemeral state — session denylist entries, rate-limit counters, job progress — while PostgreSQL owns durable data like user accounts and conversion history. NATS JetStream sits between the API Gateway and every worker service, decoupling request acceptance from actual processing. This is what lets the platform stay responsive under heavy load: the gateway enqueues and returns immediately.',
+        type: 'paragraph',
+      },
+
+      // ── Data Flow Overview ────────────────────────────────────────────
+      {
+        heading: 'Following a File Through the System',
+        content: 'Understanding the data flow end-to-end is the fastest way to debug production issues. A file upload touches at least four services before the user gets a download link, and each hop has its own failure mode. The diagram below traces that journey so you can pinpoint exactly where a stuck job or missing file went sideways.',
+        type: 'paragraph',
+      },
+      getMermaidSections('architecture')[1],
+      {
+        heading: 'Data Flow Design Decisions',
+        content: 'Files are written to object storage immediately on upload — the job payload only carries a storage key, never the raw bytes. This keeps NATS messages small (under 1 KB) and avoids re-uploading on retry. Workers pull the file from storage, process it, and write the result back under a new key. The original is never mutated, which gives us free rollback if a conversion fails mid-stream.',
+        type: 'paragraph',
+      },
+
+      // ── NATS JetStream Streams ────────────────────────────────────────
+      {
+        heading: 'How Async Job Dispatch Works',
+        content: 'NATS JetStream is the backbone of all asynchronous work in EsyDocs. Rather than point-to-point HTTP calls between services, the API Gateway publishes a message to a subject like JOBS.convert-to-pdf, and the corresponding worker picks it up via a durable consumer. This pattern means workers can crash and restart without losing jobs — JetStream handles redelivery automatically after an ack timeout.',
+        type: 'paragraph',
+      },
+      getMermaidSections('architecture')[2],
+      {
+        heading: 'Stream Architecture Takeaways',
+        content: 'Each conversion type has its own subject under a single JOBS stream, which keeps configuration simple while still allowing per-subject filtering. Consumers are pull-based and durable, so a worker only receives the next message when it explicitly asks for one — this provides natural backpressure. If you need to add a new conversion format, you just add a new subject and deploy a worker that subscribes to it; no changes to existing services required.',
+        type: 'paragraph',
+      },
+
+      // ── Authentication Flow ───────────────────────────────────────────
+      {
+        heading: 'JWT Auth with Token Rotation',
+        content: 'EsyDocs uses a dual-token JWT strategy: a short-lived access token (15 minutes) for API authorization and a longer-lived refresh token (7 days) for silent renewal. This limits the blast radius of a leaked access token while keeping the user experience seamless. The refresh token is stored in an httpOnly cookie so it is inaccessible to client-side JavaScript, mitigating XSS-based token theft.',
+        type: 'paragraph',
+      },
+      getMermaidSections('architecture')[3],
+      {
+        heading: 'Auth Design Decisions',
+        content: 'On logout or password change, the refresh token is added to a Redis denylist rather than invalidating all sessions server-wide. Redis is ideal here because denylist entries only need to live as long as the token\'s remaining TTL — after expiry, the entry self-evicts. This avoids the stale-session problem of pure stateless JWT while keeping the auth path fast: a single Redis EXISTS check per request is all it costs.',
+        type: 'paragraph',
+      },
+    ],
+  },
+  {
+    slug: 'flow-api-gateway',
+    title: 'API Gateway Flow',
+    description: 'Visual flow diagrams for the API Gateway — request routing, middleware chain, and auth verification.',
+    category: 'flows',
+    sections: [
+      {
+        heading: 'About This Service',
+        content: 'The API Gateway is the single entry point for all client traffic. It handles CORS, authentication verification, request routing via reverse proxy, rate limiting, and security headers. It does not contain business logic — it only orchestrates middleware and forwards requests to downstream services.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Where It Fits',
+        content: mermaidDiagrams['architecture'][0].content,
+        type: 'mermaid',
+      },
+      // ── Component Diagram ──────────────────────────────────────────
+      {
+        heading: 'Internal Structure',
+        content: 'Before looking at runtime behavior, it helps to understand what the API Gateway is actually made of. The component diagram below breaks out the major internal pieces — the middleware stack, the reverse proxy, and the configuration layer. Notice that the gateway itself holds no domain logic; every component exists solely to inspect, enrich, or forward HTTP requests.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-api-gateway')[0],
+      {
+        heading: 'Why This Decomposition Matters',
+        content: 'Separating middleware, proxy, and config into distinct components means each can be tested and replaced independently. The config layer is loaded once at startup and injected into middleware constructors, so there is no hidden global state. This also makes it straightforward to add new middleware — you write the handler, register it in the config, and the gateway picks it up without touching the proxy code.',
+        type: 'paragraph',
+      },
+
+      // ── Middleware Execution Order ──────────────────────────────────
+      {
+        heading: 'The Middleware Pipeline',
+        content: 'Order matters in a middleware chain. A rate limiter that runs after authentication would waste cycles verifying tokens for requests that should have been throttled. The diagram below shows the exact execution order the gateway uses, and understanding this sequence is essential for debugging request failures — if a request is rejected, the position in the chain tells you which middleware made the call.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-api-gateway')[1],
+      {
+        heading: 'Design Decisions in the Pipeline',
+        content: 'CORS runs first because preflight requests must be answered immediately — no downstream processing needed. Rate limiting comes before auth so that brute-force attacks are blocked cheaply, without hitting Redis for session lookups. RequestID and Logger wrap the proxy call so every log line, including errors from downstream services, carries a correlation ID for tracing.',
+        type: 'paragraph',
+      },
+
+      // ── Dependency Graph ────────────────────────────────────────────
+      {
+        heading: 'External Dependencies',
+        content: 'The gateway is stateless by design, but it still needs external systems for rate-limit counters and session validation. The dependency graph below shows exactly what the gateway talks to and why. Understanding these connections helps you predict what breaks when a dependency goes down — for example, a Redis outage affects both rate limiting and auth verification simultaneously.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-api-gateway')[2],
+      {
+        heading: 'Failure Modes and Resilience',
+        content: 'Because Redis backs both rate limiting and session storage, losing it degrades two capabilities at once. The gateway is configured to fail open on rate limiting (allowing traffic through) but fail closed on auth (rejecting requests) when Redis is unavailable. Downstream service failures are isolated — a 500 from job-service does not cascade into auth-service requests, because the reverse proxy routes each path independently.',
+        type: 'paragraph',
+      },
+
+      // ── Authenticated Request Flow ──────────────────────────────────
+      {
+        heading: 'Authenticated Request Lifecycle',
+        content: 'Most API traffic follows the authenticated path — a logged-in user hitting a protected endpoint. The diagram below traces a single request from the client through every middleware layer, across the network to the downstream service, and back. Pay attention to where the token is validated versus where it is merely forwarded; the gateway verifies the session but never decodes the JWT payload itself.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-api-gateway')[3],
+      {
+        heading: 'What the Authenticated Flow Reveals',
+        content: 'The gateway adds the validated user ID as a header before proxying, so downstream services never need to call auth-service themselves. This is a deliberate trust boundary: services behind the gateway trust the X-User-ID header because only the gateway can set it. If a downstream service were exposed directly, this header could be spoofed — which is why all traffic must enter through the gateway.',
+        type: 'paragraph',
+      },
+
+      // ── Guest (Unauthenticated) Request Flow ───────────────────────
+      {
+        heading: 'Guest and Unauthenticated Access',
+        content: 'Not every endpoint requires a login. Public routes like documentation pages, health checks, and the login endpoint itself need to be accessible without a token. The flow below shows how the gateway distinguishes between protected and public routes, and what happens when a request arrives without credentials.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-api-gateway')[4],
+      {
+        heading: 'Guest Flow Takeaways',
+        content: 'The gateway uses a route whitelist to decide which paths skip auth verification. This list is defined in the gateway config, not in the auth middleware itself, so adding a new public route is a configuration change rather than a code change. Guest requests still pass through rate limiting and CORS — being unauthenticated does not mean being unprotected.',
+        type: 'paragraph',
+      },
+
+      // ── CORS Preflight Flow ─────────────────────────────────────────
+      {
+        heading: 'CORS Preflight Handling',
+        content: 'Browsers send an OPTIONS preflight request before any cross-origin POST, PUT, or DELETE. These requests carry no auth token and expect a fast response with the right headers. The diagram below shows how the gateway short-circuits the middleware chain for preflight requests, returning the appropriate Access-Control headers without ever touching downstream services.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-api-gateway')[5],
+      {
+        heading: 'Why Preflight Is Handled First',
+        content: 'CORS middleware sits at position zero in the chain specifically because preflight requests must never reach the auth layer. If they did, every cross-origin request would fail with a 401 before the browser even sent the real request. By handling OPTIONS immediately, the gateway keeps preflight latency under a millisecond and avoids unnecessary Redis lookups.',
+        type: 'paragraph',
+      },
+
+      // ── Health Check Flow ───────────────────────────────────────────
+      {
+        heading: 'Health Check Endpoint',
+        content: 'Load balancers, Kubernetes probes, and monitoring tools all need a lightweight way to ask "is this service alive?" The health check flow below is intentionally minimal — it bypasses the full middleware chain and returns a 200 with basic version and uptime metadata. This ensures that infrastructure tooling gets a reliable signal even when downstream services or Redis are experiencing issues.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-api-gateway')[6],
+      {
+        heading: 'Health Check Design',
+        content: 'The /health endpoint is excluded from both auth and rate limiting, so it cannot be blocked by a misconfigured token or a burst of traffic. It reports only the gateway\'s own status, not the health of downstream services — that distinction is important because a healthy gateway with an unhealthy job-service should still accept and route traffic to other services. Deep health checks that cascade into dependencies are handled by a separate /health/deep endpoint used for diagnostics, not for load balancer routing.',
+        type: 'paragraph',
+      },
+    ],
+  },
+  {
+    slug: 'flow-auth',
+    title: 'Auth Service Flow',
+    description: 'Visual flow diagrams for the Auth Service — registration, login, logout, token lifecycle, and guest sessions.',
+    category: 'flows',
+    sections: [
+      {
+        heading: 'About This Service',
+        content: 'The Auth Service handles user registration, login, logout, token refresh, and guest session management. It issues JWT access tokens (15min) and refresh tokens (7d) as HTTP-only cookies, with a Redis-backed denylist for instant revocation on logout.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Where It Fits',
+        content: mermaidDiagrams['architecture'][0].content,
+        type: 'mermaid',
+      },
+      // 1. Component Diagram
+      {
+        heading: 'Inside the Auth Service',
+        content: 'Before diving into individual flows, it helps to see what the Auth Service is actually made of. The diagram below breaks it down into its internal building blocks — handlers, services, repositories, and the supporting infrastructure clients.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-auth')[0],
+      {
+        heading: 'Why This Decomposition Matters',
+        content: 'Separating the JWT manager and password hasher into their own components means we can swap algorithms (e.g., moving from bcrypt to argon2) without touching any handler or service logic. The repository layer abstracts all direct database calls, so the service layer never knows whether users live in PostgreSQL, DynamoDB, or an in-memory store during tests.',
+        type: 'paragraph',
+      },
+
+      // 2. Token Lifecycle
+      {
+        heading: 'Understanding Token Lifetimes',
+        content: 'JWTs are stateless by design, but that creates a revocation problem — you cannot "delete" a token that has already been issued. Our solution is a two-token system with a Redis-backed denylist that bridges the gap between stateless speed and stateful control.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-auth')[1],
+      {
+        heading: 'Why 15 Minutes and 7 Days?',
+        content: 'The short-lived access token (15 min) limits the blast radius if a token is leaked; an attacker gets at most 15 minutes of access. The longer refresh token (7 days) keeps users from having to log in every quarter-hour. On logout, both tokens are added to the Redis denylist with a TTL matching their remaining lifespan, so Redis automatically cleans up expired entries.',
+        type: 'paragraph',
+      },
+
+      // 3. Password Security Flow
+      {
+        heading: 'How Passwords Are Protected',
+        content: 'Storing passwords in plain text is a non-starter. The Auth Service never persists the raw password — it only ever stores a one-way bcrypt hash. The following diagram shows exactly when hashing and comparison happen relative to the rest of the flow.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-auth')[2],
+      {
+        heading: 'Design Notes on Hashing',
+        content: 'bcrypt is intentionally slow, which makes brute-force attacks impractical. The cost factor is configurable via environment variables so it can be tuned as hardware gets faster. Because the hash includes its own salt, we never need a separate salt column in the database.',
+        type: 'paragraph',
+      },
+
+      // 4. Dependency Graph
+      {
+        heading: 'External Dependencies',
+        content: 'The Auth Service does not operate in isolation — it depends on two external data stores. Understanding these dependencies is critical for local development setup and for reasoning about what happens when one of them goes down.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-auth')[3],
+      {
+        heading: 'Failure Implications',
+        content: 'If PostgreSQL is unreachable, signup and login both fail because user records cannot be read or written. If Redis goes down, logout becomes a no-op (tokens cannot be denylisted) and guest sessions stop working. In production we run both with replicas, but the service itself does not retry — it fails fast and lets the API gateway return a 503.',
+        type: 'paragraph',
+      },
+
+      // 5. User Signup
+      {
+        heading: 'Walking Through Registration',
+        content: 'Registration is the most write-heavy flow in the Auth Service. It touches validation, the database, the password hasher, and the token issuer in sequence. Every step is a potential failure point, and the diagram below shows the happy path from start to finish.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-auth')[4],
+      {
+        heading: 'Signup Design Decisions',
+        content: 'We validate the request body before hitting the database to avoid unnecessary round-trips. The duplicate-email check and the insert happen inside a single database transaction to prevent race conditions where two users register with the same email simultaneously. Tokens are issued immediately after insertion so the user is logged in the moment they finish signing up — no extra login step required.',
+        type: 'paragraph',
+      },
+
+      // 6. User Login
+      {
+        heading: 'Walking Through Login',
+        content: 'Login is the mirror image of signup: instead of writing a new user, we look one up and verify their credentials. The flow is deliberately similar in shape to keep the codebase predictable.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-auth')[5],
+      {
+        heading: 'Login Design Decisions',
+        content: 'The service returns a generic "invalid credentials" error whether the email is wrong or the password is wrong. This prevents user enumeration attacks — an attacker cannot probe for valid email addresses. Cookies are set with the HttpOnly, Secure, and SameSite=Strict flags to minimize XSS and CSRF exposure.',
+        type: 'paragraph',
+      },
+
+      // 7. User Logout
+      {
+        heading: 'Walking Through Logout',
+        content: 'Logout needs to do more than just clear cookies on the client. Because JWTs are self-contained, a stolen token would remain valid until expiry unless we actively revoke it. That is where the Redis denylist comes in.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-auth')[6],
+      {
+        heading: 'Logout Design Decisions',
+        content: 'The service calculates the remaining TTL of each token and stores them in Redis with that exact TTL. This means Redis automatically evicts expired entries — no background cleanup job needed. Clearing cookies on the response is a courtesy to the browser; the real security boundary is the server-side denylist.',
+        type: 'paragraph',
+      },
+
+      // 8. Get Current User (Me)
+      {
+        heading: 'The "Me" Endpoint',
+        content: 'Most SPAs need a way to ask "who am I?" on page load. The /me endpoint decodes the access token, fetches the corresponding user record, and returns a sanitized profile. It is the most frequently called endpoint in the Auth Service.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-auth')[7],
+      {
+        heading: 'Performance Considerations',
+        content: 'Because this endpoint is hit on every page load, it needs to be fast. Token verification is pure CPU work (no I/O), and the database query is a simple primary-key lookup. We intentionally do not cache the user profile in Redis here — the data changes infrequently enough that a single DB read per page load is acceptable, and it avoids cache-invalidation complexity.',
+        type: 'paragraph',
+      },
+
+      // 9. Failed Login (Wrong Password)
+      {
+        heading: 'Error Path: Wrong Password',
+        content: 'Happy paths are only half the story. Understanding how the service behaves when things go wrong is just as important for debugging and for writing integration tests.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-auth')[8],
+      {
+        heading: 'Why We Treat This Carefully',
+        content: 'The error response is intentionally vague — "invalid credentials" rather than "wrong password" — to avoid leaking information about which accounts exist. Rate limiting at the API gateway layer provides additional protection against credential-stuffing attacks. The service itself remains stateless with respect to failed attempts; it does not track them.',
+        type: 'paragraph',
+      },
+
+      // 10. Duplicate Signup
+      {
+        heading: 'Error Path: Duplicate Email',
+        content: 'When a user tries to register with an email that is already taken, the service needs to reject the request without revealing too much. This diagram shows the exact point where the flow diverges from the happy path.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-auth')[9],
+      {
+        heading: 'Balancing UX and Security',
+        content: 'Returning a specific "email already exists" error is a trade-off. It improves the user experience (they know to try logging in instead) but it also confirms to an attacker that an account exists. We have chosen to accept this trade-off because email enumeration can also be done via the password-reset flow, so hiding it here would only provide a false sense of security.',
+        type: 'paragraph',
+      },
+
+      // 11. Guest Session Creation
+      {
+        heading: 'Anonymous Guest Sessions',
+        content: 'Not every user wants to create an account just to try the product. Guest sessions let anonymous users access a limited feature set without signing up. The following diagram shows how these lightweight sessions are created and stored.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-auth')[10],
+      {
+        heading: 'Guest Session Constraints',
+        content: 'Guest sessions are stored in Redis with a 24-hour TTL so they do not accumulate indefinitely. They carry a reduced permission set — no file uploads, no persistent storage. When a guest later signs up, the session is promoted to a full user account and linked to the same ID, preserving any in-progress work.',
+        type: 'paragraph',
+      },
+    ],
+  },
+  {
+    slug: 'flow-job',
+    title: 'Job Service Flow',
+    description: 'Visual flow diagrams for the Job Service — job creation, dispatch, status tracking, uploads, and SSE.',
+    category: 'flows',
+    sections: [
+      {
+        heading: 'About This Service',
+        content: 'The Job Service is the central orchestrator. It handles file uploads (chunked and multipart), creates jobs, dispatches them to worker services via NATS JetStream, tracks job status, and streams real-time updates to clients via SSE. It also manages the upload-to-job lifecycle.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Where It Fits',
+        content: mermaidDiagrams['architecture'][0].content,
+        type: 'mermaid',
+      },
+      // --- Component & Architecture Diagrams ---
+      {
+        heading: 'Component Diagram',
+        content: 'Before we trace any request flows, it helps to see the internal building blocks of the Job Service. The service is not a single monolith handler — it is composed of discrete components (HTTP handlers, a NATS dispatcher, an SSE hub, and an upload manager) that each own a specific responsibility.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[0],
+      {
+        heading: '',
+        content: 'Notice how the SSE hub and the NATS dispatcher are siblings, not parent-child. That separation is intentional: the dispatcher fires messages into the queue and forgets about them, while the SSE hub independently listens for status changes and pushes them to connected clients. This decoupling means a slow SSE consumer can never back-pressure the dispatch path.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Job Dispatch Flow',
+        content: 'When a job is created, it does not get processed in-place. Instead, the Job Service publishes a message to a NATS JetStream subject that is keyed by the requested tool type. This is the fan-out mechanism that lets the platform scale each conversion tool independently.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[1],
+      {
+        heading: '',
+        content: 'The subject-based routing is what makes adding a new tool straightforward — you deploy a new consumer that subscribes to the right subject, and the Job Service does not need a code change. It also means you can horizontally scale a single tool (say, PDF merge) without affecting any other worker pool.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Tool-to-Service Routing Map',
+        content: 'With subject-based dispatch in mind, the natural next question is: which tool lands on which service? This routing map makes the answer explicit. Each tool name resolves to exactly one downstream worker service.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[2],
+      {
+        heading: '',
+        content: 'If you are debugging a failed job, this map is your first stop. Find the tool, find the service, then check that service\'s logs. The one-to-one mapping keeps things predictable even as the number of tools grows.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Dependency Graph',
+        content: 'The Job Service sits at a busy intersection of infrastructure. It talks to PostgreSQL for persistence, Redis for caching and rate limiting, NATS for async messaging, and a file storage backend for uploads and results. Understanding these dependencies is critical for operational readiness.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[3],
+      {
+        heading: '',
+        content: 'Every one of these dependencies has a health check wired into the service\'s readiness probe. If Redis goes down, the service stays in the load balancer but degrades gracefully — it skips the cache layer rather than returning errors. NATS and PostgreSQL, on the other hand, are hard dependencies: lose either one and the service marks itself not-ready.',
+        type: 'paragraph',
+      },
+
+      // --- Job Lifecycle ---
+      {
+        heading: 'Job Lifecycle',
+        content: 'Now that you understand the components and their dependencies, let us walk through the actual job lifecycle — from creation through completion and cleanup.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Create Job (JSON body with uploadId)',
+        content: 'The most common job creation path starts after the client has already uploaded files. The client sends a JSON body that references an existing uploadId, so the service only needs to validate the reference, create the job record, and dispatch it.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[4],
+      {
+        heading: '',
+        content: 'Separating upload from job creation gives the client flexibility — a user can upload files, navigate away, come back, and still create the job without re-uploading. It also means the upload and the job can have independent retry semantics.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Create Job (Multipart upload)',
+        content: 'Sometimes the client wants a simpler, one-shot flow: upload the files and create the job in a single HTTP request. This multipart path handles that by internally creating the upload record, persisting the files, and then dispatching the job — all within one request cycle.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[5],
+      {
+        heading: '',
+        content: 'The trade-off is that this path ties the upload lifetime to the HTTP request. If the connection drops mid-upload, the entire operation fails and must be retried from scratch. For large files, the chunked upload path is almost always the better choice.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Get Job Status',
+        content: 'Clients that do not use SSE fall back to polling the status endpoint. The endpoint returns the current job state along with progress metadata so the UI can render a progress bar.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[6],
+      {
+        heading: '',
+        content: 'Status responses are served from a Redis cache with a short TTL, so even aggressive polling does not hit PostgreSQL on every request. The cache is invalidated whenever the job state changes, keeping the data fresh without sacrificing read performance.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Download Completed Job',
+        content: 'Once a job reaches the "completed" state, the result file is available for download. The download endpoint validates that the job is owned by the requesting user, then streams the file from storage.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[7],
+      {
+        heading: '',
+        content: 'Downloads use a signed, time-limited URL rather than proxying the bytes through the Job Service. This keeps the service\'s memory footprint low and lets the storage backend handle range requests and caching headers natively.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Delete Job',
+        content: 'Deleting a job is more than removing a database row. The service must also clean up associated files in storage and invalidate any cached state. This diagram shows the full teardown sequence.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[8],
+      {
+        heading: '',
+        content: 'File cleanup happens asynchronously after the database record is deleted. If storage deletion fails, a background reconciliation process will eventually catch orphaned files. This design ensures the user gets an immediate response while expensive I/O happens out of band.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Guest User Job Access',
+        content: 'Guest users present a unique challenge: they have no persistent identity, so the service uses a short-lived token tied to the browser session. This diagram shows how guest access is granted and scoped.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[9],
+      {
+        heading: '',
+        content: 'Guest tokens are intentionally limited — they grant access only to the specific job that was created in that session, and they expire aggressively. This prevents abuse while still letting anonymous users try the product without signing up.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'SSE Job Status Updates',
+        content: 'For clients that want real-time feedback, the Job Service exposes a Server-Sent Events endpoint. Once a client subscribes, every status transition for that job is pushed immediately — no polling required.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[10],
+      {
+        heading: '',
+        content: 'The SSE connection is per-job, not per-user. This keeps the fan-out manageable and means the server only holds state for jobs that are actively being watched. When the job reaches a terminal state (completed or failed), the server closes the connection automatically.',
+        type: 'paragraph',
+      },
+
+      // --- Upload Subsystem ---
+      {
+        heading: 'Upload Subsystem',
+        content: 'The upload subsystem is a semi-autonomous part of the Job Service that manages file ingestion. It has its own component structure, state machine, and dependency graph because uploads have a fundamentally different lifecycle from jobs.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Upload Service Component Diagram',
+        content: 'The upload manager is composed of a chunk receiver, a reassembly pipeline, and a storage writer. These components work together to turn a stream of chunks into a complete file that a job can reference.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[11],
+      {
+        heading: '',
+        content: 'Keeping the upload components separate from the job components means you can reason about upload bugs without thinking about job dispatch at all. The only shared surface is the storage layer and the uploadId foreign key.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Upload State Machine',
+        content: 'Every upload moves through a strict set of states: initiated, uploading, complete, or failed. Transitions are enforced at the database level, so no application bug can skip a state or move backwards.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[12],
+      {
+        heading: '',
+        content: 'The "failed" state is a terminal state, but it does not trigger automatic cleanup. Failed uploads are retained for a configurable window so that support teams can investigate what went wrong before the data is purged.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Upload Service Dependency Graph',
+        content: 'The upload subsystem has a narrower dependency footprint than the job side. It primarily needs file storage and PostgreSQL. Redis is used only for deduplication checks on chunk hashes.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[13],
+      {
+        heading: '',
+        content: 'Because the upload path does not depend on NATS, an outage in the messaging layer does not prevent users from uploading files. They just cannot create jobs until NATS recovers, which is a much better failure mode than losing an in-progress upload.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Chunked File Upload Flow',
+        content: 'Large files are uploaded in chunks to avoid timeout and memory issues. The client splits the file, sends each chunk with an index, and the server reassembles them once all chunks have arrived.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[14],
+      {
+        heading: '',
+        content: 'Chunks can arrive out of order and even be retried individually without restarting the entire upload. The server tracks which chunks have been received and only triggers reassembly when the set is complete. This makes the upload resilient to flaky networks.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Job Creation from Upload',
+        content: 'Once an upload reaches the "complete" state, the client can reference it by uploadId to create a job. This diagram shows the handoff from the upload subsystem to the job lifecycle.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[15],
+      {
+        heading: '',
+        content: 'The handoff is intentionally loose-coupled. The upload subsystem does not know or care what happens after completion — it simply marks the upload as complete and makes the files addressable. The job creation endpoint independently validates that the referenced upload exists and is in the right state.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Multipart Direct Upload with Job Creation',
+        content: 'This is the convenience path that combines file upload and job creation into a single multipart HTTP request. It is the fastest way to go from file selection to a running job.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[16],
+      {
+        heading: '',
+        content: 'Under the hood, the service still creates an upload record and runs it through the same validation pipeline. The only difference is that the client never sees the uploadId — it is an internal implementation detail. This keeps the two paths consistent from a data integrity perspective.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Upload Service User Signup',
+        content: 'When a brand-new user signs up, any uploads they created as a guest need to be migrated to their new account. This diagram walks through how that ownership transfer works.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-job')[17],
+      {
+        heading: '',
+        content: 'The migration is atomic — either all guest uploads transfer to the new account or none do. This prevents a partial transfer from leaving orphaned files that neither the guest token nor the new account can access.',
+        type: 'paragraph',
+      },
+    ],
+  },
+  {
+    slug: 'flow-convert-to-pdf',
+    title: 'Convert to PDF Flow',
+    description: 'Visual flow diagrams for the Convert to PDF service — document and image to PDF conversion pipeline.',
+    category: 'flows',
+    sections: [
+      {
+        heading: 'About This Service',
+        content: 'The Convert to PDF service is a NATS consumer that converts office documents (Word, Excel, PowerPoint, HTML) and images to PDF using LibreOffice headless and pdfcpu. It picks up jobs from the NATS JetStream dispatch queue and writes results back to the shared file storage.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Where It Fits',
+        content: mermaidDiagrams['architecture'][0].content,
+        type: 'mermaid',
+      },
+      // — 0. Component Diagram —
+      {
+        heading: 'Inside the Service',
+        content: 'The Convert to PDF service is not a single monolithic converter — it is composed of several focused components that each own one responsibility. A NATS consumer pulls jobs off the queue, a tool router decides which converter handles the file type, and dedicated pools for LibreOffice and pdfcpu do the heavy lifting. This separation means we can scale or swap out individual pieces (for example, replacing LibreOffice with a commercial engine) without rewriting the entire service.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Component Diagram',
+        content: mermaidDiagrams['svc-convert-to-pdf'][0].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'Notice that the LibreOffice pool is intentionally isolated behind its own wrapper. LibreOffice headless is not thread-safe, so the pool manages a fixed number of sequential workers and queues requests to them. This avoids the classic pitfall of spawning dozens of LibreOffice processes that fight over memory and crash under load.',
+        type: 'paragraph',
+      },
+
+      // — 1. Allowed Tool Types —
+      {
+        heading: 'Supported Conversion Types',
+        content: 'Not every conversion request should land in this service. The tool router acts as a gatekeeper, accepting only the conversion types that this service is explicitly built to handle: Word, Excel, PowerPoint, HTML, and image to PDF, plus PDF merging. Any unrecognized tool type is rejected immediately with a clear error rather than silently failing halfway through a pipeline.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Allowed Tool Types',
+        content: mermaidDiagrams['svc-convert-to-pdf'][1].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'This allow-list approach was chosen over a deny-list because new tool types are added to the platform regularly. An allow-list guarantees that a new, untested type never accidentally runs through a converter that does not understand it. When you add a new conversion type, you must explicitly register it here — a small cost for a large safety gain.',
+        type: 'paragraph',
+      },
+
+      // — 2. Dependency Graph —
+      {
+        heading: 'External Dependencies',
+        content: 'Understanding the dependency graph is critical for debugging and deployment. The service depends on four external systems: LibreOffice for office-document conversion, pdfcpu for merge and page-manipulation operations, NATS JetStream for job delivery, and a shared file-storage volume for reading input files and writing output PDFs. If any one of these is unavailable at startup, the service will fail its health check and refuse to accept jobs.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Dependency Graph',
+        content: mermaidDiagrams['svc-convert-to-pdf'][2].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'We chose pdfcpu over Ghostscript for merge operations because pdfcpu is a pure Go library — no CGO, no external binary, no extra attack surface. It is statically compiled into the service binary, which makes container images smaller and eliminates an entire class of "missing shared library" deployment issues.',
+        type: 'paragraph',
+      },
+
+      // — 3. Job Processing (Happy Path) —
+      {
+        heading: 'The Happy Path',
+        content: 'Most conversion jobs follow the same predictable pipeline: the service receives a job message from NATS, downloads the source file from shared storage, routes it to the correct converter, uploads the resulting PDF back to storage, and marks the job as complete. Each step is idempotent — if the service crashes mid-conversion, NATS will redeliver the message and the entire pipeline reruns from scratch without producing duplicates.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Job Processing (Happy Path)',
+        content: mermaidDiagrams['svc-convert-to-pdf'][3].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'The "download first, convert locally" pattern deserves a callout. We deliberately copy the file to a local temp directory before handing it to LibreOffice. This avoids NFS or FUSE latency during the actual conversion, which can cause LibreOffice to time out on large files. The local copy is cleaned up after the result is uploaded, keeping disk usage bounded.',
+        type: 'paragraph',
+      },
+
+      // — 4. Merge PDF Processing —
+      {
+        heading: 'The Merge Flow',
+        content: 'PDF merging is a special case that bypasses the LibreOffice path entirely. Instead of converting a single file, the service downloads multiple source PDFs, passes them to pdfcpu in the correct page order, and produces a single combined output. This flow exists as a separate code path because the input shape is fundamentally different — one job references many files, not one.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Merge PDF Processing',
+        content: mermaidDiagrams['svc-convert-to-pdf'][4].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'Order matters during a merge, and the job payload includes an explicit ordering array rather than relying on filename sorting. This was a deliberate design decision after early users reported that lexicographic ordering produced unexpected results when filenames contained mixed numeric prefixes.',
+        type: 'paragraph',
+      },
+
+      // — 5. Image-to-PDF Conversion —
+      {
+        heading: 'Image Conversion Pipeline',
+        content: 'Images require their own pipeline because they need pre-processing that office documents do not. Before conversion, the service validates the image format, checks dimensions, and optionally resizes oversized images so the resulting PDF stays within reasonable page bounds. Without this step, a 10,000-pixel-wide photograph would produce a PDF page the size of a billboard.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Image-to-PDF Conversion',
+        content: mermaidDiagrams['svc-convert-to-pdf'][5].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'The resize threshold is configurable via environment variable, defaulting to 4096 pixels on the longest edge. We chose this default because it produces A4-compatible output at 300 DPI — high enough for print quality, small enough to keep file sizes under control. JPEG, PNG, TIFF, and WebP are all supported; unsupported formats are rejected at the validation step before any processing begins.',
+        type: 'paragraph',
+      },
+
+      // — 6. Worker Lifecycle —
+      {
+        heading: 'Startup and Shutdown',
+        content: 'The worker lifecycle is designed around graceful degradation. On startup, the service connects to NATS, initializes the LibreOffice pool, verifies that pdfcpu is available, and only then begins consuming messages. This "verify everything before accepting work" pattern prevents the service from pulling jobs it cannot actually process, which would cause unnecessary redeliveries and user-visible delays.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Worker Lifecycle',
+        content: mermaidDiagrams['svc-convert-to-pdf'][6].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'During shutdown, the service stops accepting new messages, waits for in-flight conversions to finish (up to a configurable timeout), and then tears down the LibreOffice pool and NATS connection in reverse order. This two-phase shutdown ensures that a rolling deployment never drops a job mid-conversion — the orchestrator can safely kill the old pod once it reports healthy termination.',
+        type: 'paragraph',
+      },
+    ],
+  },
+  {
+    slug: 'flow-convert-from-pdf',
+    title: 'Convert from PDF Flow',
+    description: 'Visual flow diagrams for the Convert from PDF service — PDF to document format conversion pipeline.',
+    category: 'flows',
+    sections: [
+      {
+        heading: 'About This Service',
+        content: 'The Convert from PDF service is a NATS consumer that converts PDFs to other formats (Word, Excel, PowerPoint, images, HTML, text, PDF/A) using LibreOffice, Poppler utilities (pdftoppm, pdftohtml, pdftotext), and Ghostscript.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Where It Fits',
+        content: mermaidDiagrams['architecture'][0].content,
+        type: 'mermaid',
+      },
+      // — 0. Component Diagram —
+      {
+        heading: 'Component Architecture',
+        content: 'Unlike the Convert to PDF service which leans heavily on a single tool (LibreOffice), the Convert from PDF service must orchestrate three entirely different conversion backends. Each backend excels at a specific class of output format, so a routing layer inspects the requested tool type and dispatches work to the right adapter. This keeps each adapter small, testable, and independently upgradable.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Component Diagram',
+        content: mermaidDiagrams['svc-convert-from-pdf'][0].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'LibreOffice handles document-format conversions (Word, Excel, PowerPoint) because it understands the rich layout information inside a PDF and can reconstruct it in Office XML. Poppler utilities handle lighter-weight extractions — images via pdftoppm, HTML via pdftohtml, and plain text via pdftotext — where raw content matters more than formatting fidelity. Ghostscript handles PDF/A conversion because it can re-linearize and embed fonts to meet archival compliance standards.',
+        type: 'paragraph',
+      },
+
+      // — 1. Allowed Tool Types —
+      {
+        heading: 'Supported Conversion Types',
+        content: 'The service exposes seven distinct conversion tool types, each mapped to a specific backend adapter. This explicit allowlist serves two purposes: it prevents callers from requesting unsupported conversions at the NATS message level, and it makes the mapping between tool type and backend transparent for debugging. Every new format added in the future only requires a new entry here and a corresponding adapter implementation.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Allowed Tool Types',
+        content: mermaidDiagrams['svc-convert-from-pdf'][1].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'Notice that image extraction (pdf-to-image) goes through Poppler rather than LibreOffice. Poppler\'s pdftoppm renders each page at the pixel level, producing consistently sharp raster output. LibreOffice could technically export images, but its rendering pipeline is optimized for editable vector content, which often introduces subtle artifacts in bitmap output.',
+        type: 'paragraph',
+      },
+
+      // — 2. Worker Retry Strategy —
+      {
+        heading: 'Why Exponential Backoff?',
+        content: 'PDF conversion is inherently resource-intensive — LibreOffice can consume several hundred megabytes of RAM for a complex document, and Ghostscript may need significant CPU time for font embedding. When a conversion fails, immediately retrying would pile pressure onto an already strained worker. Exponential backoff gives the system breathing room to recover, whether the root cause is a transient OOM kill, a temporary disk-space shortage, or a slow upstream object store.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Worker Retry Strategy',
+        content: mermaidDiagrams['svc-convert-from-pdf'][2].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'After all retries are exhausted the message is moved to a dead letter queue rather than silently dropped. This is critical for operational visibility: a growing dead letter queue signals a systemic issue (e.g., a corrupt LibreOffice installation) rather than one-off bad input. Operators can inspect, replay, or discard dead letters without affecting the main processing pipeline.',
+        type: 'paragraph',
+      },
+
+      // — 3. Job Processing (Happy Path) —
+      {
+        heading: 'The Happy Path',
+        content: 'In the common case, a conversion job flows through four sequential stages: receive the NATS message, download the source PDF from object storage, run the appropriate backend conversion, and upload the result. This linear pipeline is deliberately simple — there is no internal fan-out or parallelism within a single job. Keeping one job on one goroutine makes resource accounting predictable and prevents a single large PDF from starving other in-flight conversions.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Job Processing (Happy Path)',
+        content: mermaidDiagrams['svc-convert-from-pdf'][3].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'The download and upload steps use streaming where possible so that the worker does not need to buffer the entire file in memory. For extremely large PDFs this is the difference between a successful conversion and an out-of-memory crash. The final "complete" step publishes a status update back through NATS so the Job Service can notify the client.',
+        type: 'paragraph',
+      },
+
+      // — 4. Job Processing (Failure with Retry) —
+      {
+        heading: 'Handling Transient Failures',
+        content: 'Not every failure is permanent. A conversion might fail because LibreOffice ran out of file descriptors, the object store returned a 503, or the worker was briefly CPU-throttled by the container runtime. When a failure occurs and retries remain, the service NAKs the NATS message with a calculated backoff delay. NATS will redeliver the message after that delay, and the next attempt may land on the same worker or a different one — either way the retry is transparent to the caller.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Job Processing (Failure with Retry)',
+        content: mermaidDiagrams['svc-convert-from-pdf'][4].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'The retry count is tracked in the NATS message metadata, not in application state. This means a worker crash mid-retry does not lose the count — NATS itself is the source of truth. It also means the service can be redeployed between retries without resetting progress, which is important for zero-downtime rolling updates.',
+        type: 'paragraph',
+      },
+
+      // — 5. Job Processing (Permanent Failure) —
+      {
+        heading: 'When All Retries Are Exhausted',
+        content: 'If a job has failed through every retry attempt, it is considered a permanent failure. At this point the service marks the job as failed in the Job Service, so the end user sees a clear error instead of an endlessly spinning progress bar. The original NATS message is terminated so it leaves the consumer queue entirely, preventing it from blocking newer work.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Job Processing (Permanent Failure)',
+        content: mermaidDiagrams['svc-convert-from-pdf'][5].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'Permanent failures are also logged with full context — the tool type, file size, retry count, and the last error message. This structured logging feeds into the analytics pipeline, letting the team spot patterns like "all pdf-to-excel jobs over 50 MB fail" and address them proactively rather than waiting for user complaints.',
+        type: 'paragraph',
+      },
+
+      // — 6. Service Startup —
+      {
+        heading: 'Boot Sequence',
+        content: 'The startup sequence is intentionally ordered to catch configuration problems as early as possible. The service connects to NATS first because every other operation depends on it — if NATS is unreachable, there is no point subscribing to subjects or starting a health check that would falsely report readiness. Only after subscriptions are confirmed does the health endpoint begin returning 200, which tells the orchestrator (Kubernetes, Docker Compose, etc.) that the service is ready to receive traffic.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Service Startup',
+        content: mermaidDiagrams['svc-convert-from-pdf'][6].content,
+        type: 'mermaid',
+      },
+      {
+        heading: '',
+        content: 'The health check is a lightweight HTTP endpoint rather than a NATS ping because container orchestrators already speak HTTP. Keeping the readiness probe on a separate port also means a flood of conversion traffic on the NATS connection cannot starve the health check, avoiding false-negative liveness failures that would trigger unnecessary restarts.',
+        type: 'paragraph',
+      },
+    ],
+  },
+  {
+    slug: 'flow-organize-pdf',
+    title: 'Organize PDF Flow',
+    description: 'Visual flow diagrams for the Organize PDF service — merge, split, rotate, watermark, sign, and edit.',
+    category: 'flows',
+    sections: [
+      {
+        heading: 'About This Service',
+        content: 'The Organize PDF service handles all PDF manipulation operations using the pdfcpu Go library (no external binary dependency). It supports merge, split (4 modes), rotate, extract/remove/reorder pages, watermark, protect/unlock, visual signatures, text annotations, and page numbering.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Where It Fits',
+        content: mermaidDiagrams['architecture'][0].content,
+        type: 'mermaid',
+      },
+      // ── Component Diagram ──────────────────────────────────────────
+      {
+        heading: 'Inside the Organize PDF Service',
+        content: 'Before diving into individual operations, it is worth understanding how the service is wired together internally. The component diagram below shows the three main pieces: a NATS consumer that receives job messages, a tool router that dispatches to the correct handler based on the requested operation, and a pdfcpu wrapper that does the actual PDF manipulation. This architecture means the service has no external binary dependencies — pdfcpu is a pure Go library compiled directly into the binary.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-organize-pdf')[0],
+      {
+        heading: 'Why a Tool Router Pattern',
+        content: 'The tool router acts as a single entry point that maps a tool-type string to a handler function, keeping the NATS consumer completely unaware of which PDF operations exist. This means adding a new operation — say, a "flatten forms" tool — requires writing the handler and registering it in the router, with zero changes to the consumer or the message format. The pdfcpu wrapper is injected into each handler rather than imported directly, which makes unit testing straightforward since you can swap in a mock.',
+        type: 'paragraph',
+      },
+
+      // ── Allowed Tool Types ────────────────────────────────────────────
+      {
+        heading: 'The Full Operation Catalog',
+        content: 'The Organize PDF service is not a single-purpose worker — it handles twelve distinct PDF operations through that single tool router. The diagram below enumerates every supported tool type: merge, split, rotate, extract, remove, reorder, watermark, protect, unlock, sign, annotate, and page-numbers. Understanding this list matters because the API gateway validates the incoming tool type against exactly this set before dispatching the job.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-organize-pdf')[1],
+      {
+        heading: 'Scope Decisions and Boundaries',
+        content: 'Notice that operations like OCR, compression, and repair are absent from this list — those belong to the Optimize PDF service. This boundary is deliberate: organize operations are structural (rearranging, combining, or annotating pages) while optimize operations transform content (re-encoding images, running text recognition). Keeping them in separate services means a CPU-heavy OCR job cannot starve a quick page-reorder, and each service can scale independently based on its own traffic profile.',
+        type: 'paragraph',
+      },
+
+      // ── Worker Configuration ──────────────────────────────────────────
+      {
+        heading: 'Concurrency and Subscription Tuning',
+        content: 'A NATS consumer that processes PDF files needs careful concurrency settings — too few workers and the queue backs up, too many and you exhaust memory manipulating large documents in parallel. The diagram below shows how the service configures its NATS subscription: the maximum number of concurrent handlers, the ack-wait timeout, and the redelivery policy for failed jobs.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-organize-pdf')[2],
+      {
+        heading: 'Balancing Throughput and Safety',
+        content: 'The concurrency limit is set conservatively because pdfcpu loads entire pages into memory during manipulation. The ack-wait timeout is generous enough to handle a 200-page merge but short enough that a truly stuck worker gets its message redelivered within a reasonable window. These values are environment-configurable, so production and staging can run different profiles without a code change.',
+        type: 'paragraph',
+      },
+
+      // ── Split PDF Processing ──────────────────────────────────────────
+      {
+        heading: 'Split: Four Modes, One Handler',
+        content: 'Splitting a PDF sounds simple until you realize users want to split in very different ways. The diagram below walks through the four supported split modes: splitting by an explicit page range (e.g., pages 3-7 become a new file), splitting by count (every N pages becomes a separate file), splitting by target file size, and extracting every single page into its own document. Each mode shares the same download-process-upload skeleton but differs in how it determines page boundaries.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-organize-pdf')[3],
+      {
+        heading: 'Why Four Modes Instead of One',
+        content: 'A generic "split at these page numbers" API could technically cover all cases, but it would push the boundary-calculation logic onto the client. By offering purpose-built modes, the frontend can present simple UIs — a slider for "split every N pages," a file-size target for email-friendly chunks — without reimplementing PDF page-counting logic in the browser. The handler picks the right pdfcpu call internally, and every mode produces a consistent output: a zip archive when multiple files result, or a single PDF when only one segment is generated.',
+        type: 'paragraph',
+      },
+
+      // ── Rotate PDF Processing ─────────────────────────────────────────
+      {
+        heading: 'Rotate: Page Selection and Angle Application',
+        content: 'Rotation is one of the simpler operations, but it has a subtlety that the diagram below highlights: users can rotate all pages by the same angle, or specify different angles for different page ranges. The handler first resolves the page selection (which can be "all," a comma-separated list, or a range expression), then applies the rotation in a single pdfcpu pass.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-organize-pdf')[4],
+      {
+        heading: 'Single-Pass Efficiency',
+        content: 'Rather than loading the PDF, rotating one page, writing it out, and repeating, the handler collects all rotation instructions and applies them in one call. This matters for large documents because pdfcpu only needs to parse the page tree once. The rotation angles are normalized to multiples of 90 degrees on the server side, so even if the client sends 270, -90, or 450, the result is deterministic.',
+        type: 'paragraph',
+      },
+
+      // ── Merge PDF Processing ──────────────────────────────────────────
+      {
+        heading: 'Merge: Multi-File Download and Ordered Assembly',
+        content: 'Merging is the most I/O-intensive organize operation because it requires downloading multiple source files before any processing can begin. The diagram below traces the full lifecycle: downloading each input PDF from object storage in parallel, sorting them into the user-specified order, merging them with pdfcpu, and uploading the combined result. Pay attention to the parallel download step — it is the primary reason merge jobs take longer than other operations.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-organize-pdf')[5],
+      {
+        heading: 'Ordering Guarantees and Error Handling',
+        content: 'The user specifies document order as an array of file IDs in the request, and the handler preserves that order exactly — even though downloads happen concurrently. If any single file fails to download (expired, deleted, corrupted), the entire merge is aborted rather than producing a partial result with missing pages. This fail-fast approach avoids a class of subtle bugs where a user gets a merged PDF and does not notice that one source document was silently dropped.',
+        type: 'paragraph',
+      },
+
+      // ── Extract Pages Processing ──────────────────────────────────────
+      {
+        heading: 'Extract: Pulling Pages from a Source PDF',
+        content: 'Page extraction is conceptually the inverse of merge — instead of combining multiple files, you are pulling a subset of pages out of a single file to create a new, smaller PDF. The diagram below shows how the handler interprets page range expressions (like "1-3,7,12-15"), validates them against the actual page count of the source document, and produces the output.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-organize-pdf')[6],
+      {
+        heading: 'Validation Before Processing',
+        content: 'The handler validates that every requested page number actually exists in the source PDF before calling pdfcpu. This prevents cryptic library errors and gives the user a clear message like "page 25 requested but document only has 18 pages." The extraction preserves the original page dimensions and annotations — it is a structural copy, not a re-render, so there is zero quality loss and the operation completes in milliseconds even for large documents.',
+        type: 'paragraph',
+      },
+
+      // ── Service Startup ───────────────────────────────────────────────
+      {
+        heading: 'Boot Sequence and NATS Connection',
+        content: 'The final diagram covers what happens when the service starts up. Understanding the boot sequence matters for debugging deployment issues — if the service fails to connect to NATS, it will retry with exponential backoff rather than crashing immediately, and the health check endpoint will report "not ready" until the subscription is active. This is the sequence you will see in the logs when you deploy or restart the service.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-organize-pdf')[7],
+      {
+        heading: 'Startup Design Takeaways',
+        content: 'The service validates its configuration (tool registry, pdfcpu availability, temp directory permissions) before attempting the NATS connection, so misconfiguration is caught immediately rather than on the first job. The NATS subscription uses a durable consumer name, which means restarting the service does not lose any queued messages — they will be redelivered to the new instance. The health endpoint only flips to "ready" after the subscription is confirmed, ensuring Kubernetes does not route traffic to a half-initialized pod.',
+        type: 'paragraph',
+      },
+    ],
+  },
+  {
+    slug: 'flow-optimize-pdf',
+    title: 'Optimize PDF Flow',
+    description: 'Visual flow diagrams for the Optimize PDF service — compression, OCR, and repair.',
+    category: 'flows',
+    sections: [
+      {
+        heading: 'About This Service',
+        content: 'The Optimize PDF service handles PDF compression (Ghostscript), OCR (Tesseract via Poppler rendering), and PDF repair (Ghostscript and QPDF). It is a NATS consumer that processes jobs from the dispatch queue.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Where It Fits',
+        content: mermaidDiagrams['architecture'][0].content,
+        type: 'mermaid',
+      },
+      // ── 0. Component Diagram ──────────────────────────────────────────
+      {
+        heading: 'Inside the Optimize PDF Service',
+        content:
+          'Before diving into individual tool flows, it helps to see the big picture. The Optimize PDF service is a single NATS consumer that fans work out to three specialized adapters — Ghostscript for compression, Tesseract for OCR, and QPDF for repair. Understanding this internal wiring explains why each tool path looks different even though they share the same entry point.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-optimize-pdf')[0],
+      {
+        heading: 'Why This Layout Matters',
+        content:
+          'By routing through a single consumer into discrete adapters, the service avoids duplicating connection-management or retry logic. Each adapter owns exactly one responsibility, which makes it straightforward to swap out Ghostscript for another compressor — or add a fourth tool type — without touching the shared infrastructure. The diagram above is the map you will keep coming back to as we zoom into each path below.',
+        type: 'paragraph',
+      },
+
+      // ── 1. Allowed Tool Types ──────────────────────────────────────────
+      {
+        heading: 'Which Tool Types Are Supported',
+        content:
+          'Not every request that reaches the optimize service is valid. The service enforces a strict allowlist of tool types — compress, ocr, and repair — at the router level, before any heavy processing begins. This means malformed or unsupported requests fail fast, saving CPU time and keeping logs clean.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-optimize-pdf')[1],
+      {
+        heading: 'Failing Fast on Unknown Tools',
+        content:
+          'If a request arrives with a tool type that is not in the allowlist, the router immediately returns an error to the caller without allocating any file-system resources. This guard is intentionally placed before file download so that a misconfigured client can never trigger unnecessary I/O. Think of it as the bouncer at the door — cheap to run, expensive problems avoided.',
+        type: 'paragraph',
+      },
+
+      // ── 2. Service Architecture Pattern ────────────────────────────────
+      {
+        heading: 'The Shared Worker Pattern',
+        content:
+          'All three tool types share a common lifecycle: pull a message from NATS, download the source file, run a tool-specific binary, upload the result, and acknowledge the message. Rather than duplicating that lifecycle in three separate services, the optimize service uses a shared worker pattern where only the "run binary" step differs. This keeps deployment simple — one container, one health check, one set of resource limits.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-optimize-pdf')[2],
+      {
+        heading: 'Trade-offs of a Single Worker',
+        content:
+          'The obvious downside is that a misbehaving Ghostscript process can starve Tesseract jobs if they share the same concurrency pool. In practice, NATS consumer-level concurrency limits and per-tool timeouts mitigate this risk. If traffic patterns later demand isolation, splitting into separate consumers is a configuration change, not an architectural rewrite, precisely because the adapter boundaries are already clean.',
+        type: 'paragraph',
+      },
+
+      // ── 3. Compress PDF Processing ─────────────────────────────────────
+      {
+        heading: 'How PDF Compression Works',
+        content:
+          'Compression is the most frequently used optimize tool. The service delegates to Ghostscript, which re-renders every page through a PostScript pipeline, stripping unused objects and down-sampling images according to the requested quality level. The quality parameter maps directly to Ghostscript PDFSETTINGS — "screen" for aggressive compression, "ebook" for balanced, and "printer" for near-lossless output.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-optimize-pdf')[3],
+      {
+        heading: 'Understanding Quality Levels',
+        content:
+          'Choosing the right quality level matters more than most users realize. A 50 MB scan-heavy PDF can shrink to 3 MB at "screen" quality, but text sharpness degrades noticeably. The "ebook" preset is the default because it strikes the best balance for the majority of documents. After Ghostscript finishes, the service performs a size comparison — if the output is somehow larger than the input (rare, but possible with already-optimized files), it returns the original and logs a warning rather than silently making things worse.',
+        type: 'paragraph',
+      },
+
+      // ── 4. OCR PDF Processing ──────────────────────────────────────────
+      {
+        heading: 'How OCR Processing Works',
+        content:
+          'OCR is the most resource-intensive path. The service first uses Poppler to render each page into a high-DPI image, then feeds those images into Tesseract for text recognition, and finally reassembles the recognized text layer back into a searchable PDF. This three-stage pipeline exists because Tesseract cannot read PDF pages directly — it needs raster images as input.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-optimize-pdf')[4],
+      {
+        heading: 'Why Poppler Comes Before Tesseract',
+        content:
+          'You might wonder why we do not use a library that handles PDF-to-text in one step. The answer is control and quality. Poppler lets us choose the exact DPI for rendering (300 DPI by default), which directly affects OCR accuracy. Tesseract then operates on clean raster data without having to understand PDF internals. The final reconstruction step merges the original page geometry with the new text layer, preserving fonts and vector graphics while adding the invisible searchable text underneath.',
+        type: 'paragraph',
+      },
+
+      // ── 5. Repair PDF Processing ───────────────────────────────────────
+      {
+        heading: 'How PDF Repair Works',
+        content:
+          'Corrupted PDFs are surprisingly common — truncated downloads, buggy export tools, and incompatible editors all produce files that viewers struggle with. The repair path uses a two-strategy approach: it first attempts a Ghostscript re-render (which rebuilds the cross-reference table and object stream), and if that fails, it falls back to QPDF linearization. Each strategy targets different classes of corruption.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-optimize-pdf')[5],
+      {
+        heading: 'Ghostscript vs. QPDF: When Each Wins',
+        content:
+          'Ghostscript excels at fixing structural corruption — broken xref tables, missing stream lengths, and mangled page trees — because it fully re-interprets the file. QPDF is better at fixing linearization issues and object-level damage because it operates at the PDF object graph level without re-rendering. By trying Ghostscript first (the heavier tool), the service handles the most common corruption patterns, then falls back to QPDF for the edge cases that Ghostscript cannot recover.',
+        type: 'paragraph',
+      },
+
+      // ── 6. Failure and Retry Flow ──────────────────────────────────────
+      {
+        heading: 'What Happens When Things Go Wrong',
+        content:
+          'External binaries crash, disks fill up, and OOM kills happen. The optimize service uses exponential backoff with jitter to retry transient failures, capping at a configurable maximum number of attempts. This prevents a single corrupted file from flooding the system with rapid retries while still giving legitimate transient errors a fair chance to resolve.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-optimize-pdf')[6],
+      {
+        heading: 'The Dead Letter Safety Net',
+        content:
+          'After exhausting all retries, the message moves to a dead-letter subject where it can be inspected and replayed manually. This is critical for debugging — rather than silently dropping a failed job, the dead-letter queue preserves the full payload and error context. Operations teams can then determine whether the failure was caused by a genuinely corrupt input file or by a service bug that needs a code fix before replaying the batch.',
+        type: 'paragraph',
+      },
+    ],
+  },
+  {
+    slug: 'flow-analytics',
+    title: 'Analytics Flow',
+    description: 'Visual flow diagrams for the Analytics Service — event consumption and metrics tracking.',
+    category: 'flows',
+    sections: [
+      {
+        heading: 'About This Service',
+        content: 'The Analytics Service is a NATS consumer that listens to analytics events published by other services (auth, job-service). It aggregates usage metrics, tracks conversion counts, and stores analytics data in PostgreSQL for admin dashboard reporting.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Where It Fits',
+        content: mermaidDiagrams['architecture'][0].content,
+        type: 'mermaid',
+      },
+      // ── Analytics Service Architecture ─────────────────────────────
+      {
+        heading: 'How the Analytics Consumer Works',
+        content: 'The analytics service is not a typical HTTP server — it is a pure NATS consumer that never exposes a port. It subscribes to analytics event subjects published by auth-service and job-service, then processes those events asynchronously. This decoupled design means the services that generate events never wait for analytics to finish; they fire and forget, keeping latency low on the hot path.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-analytics')[0],
+      {
+        heading: 'Why a Dedicated Consumer',
+        content: 'You might wonder why analytics is not just a library inside each service. The answer is operational independence. By isolating analytics into its own process, you can restart, scale, or redeploy it without touching auth or job-service. If the analytics consumer falls behind, NATS buffers the messages — no events are lost, and no upstream service is slowed down.',
+        type: 'paragraph',
+      },
+
+      // ── Data Flow ─────────────────────────────────────────────────────
+      {
+        heading: 'From Raw Events to Stored Metrics',
+        content: 'Once an event arrives, it does not go straight into the database. The consumer first validates and deserializes the message, then applies aggregation logic — grouping counts by time window, user type, and action. This pre-aggregation step is critical because writing one summarized row per interval is far cheaper than writing one row per event when traffic spikes.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-analytics')[1],
+      {
+        heading: 'PostgreSQL as the Analytics Store',
+        content: 'The aggregated metrics land in PostgreSQL rather than a specialized time-series database. This was a deliberate trade-off: the admin dashboard already queries PostgreSQL for user and job data, so keeping analytics in the same database avoids introducing another infrastructure dependency. For the current scale, PostgreSQL handles the query patterns well, and the pre-aggregation keeps table sizes manageable.',
+        type: 'paragraph',
+      },
+    ],
+  },
+  {
+    slug: 'flow-cleanup',
+    title: 'Cleanup Worker Flow',
+    description: 'Visual flow diagrams for the Cleanup Worker — background cleanup of expired files, jobs, and stale uploads.',
+    category: 'flows',
+    sections: [
+      {
+        heading: 'About This Service',
+        content: 'The Cleanup Worker is a ticker-based background process (not a NATS consumer) that runs on a configurable interval. It removes expired guest jobs and their files, cleans up stale upload state from Redis, and purges orphaned files from disk. It deletes from disk first, then marks the DB record, so crashes result in retried deletions rather than orphaned files.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Where It Fits',
+        content: mermaidDiagrams['architecture'][0].content,
+        type: 'mermaid',
+      },
+      // ── Component Diagram ──────────────────────────────────────────
+      {
+        heading: 'Anatomy of the Cleanup Worker',
+        content: 'Unlike the NATS-driven services in this system, the cleanup worker is ticker-based — it wakes up on a fixed interval, runs its tasks, and goes back to sleep. The component diagram below shows the major pieces: a scheduler loop, a set of cleanup task handlers, and the external systems they touch. Each task handler is independent, so a failure in one does not block the others from running.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-cleanup')[0],
+      {
+        heading: 'Why Ticker-Based Instead of Event-Driven',
+        content: 'A cleanup worker does not need real-time responsiveness. Expired files and stale records can wait minutes or even hours before being removed. Using a simple ticker avoids the complexity of managing NATS subscriptions, retry logic, and exactly-once delivery for work that is inherently idempotent — running the same cleanup twice produces the same result.',
+        type: 'paragraph',
+      },
+
+      // ── Cleanup Targets ───────────────────────────────────────────────
+      {
+        heading: 'What Gets Cleaned Up',
+        content: 'The system accumulates three categories of waste over time: guest jobs that have passed their expiration window, upload state in Redis that was abandoned mid-flight, and files on disk that no longer have a corresponding database record. Each category has different detection criteria and different deletion strategies, which is why they are handled by separate task handlers.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-cleanup')[1],
+      {
+        heading: 'The Cost of Not Cleaning Up',
+        content: 'Without the cleanup worker, disk usage would grow unbounded as guest users convert files and never return to download them. Redis would accumulate keys for uploads that were started but never finished. Over weeks, these orphaned resources add up — not just in storage costs, but in degraded performance as the filesystem and Redis keyspace grow larger than necessary.',
+        type: 'paragraph',
+      },
+
+      // ── Configuration ─────────────────────────────────────────────────
+      {
+        heading: 'Tuning the Cleanup Behavior',
+        content: 'Every aspect of the cleanup worker is configurable: how often it runs, how long records must be idle before they qualify for deletion, and how many records to process in a single batch. These knobs exist because the right values depend on your deployment — a high-traffic instance needs shorter retention and larger batches, while a small self-hosted setup can afford to run cleanup less frequently.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-cleanup')[2],
+      {
+        heading: 'Sensible Defaults',
+        content: 'The default configuration is tuned for a moderate workload: guest jobs expire after 24 hours, upload state is considered stale after 1 hour, and batches are capped at 100 records per cycle. These defaults keep the worker lightweight while preventing runaway resource consumption. If you are unsure what to change, start with the defaults and monitor disk usage trends.',
+        type: 'paragraph',
+      },
+
+      // ── Main Loop ─────────────────────────────────────────────────────
+      {
+        heading: 'The Main Ticker Loop',
+        content: 'The cleanup worker follows a straightforward loop: sleep for the configured interval, wake up, run every cleanup task in sequence, then go back to sleep. There is no task queue or priority system — simplicity is the point. The diagram below shows this loop and the order in which tasks execute.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-cleanup')[3],
+      {
+        heading: 'Graceful Shutdown',
+        content: 'When the process receives a shutdown signal, it finishes the current task before exiting rather than terminating mid-deletion. This matters because partially deleted data — a file removed from disk but not from the database — would create inconsistencies that the next run would need to reconcile. Letting the current task complete avoids that edge case entirely.',
+        type: 'paragraph',
+      },
+
+      // ── Cleanup Expired Guest Jobs ────────────────────────────────────
+      {
+        heading: 'Removing Expired Guest Jobs',
+        content: 'Guest users do not have accounts, so their converted files have a limited shelf life. When a guest job passes its retention window, the cleanup worker needs to remove both the output file on disk and the job record in the database. The order of these operations is not arbitrary — it is the most important design decision in this task.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-cleanup')[4],
+      {
+        heading: 'Delete Files First, Then Records',
+        content: 'The worker deletes the file from disk before removing the database record. If the process crashes between these two steps, the database still references a file that no longer exists — and the next cleanup run will simply try to delete the file again, see that it is already gone, and proceed to remove the database record. The alternative — deleting the record first — would leave an orphaned file on disk with no way to find it. This crash-safe ordering is a pattern worth remembering.',
+        type: 'paragraph',
+      },
+
+      // ── Cleanup Stale Upload State ────────────────────────────────────
+      {
+        heading: 'Clearing Abandoned Upload State',
+        content: 'When a user starts an upload, the system tracks its progress in Redis. If the user closes their browser or loses connectivity, that upload state lingers indefinitely. The cleanup worker identifies these abandoned entries by checking how long they have been idle and removes them, freeing Redis memory and preventing the upload tracker from growing without bound.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-cleanup')[5],
+      {
+        heading: 'Redis Key Expiry as a Safety Net',
+        content: 'In addition to active cleanup, upload state keys in Redis are created with a TTL as a defense-in-depth measure. Even if the cleanup worker is down for an extended period, Redis will eventually evict the stale keys on its own. The cleanup worker handles the normal case; the TTL handles the edge case where the worker itself is unavailable.',
+        type: 'paragraph',
+      },
+
+      // ── Cleanup Decision Flow ─────────────────────────────────────────
+      {
+        heading: 'How the Worker Decides What to Delete',
+        content: 'Not every old record qualifies for cleanup. The decision tree below shows the criteria the worker evaluates for each candidate: Is it a guest job or an authenticated user job? Has it exceeded the retention period? Is there still an active download in progress? These checks prevent the worker from deleting something a user is actively waiting for.',
+        type: 'paragraph',
+      },
+      getMermaidSections('svc-cleanup')[6],
+      {
+        heading: 'Erring on the Side of Caution',
+        content: 'When in doubt, the cleanup worker skips the record and re-evaluates it on the next cycle. A file that lingers for one extra interval costs almost nothing, but a premature deletion means a user gets a broken download link. This conservative approach means the worker occasionally leaves a few extra records around, but it never destroys data that someone still needs.',
+        type: 'paragraph',
       },
     ],
   },

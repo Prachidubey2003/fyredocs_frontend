@@ -23,7 +23,7 @@ export const DocsSidebar = ({ className, onNavigate }: DocsSidebarProps) => {
 
   return (
     <ScrollArea className={cn('h-full', className)}>
-      <nav className="py-4 pr-4">
+      <nav className="py-4 px-2">
         <Accordion
           type="multiple"
           defaultValue={defaultOpen.length > 0 ? defaultOpen : ['Getting Started']}
@@ -33,7 +33,7 @@ export const DocsSidebar = ({ className, onNavigate }: DocsSidebarProps) => {
             <AccordionItem key={group.title} value={group.title} className="border-none">
               <AccordionTrigger
                 className={cn(
-                  'py-2 px-3 text-xs font-bold tracking-wider hover:no-underline rounded-md hover:bg-muted/50',
+                  'py-2 px-3 text-xs font-bold tracking-wider hover:no-underline rounded-md hover:bg-muted',
                   group.color
                 )}
               >
@@ -50,7 +50,7 @@ export const DocsSidebar = ({ className, onNavigate }: DocsSidebarProps) => {
                           'block px-3 py-1.5 text-sm rounded-md transition-colors',
                           slug === item.slug
                             ? 'bg-primary/10 text-primary font-medium'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                         )}
                       >
                         {item.title}

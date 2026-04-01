@@ -61,6 +61,13 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Docs panel colors
+        docs: {
+          panel: "hsl(var(--docs-panel))",
+          "panel-foreground": "hsl(var(--docs-panel-foreground))",
+          "panel-muted": "hsl(var(--docs-panel-muted))",
+          "panel-border": "hsl(var(--docs-panel-border))",
+        },
         // Tool colors
         tool: {
           merge: "hsl(var(--tool-merge))",
