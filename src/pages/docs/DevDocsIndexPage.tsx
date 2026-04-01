@@ -1,7 +1,8 @@
-import { Layout } from '@/components/layout/Layout';
+import { DocsLayout } from '@/components/layout/DocsLayout';
+import { DevDocsSidebar } from '@/components/docs/DevDocsSidebar';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
-import { Server, Code, Layers, Database, ShieldCheck } from 'lucide-react';
+import { Server, Code, Layers, Database, ShieldCheck, GitBranch } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 const categories = [
@@ -11,6 +12,13 @@ const categories = [
     icon: Layers,
     href: '/dev-docs/architecture',
     color: 'text-primary',
+  },
+  {
+    title: 'Service Flows',
+    description: 'Visual architecture and sequence diagrams for every service — see how data flows through the system.',
+    icon: GitBranch,
+    href: '/dev-docs/flow-overview',
+    color: 'text-rose-500',
   },
   {
     title: 'API Reference',
@@ -44,12 +52,12 @@ const categories = [
 
 const DevDocsIndexPage = () => {
   return (
-    <Layout>
+    <DocsLayout sidebar={<DevDocsSidebar />} activeTab="architecture">
       <Helmet>
         <title>Developer Documentation - EsyDocs</title>
         <meta name="description" content="Internal developer documentation for the EsyDocs platform." />
       </Helmet>
-      <div className="container py-16 md:py-24">
+      <div className="px-8 py-16">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             <span className="text-gradient-primary">Developer Docs</span>
@@ -73,7 +81,7 @@ const DevDocsIndexPage = () => {
           ))}
         </div>
       </div>
-    </Layout>
+    </DocsLayout>
   );
 };
 

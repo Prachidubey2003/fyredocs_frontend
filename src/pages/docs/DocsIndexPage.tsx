@@ -1,4 +1,5 @@
-import { Layout } from '@/components/layout/Layout';
+import { DocsLayout } from '@/components/layout/DocsLayout';
+import { DocsSidebar } from '@/components/docs/DocsSidebar';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { BookOpen, Wrench, FileText, Shield, HelpCircle } from 'lucide-react';
@@ -44,12 +45,12 @@ const categories = [
 
 const DocsIndexPage = () => {
   return (
-    <Layout>
+    <DocsLayout sidebar={<DocsSidebar />} activeTab="features">
       <Helmet>
         <title>Documentation - EsyDocs</title>
         <meta name="description" content="Learn how to use EsyDocs PDF tools. Browse tool guides, supported formats, security info, and FAQ." />
       </Helmet>
-      <div className="container py-16 md:py-24">
+      <div className="px-8 py-16">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             <span className="text-gradient-primary">Documentation</span>
@@ -73,7 +74,7 @@ const DocsIndexPage = () => {
           ))}
         </div>
       </div>
-    </Layout>
+    </DocsLayout>
   );
 };
 
