@@ -1,5 +1,5 @@
 import type { DocSection } from '@/config/docs';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, AlertTriangle } from 'lucide-react';
 
 interface DocsContentProps {
   sections: DocSection[];
@@ -16,6 +16,17 @@ const SectionSteps = ({ items }: { items: string[] }) => (
         <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center mt-0.5">
           {i + 1}
         </span>
+        <span className="leading-relaxed">{item}</span>
+      </li>
+    ))}
+  </ul>
+);
+
+const SectionList = ({ items }: { items: string[] }) => (
+  <ul className="space-y-1.5 text-muted-foreground">
+    {items.map((item, i) => (
+      <li key={i} className="flex gap-2.5">
+        <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-muted-foreground/50 mt-2" />
         <span className="leading-relaxed">{item}</span>
       </li>
     ))}
@@ -56,6 +67,26 @@ const SectionTip = ({ content }: { content: string }) => (
   </div>
 );
 
+const SectionWarning = ({ content }: { content: string }) => (
+  <div className="flex gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+    <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+    <p className="text-sm text-foreground leading-relaxed">{content}</p>
+  </div>
+);
+
+const SectionCode = ({ content, language }: { content: string; language?: string }) => (
+  <div className="rounded-lg border bg-muted/50 overflow-hidden">
+    {language && (
+      <div className="px-4 py-1.5 border-b bg-muted/80 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        {language}
+      </div>
+    )}
+    <pre className="p-4 overflow-x-auto">
+      <code className="text-sm font-mono text-foreground leading-relaxed whitespace-pre">{content}</code>
+    </pre>
+  </div>
+);
+
 export const DocsContent = ({ sections }: DocsContentProps) => {
   return (
     <div className="space-y-8">
@@ -66,8 +97,11 @@ export const DocsContent = ({ sections }: DocsContentProps) => {
           )}
           {section.type === 'paragraph' && <SectionParagraph content={section.content} />}
           {section.type === 'steps' && section.items && <SectionSteps items={section.items} />}
+          {section.type === 'list' && section.items && <SectionList items={section.items} />}
           {section.type === 'table' && section.tableData && <SectionTable tableData={section.tableData} />}
           {section.type === 'tip' && <SectionTip content={section.content} />}
+          {section.type === 'warning' && <SectionWarning content={section.content} />}
+          {section.type === 'code' && <SectionCode content={section.content} language={section.language} />}
           {section.type === 'formats' && section.content && <SectionParagraph content={section.content} />}
         </div>
       ))}
