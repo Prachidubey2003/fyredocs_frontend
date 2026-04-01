@@ -13,7 +13,7 @@ import { AnimatedSwitch } from '@/components/ui/animated';
 
 interface ConvertToolProps {
   toolId: ToolId;
-  outputFormat: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf' | 'pptx' | 'html' | 'txt';
+  outputFormat: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf' | 'pptx' | 'html' | 'txt' | 'odt' | 'ods' | 'odp';
 }
 
 export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {

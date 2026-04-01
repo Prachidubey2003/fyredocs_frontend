@@ -33,6 +33,17 @@ export type ToolId =
   | 'image-to-pdf'
   | 'powerpoint-to-pdf'
   | 'html-to-pdf'
+  // Convert to LibreOffice tools
+  | 'pdf-to-odt'
+  | 'pdf-to-ods'
+  | 'pdf-to-odp'
+  | 'word-to-odt'
+  | 'excel-to-ods'
+  | 'powerpoint-to-odp'
+  // Convert LibreOffice to PDF tools
+  | 'odt-to-pdf'
+  | 'ods-to-pdf'
+  | 'odp-to-pdf'
   // Edit PDF tools
   | 'add-page-numbers'
   | 'edit-pdf'
@@ -202,7 +213,7 @@ export interface ReorderOptions {
 }
 
 export interface ConvertOptions {
-  format: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf' | 'pptx' | 'html' | 'txt';
+  format: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf' | 'pptx' | 'html' | 'txt' | 'odt' | 'ods' | 'odp';
   quality?: 'low' | 'medium' | 'high';
 }
 
