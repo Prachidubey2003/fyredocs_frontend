@@ -13,7 +13,7 @@ const features = [
   },
   {
     icon: Clock,
-    label: 'Auto-delete in 1hr',
+    label: 'Auto-delete in 30 Minutes',
   },
 ];
 
