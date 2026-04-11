@@ -158,7 +158,7 @@ export const SplitTool = () => {
                   <div className="p-6 rounded-xl border bg-card mb-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-semibold flex items-center gap-2">
-                        <Scissors className="w-5 h-5 text-tool-split" />
+                        <Scissors className="w-5 h-5 text-primary" />
                         Split Options
                       </h3>
                       {pageCount !== null && (
@@ -173,7 +173,7 @@ export const SplitTool = () => {
                       onValueChange={(value) => setSplitMode(value as SplitMode)}
                       className="space-y-4"
                     >
-                      <div className="flex items-start space-x-3 p-4 rounded-lg border hover:border-primary/50 transition-colors cursor-pointer">
+                      <div className="flex items-start space-x-3 p-4 rounded-lg border-2 border-muted hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-gradient-to-r has-[[data-state=checked]]:from-primary/5 has-[[data-state=checked]]:to-secondary/5 transition-colors cursor-pointer">
                         <RadioGroupItem value="all" id="all" className="mt-0.5" />
                         <div className="flex-1">
                           <Label htmlFor="all" className="font-medium cursor-pointer">
@@ -185,7 +185,7 @@ export const SplitTool = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-start space-x-3 p-4 rounded-lg border hover:border-primary/50 transition-colors cursor-pointer">
+                      <div className="flex items-start space-x-3 p-4 rounded-lg border-2 border-muted hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-gradient-to-r has-[[data-state=checked]]:from-primary/5 has-[[data-state=checked]]:to-secondary/5 transition-colors cursor-pointer">
                         <RadioGroupItem value="range" id="range" className="mt-0.5" />
                         <div className="flex-1">
                           <Label htmlFor="range" className="font-medium cursor-pointer">
@@ -205,7 +205,7 @@ export const SplitTool = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-start space-x-3 p-4 rounded-lg border hover:border-primary/50 transition-colors cursor-pointer">
+                      <div className="flex items-start space-x-3 p-4 rounded-lg border-2 border-muted hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-gradient-to-r has-[[data-state=checked]]:from-primary/5 has-[[data-state=checked]]:to-secondary/5 transition-colors cursor-pointer">
                         <RadioGroupItem value="extract" id="extract" className="mt-0.5" />
                         <div className="flex-1">
                           <Label htmlFor="extract" className="font-medium cursor-pointer">
@@ -227,7 +227,7 @@ export const SplitTool = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-start space-x-3 p-4 rounded-lg border hover:border-primary/50 transition-colors cursor-pointer">
+                      <div className="flex items-start space-x-3 p-4 rounded-lg border-2 border-muted hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-gradient-to-r has-[[data-state=checked]]:from-primary/5 has-[[data-state=checked]]:to-secondary/5 transition-colors cursor-pointer">
                         <RadioGroupItem value="equal" id="equal" className="mt-0.5" />
                         <div className="flex-1">
                           <Label htmlFor="equal" className="font-medium cursor-pointer">
@@ -261,7 +261,7 @@ export const SplitTool = () => {
                       Choose different file
                     </Button>
                     <Button
-                      className="flex-1 bg-tool-split hover:bg-tool-split/90"
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
                       onClick={handleSplit}
                       disabled={!canProceed || (splitMode === 'range' && !rangeInput.trim()) || (splitMode === 'extract' && (!extractCount.trim() || Number(extractCount) < 1)) || (splitMode === 'equal' && (!equalParts.trim() || Number(equalParts) < 2))}
                     >
