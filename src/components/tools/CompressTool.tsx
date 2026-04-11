@@ -285,7 +285,7 @@ export const CompressTool = () => {
                       Add more files
                     </Button>
                     <Button
-                      className="flex-1 bg-tool-compress hover:bg-tool-compress/90"
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
                       onClick={handleCompress}
                       disabled={!canProceed}
                     >

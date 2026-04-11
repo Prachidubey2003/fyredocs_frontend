@@ -153,7 +153,7 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
                       Add more files
                     </Button>
                     <Button
-                      className="flex-1 bg-tool-convert hover:bg-tool-convert/90"
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
                       onClick={handleConvert}
                       disabled={!canProceed}
                     >

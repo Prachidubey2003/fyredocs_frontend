@@ -172,7 +172,7 @@ export const PageSpecificationTool = ({
                       Choose different file
                     </Button>
                     <Button
-                      className="flex-1 bg-tool-organize hover:bg-tool-organize/90"
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
                       onClick={handleProcess}
                       disabled={!canProceed || !pagesInput.trim()}
                     >

@@ -154,7 +154,7 @@ export const MergeTool = () => {
                       Add more files
                     </Button>
                     <Button
-                      className="flex-1 bg-tool-merge hover:bg-tool-merge/90"
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
                       onClick={handleMerge}
                       disabled={!canProceed || files.length < 2}
                     >

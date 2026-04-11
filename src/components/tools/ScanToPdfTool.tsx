@@ -219,7 +219,7 @@ export const ScanToPdfTool = () => {
                       Add more images
                     </Button>
                     <Button
-                      className="flex-1 bg-tool-convert hover:bg-tool-convert/90"
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
                       onClick={handleCreatePdf}
                       disabled={!canProceed}
                     >
