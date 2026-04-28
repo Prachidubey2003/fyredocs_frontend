@@ -69,10 +69,10 @@ const Index = () => {
               Ready to work with your PDFs?
             </h2>
             <p className="text-muted-foreground mb-6">
-              Sign in to unlock secure file conversions.
+              Browse our complete suite of PDF tools — no sign-up required to get started.
             </p>
             <Button className="bg-gradient-primary" asChild>
-              <Link to="/signin">Get started</Link>
+              <Link to="/all-tools">Get started</Link>
             </Button>
           </div>
         </div>
