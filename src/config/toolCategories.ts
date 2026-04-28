@@ -93,3 +93,55 @@ export const convertToPdf: ToolItem[] = toolCategories
 export const convertFromPdf: ToolItem[] = toolCategories
   .find((c) => c.title === 'CONVERT FROM PDF')!
   .tools;
+
+export interface NavSection {
+  label?: string;
+  color: string;
+  tools: ToolItem[];
+}
+
+export interface NavCategory {
+  title: string;
+  sections: NavSection[];
+}
+
+const byTitle = (t: string) => toolCategories.find((c) => c.title === t)!.tools;
+
+export const navCategories: NavCategory[] = [
+  {
+    title: 'ORGANIZE',
+    sections: [
+      { label: 'Organize', color: 'text-orange-500', tools: byTitle('ORGANIZE PDF') },
+      { label: 'Optimize', color: 'text-red-500', tools: byTitle('OPTIMIZE PDF') },
+    ],
+  },
+  {
+    title: 'CONVERT',
+    sections: [
+      { label: 'To PDF', color: 'text-yellow-600', tools: byTitle('CONVERT TO PDF') },
+      { label: 'From PDF', color: 'text-purple-500', tools: byTitle('CONVERT FROM PDF') },
+    ],
+  },
+  {
+    title: 'LIBRE OFFICE',
+    sections: [
+      {
+        label: 'From PDF',
+        color: 'text-teal-500',
+        tools: byTitle('CONVERT TO LIBREOFFICE').filter((t) => t.name.startsWith('PDF to')),
+      },
+      {
+        label: 'From Office',
+        color: 'text-cyan-500',
+        tools: byTitle('CONVERT TO LIBREOFFICE').filter((t) => !t.name.startsWith('PDF to')),
+      },
+    ],
+  },
+  {
+    title: 'EDIT & PROTECT',
+    sections: [
+      { label: 'Edit', color: 'text-blue-500', tools: byTitle('EDIT PDF') },
+      { label: 'Protect', color: 'text-green-500', tools: byTitle('PDF SECURITY') },
+    ],
+  },
+];
