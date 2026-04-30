@@ -1,7 +1,32 @@
 import { Link } from 'react-router-dom';
 import { FileText, Github, Twitter, Mail, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toolCategories } from '@/config/toolCategories';
+import { navCategories, type NavSection } from '@/config/toolCategories';
+
+const findCategory = (title: string) => navCategories.find((c) => c.title === title)!;
+
+const footerCategories: { title: string; color: string; tools: NavSection['tools'] }[] = [
+  {
+    title: 'ORGANIZE',
+    color: 'text-orange-500',
+    tools: findCategory('ORGANIZE').sections.flatMap((s) => s.tools),
+  },
+  ...findCategory('CONVERT').sections.map((s) => ({
+    title: s.label!.toUpperCase(),
+    color: s.color,
+    tools: s.tools,
+  })),
+  {
+    title: 'LIBRE OFFICE',
+    color: 'text-teal-500',
+    tools: findCategory('LIBRE OFFICE').sections.flatMap((s) => s.tools),
+  },
+  {
+    title: 'EDIT & PROTECT',
+    color: 'text-blue-500',
+    tools: findCategory('EDIT & PROTECT').sections.flatMap((s) => s.tools),
+  },
+];
 
 const companyLinks = [
   { label: 'About', href: '/about' },
@@ -28,8 +53,8 @@ export const Footer = () => {
     <footer className="border-t bg-muted/30">
       <div className="container py-12 md:py-16">
         {/* Tier 1: Tool Categories */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-          {toolCategories.map((category) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+          {footerCategories.map((category) => (
             <div key={category.title}>
               <h3
                 className={cn(
