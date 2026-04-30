@@ -158,7 +158,7 @@ export const Header = () => {
           <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center">
             <FileText className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="hidden sm:inline">Esydocs</span>
+          <span className="hidden sm:inline">Fyredocs</span>
         </Link>
 
         {/* Desktop Navigation */}

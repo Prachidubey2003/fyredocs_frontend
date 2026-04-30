@@ -68,8 +68,8 @@ const PricingPage = () => {
   return (
     <Layout>
       <Helmet>
-        <title>Pricing — Esydocs</title>
-        <meta name="description" content="Simple, transparent pricing for Esydocs PDF tools. Free plan available. Upgrade anytime." />
+        <title>Pricing — Fyredocs</title>
+        <meta name="description" content="Simple, transparent pricing for Fyredocs PDF tools. Free plan available. Upgrade anytime." />
       </Helmet>
       <div className="container py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center mb-16">

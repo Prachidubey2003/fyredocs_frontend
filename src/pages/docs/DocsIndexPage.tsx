@@ -8,7 +8,7 @@ import { Helmet } from 'react-helmet-async';
 const categories = [
   {
     title: 'Getting Started',
-    description: 'Learn how EsyDocs works and start using PDF tools in minutes.',
+    description: 'Learn how Fyredocs works and start using PDF tools in minutes.',
     icon: BookOpen,
     href: '/docs/getting-started',
     color: 'text-primary',
@@ -36,7 +36,7 @@ const categories = [
   },
   {
     title: 'FAQ',
-    description: 'Quick answers to common questions about using EsyDocs.',
+    description: 'Quick answers to common questions about using Fyredocs.',
     icon: HelpCircle,
     href: '/docs/faq',
     color: 'text-purple-500',
@@ -47,8 +47,8 @@ const DocsIndexPage = () => {
   return (
     <DocsLayout sidebar={<DocsSidebar />} activeTab="features">
       <Helmet>
-        <title>Documentation - EsyDocs</title>
-        <meta name="description" content="Learn how to use EsyDocs PDF tools. Browse tool guides, supported formats, security info, and FAQ." />
+        <title>Documentation - Fyredocs</title>
+        <meta name="description" content="Learn how to use Fyredocs PDF tools. Browse tool guides, supported formats, security info, and FAQ." />
       </Helmet>
       <div className="px-8 py-16">
         <div className="max-w-3xl mx-auto text-center mb-16">
@@ -56,7 +56,7 @@ const DocsIndexPage = () => {
             <span className="text-gradient-primary">Documentation</span>
           </h1>
           <p className="text-xl text-muted-foreground">
-            Everything you need to know about using EsyDocs PDF tools
+            Everything you need to know about using Fyredocs PDF tools
           </p>
         </div>
 

@@ -96,13 +96,13 @@ export const apiRequest = async <T>(
     if (refreshed) {
       return apiRequest<T>(path, { ...options, skipRefresh: true });
     }
-    window.dispatchEvent(new CustomEvent('esydocs:unauthorized'));
+    window.dispatchEvent(new CustomEvent('fyredocs:unauthorized'));
     throw new Error(await parseErrorMessage(response));
   }
 
   // 403 = forbidden (not an expired token issue)
   if (response.status === 403 && !skipRefresh) {
-    window.dispatchEvent(new CustomEvent('esydocs:unauthorized'));
+    window.dispatchEvent(new CustomEvent('fyredocs:unauthorized'));
     throw new Error(await parseErrorMessage(response));
   }
 

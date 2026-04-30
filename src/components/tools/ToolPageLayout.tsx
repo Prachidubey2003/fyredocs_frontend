@@ -33,9 +33,9 @@ export const ToolPageLayout = ({
   return (
     <Layout>
       <Helmet>
-        <title>{tool.name} — Esydocs</title>
+        <title>{tool.name} — Fyredocs</title>
         <meta name="description" content={tool.description} />
-        <meta property="og:title" content={`${tool.name} — Esydocs`} />
+        <meta property="og:title" content={`${tool.name} — Fyredocs`} />
         <meta property="og:description" content={tool.description} />
       </Helmet>
       {/* Tool header */}

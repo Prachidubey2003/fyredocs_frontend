@@ -7,7 +7,7 @@ const AboutPage = () => {
       <div className="container py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            About <span className="text-gradient-primary">Esydocs</span>
+            About <span className="text-gradient-primary">Fyredocs</span>
           </h1>
           <p className="text-xl text-muted-foreground">
             We're on a mission to make PDF tools accessible, fast, and secure for everyone.
@@ -18,7 +18,7 @@ const AboutPage = () => {
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold">Our Story</h2>
             <p className="text-muted-foreground">
-              Esydocs was born from a simple frustration: working with PDFs shouldn't be complicated or expensive. We set out to build a platform that makes professional PDF tools available to everyone.
+              Fyredocs was born from a simple frustration: working with PDFs shouldn't be complicated or expensive. We set out to build a platform that makes professional PDF tools available to everyone.
             </p>
             <p className="text-muted-foreground">
               Today, we serve thousands of users worldwide, helping them merge, split, compress, and convert PDFs with ease. Our commitment to privacy means your files are processed securely and never stored longer than necessary.
@@ -63,7 +63,7 @@ const AboutPage = () => {
           <Users className="w-12 h-12 text-primary mx-auto mb-6" />
           <h2 className="text-2xl font-semibold mb-4">Join Thousands of Happy Users</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            From freelancers to Fortune 500 companies, Esydocs is trusted by professionals worldwide to handle their PDF needs efficiently and securely.
+            From freelancers to Fortune 500 companies, Fyredocs is trusted by professionals worldwide to handle their PDF needs efficiently and securely.
           </p>
         </div>
       </div>

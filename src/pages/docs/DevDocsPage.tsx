@@ -23,7 +23,7 @@ const DevDocsPage = () => {
       activeTab={activeTab}
     >
       <Helmet>
-        <title>{doc.title} - Developer Docs - EsyDocs</title>
+        <title>{doc.title} - Developer Docs - Fyredocs</title>
         <meta name="description" content={doc.description} />
       </Helmet>
 

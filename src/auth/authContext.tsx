@@ -103,8 +103,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       clearAuth();
       navigate('/signin', { replace: true });
     };
-    window.addEventListener('esydocs:unauthorized', handler);
-    return () => window.removeEventListener('esydocs:unauthorized', handler);
+    window.addEventListener('fyredocs:unauthorized', handler);
+    return () => window.removeEventListener('fyredocs:unauthorized', handler);
   }, [navigate, clearAuth]);
 
   // Bootstrap session state from server cookie

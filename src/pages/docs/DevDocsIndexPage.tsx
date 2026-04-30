@@ -54,8 +54,8 @@ const DevDocsIndexPage = () => {
   return (
     <DocsLayout sidebar={<DevDocsSidebar />} activeTab="architecture">
       <Helmet>
-        <title>Developer Documentation - EsyDocs</title>
-        <meta name="description" content="Internal developer documentation for the EsyDocs platform." />
+        <title>Developer Documentation - Fyredocs</title>
+        <meta name="description" content="Internal developer documentation for the Fyredocs platform." />
       </Helmet>
       <div className="px-8 py-16">
         <div className="max-w-3xl mx-auto text-center mb-16">
@@ -63,7 +63,7 @@ const DevDocsIndexPage = () => {
             <span className="text-gradient-primary">Developer Docs</span>
           </h1>
           <p className="text-xl text-muted-foreground">
-            Internal documentation for the EsyDocs platform architecture, APIs, and services
+            Internal documentation for the Fyredocs platform architecture, APIs, and services
           </p>
         </div>
 

@@ -145,7 +145,7 @@ export const developerDocs: DevDocEntry[] = [
     sections: [
       {
         heading: 'Microservices Architecture',
-        content: 'EsyDocs uses a true microservices architecture. Each service is independently deployable with its own database, configuration, and API contract. Strict boundary rules apply: no cross-service imports, no shared models, no shared database access. The only shared code lives in the /shared/ directory, which contains logging, tracing, metrics, config loading, and queue client utilities.',
+        content: 'Fyredocs uses a true microservices architecture. Each service is independently deployable with its own database, configuration, and API contract. Strict boundary rules apply: no cross-service imports, no shared models, no shared database access. The only shared code lives in the /shared/ directory, which contains logging, tracing, metrics, config loading, and queue client utilities.',
         type: 'paragraph',
       },
       {
@@ -236,13 +236,13 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Clone and configure',
-        content: 'git clone <repo-url> && cd esydocs/esydocs_backend\ncp .env.example .env',
+        content: 'git clone <repo-url> && cd fyredocs/fyredocs_backend\ncp .env.example .env',
         type: 'code',
         language: 'Bash',
       },
       {
         heading: 'Environment variables',
-        content: '# Database\nDB_HOST=localhost\nDB_PORT=5432\nDB_USER=esydocs\nDB_PASSWORD=esydocs_secret\nDB_NAME=esydocs\n\n# Redis\nREDIS_HOST=localhost\nREDIS_PORT=6379\nREDIS_PASSWORD=\n\n# NATS\nNATS_URL=nats://localhost:4222\n\n# JWT\nJWT_SECRET=your-secret-min-32-chars-long-here\nJWT_ACCESS_EXPIRY=15m\nJWT_REFRESH_EXPIRY=168h\n\n# CORS\nCORS_ORIGINS=http://localhost:5173\n\n# File storage\nUPLOAD_DIR=./uploads\nOUTPUT_DIR=./outputs',
+        content: '# Database\nDB_HOST=localhost\nDB_PORT=5432\nDB_USER=fyredocs\nDB_PASSWORD=fyredocs_secret\nDB_NAME=fyredocs\n\n# Redis\nREDIS_HOST=localhost\nREDIS_PORT=6379\nREDIS_PASSWORD=\n\n# NATS\nNATS_URL=nats://localhost:4222\n\n# JWT\nJWT_SECRET=your-secret-min-32-chars-long-here\nJWT_ACCESS_EXPIRY=15m\nJWT_REFRESH_EXPIRY=168h\n\n# CORS\nCORS_ORIGINS=http://localhost:5173\n\n# File storage\nUPLOAD_DIR=./uploads\nOUTPUT_DIR=./outputs',
         type: 'code',
         language: 'Environment',
       },
@@ -259,9 +259,9 @@ export const developerDocs: DevDocEntry[] = [
         tableData: {
           headers: ['Component', 'Container', 'Purpose'],
           rows: [
-            ['PostgreSQL', 'esydocs-postgres', 'Primary data store. Each service auto-migrates its own tables on startup via GORM AutoMigrate.'],
-            ['Redis', 'esydocs-redis', 'Upload chunk storage, rate limiting, guest sessions, token denylist.'],
-            ['NATS', 'esydocs-nats', 'JetStream-enabled message broker. Streams and consumers are created on first service startup.'],
+            ['PostgreSQL', 'fyredocs-postgres', 'Primary data store. Each service auto-migrates its own tables on startup via GORM AutoMigrate.'],
+            ['Redis', 'fyredocs-redis', 'Upload chunk storage, rate limiting, guest sessions, token denylist.'],
+            ['NATS', 'fyredocs-nats', 'JetStream-enabled message broker. Streams and consumers are created on first service startup.'],
           ],
         },
       },
@@ -423,7 +423,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'JWT claims',
-        content: '{\n  "sub": "01902a4b-5c6d-7e8f-9a0b-1c2d3e4f5a6b",\n  "email": "user@example.com",\n  "role": "user",\n  "plan": "free",\n  "jti": "unique-token-id",\n  "iss": "esydocs-auth",\n  "aud": "esydocs",\n  "exp": 1700000000,\n  "iat": 1699999100\n}',
+        content: '{\n  "sub": "01902a4b-5c6d-7e8f-9a0b-1c2d3e4f5a6b",\n  "email": "user@example.com",\n  "role": "user",\n  "plan": "free",\n  "jti": "unique-token-id",\n  "iss": "fyredocs-auth",\n  "aud": "fyredocs",\n  "exp": 1700000000,\n  "iat": 1699999100\n}',
         type: 'code',
         language: 'JSON',
       },
@@ -1593,7 +1593,7 @@ export const developerDocs: DevDocEntry[] = [
     sections: [
       {
         heading: 'CORS configuration',
-        content: 'In production, the CORS_ORIGINS environment variable must list exact origins (e.g., https://esydocs.com,https://app.esydocs.com). Never use a wildcard (*) in production. The API Gateway validates the Origin header against this list on every request. Misconfigured CORS is the most common source of "it works locally but not in production" issues.',
+        content: 'In production, the CORS_ORIGINS environment variable must list exact origins (e.g., https://fyredocs.com,https://app.fyredocs.com). Never use a wildcard (*) in production. The API Gateway validates the Origin header against this list on every request. Misconfigured CORS is the most common source of "it works locally but not in production" issues.',
         type: 'paragraph',
       },
       {
@@ -1652,7 +1652,7 @@ export const developerDocs: DevDocEntry[] = [
     sections: [
       {
         heading: 'Pre-flight commands',
-        content: '# Build all services\nfor dir in api-gateway auth-service job-service convert-to-pdf-service \\\n  convert-from-pdf-service organize-pdf-service optimize-pdf-service \\\n  analytics-service cleanup-worker; do\n  echo "Building $dir..." && cd "$dir" && go build ./... && cd ..\ndone\n\n# Run static analysis\nfor dir in api-gateway auth-service job-service convert-to-pdf-service \\\n  convert-from-pdf-service organize-pdf-service optimize-pdf-service \\\n  analytics-service cleanup-worker; do\n  echo "Vetting $dir..." && cd "$dir" && go vet ./... && cd ..\ndone\n\n# Run all tests\nfor dir in api-gateway auth-service job-service convert-to-pdf-service \\\n  convert-from-pdf-service organize-pdf-service optimize-pdf-service \\\n  analytics-service cleanup-worker; do\n  echo "Testing $dir..." && cd "$dir" && go test ./... && cd ..\ndone\n\n# Build Docker images\ndocker build -t esydocs-base -f deployment/Dockerfile.base .\nfor svc in api-gateway auth-service job-service convert-to-pdf-service \\\n  convert-from-pdf-service organize-pdf-service optimize-pdf-service \\\n  analytics-service cleanup-worker; do\n  docker build -t "esydocs-$svc" -f "$svc/Dockerfile" .\ndone',
+        content: '# Build all services\nfor dir in api-gateway auth-service job-service convert-to-pdf-service \\\n  convert-from-pdf-service organize-pdf-service optimize-pdf-service \\\n  analytics-service cleanup-worker; do\n  echo "Building $dir..." && cd "$dir" && go build ./... && cd ..\ndone\n\n# Run static analysis\nfor dir in api-gateway auth-service job-service convert-to-pdf-service \\\n  convert-from-pdf-service organize-pdf-service optimize-pdf-service \\\n  analytics-service cleanup-worker; do\n  echo "Vetting $dir..." && cd "$dir" && go vet ./... && cd ..\ndone\n\n# Run all tests\nfor dir in api-gateway auth-service job-service convert-to-pdf-service \\\n  convert-from-pdf-service organize-pdf-service optimize-pdf-service \\\n  analytics-service cleanup-worker; do\n  echo "Testing $dir..." && cd "$dir" && go test ./... && cd ..\ndone\n\n# Build Docker images\ndocker build -t fyredocs-base -f deployment/Dockerfile.base .\nfor svc in api-gateway auth-service job-service convert-to-pdf-service \\\n  convert-from-pdf-service organize-pdf-service optimize-pdf-service \\\n  analytics-service cleanup-worker; do\n  docker build -t "fyredocs-$svc" -f "$svc/Dockerfile" .\ndone',
         type: 'code',
         language: 'Bash',
       },
@@ -1710,7 +1710,7 @@ export const developerDocs: DevDocEntry[] = [
     sections: [
       {
         heading: 'Directory structure',
-        content: 'esydocs_frontend/src/\n  App.tsx                  # Root component: providers, routing, layout\n  auth/\n    authContext.tsx         # AuthProvider with login/logout/refresh state\n    authClient.ts          # API calls: login, signup, logout, refreshSession, getMe\n    authGuard.tsx           # ProtectedRoute, PublicOnlyRoute, RoleRoute components\n    useAuth.ts             # useContext(AuthContext) convenience hook\n  components/\n    common/                # PageSkeleton, ErrorBoundary, shared UI\n    tools/                 # Per-tool option components (SplitOptions, CompressOptions, etc.)\n    ui/                    # shadcn/ui primitives (Button, Dialog, Toaster, etc.)\n  config/\n    tools.ts               # TOOLS registry: every tool\'s constraints and metadata\n    toolCategories.ts      # Navigation grouping for the tools mega-menu\n    docs.ts                # User-facing feature documentation entries\n    developerDocs.ts       # This file — super-admin developer documentation\n  hooks/\n    useFileUpload.ts       # Chunked upload with pause/resume/retry\n    useJob.ts              # Single job creation, SSE, polling\n    useBatchJob.ts         # Batch processing (one job per file)\n  lib/\n    apiClient.ts           # fetch wrapper with auth, refresh, error parsing\n    toolApi.ts             # TOOL_API_CONFIG mapping + path builders\n    guestToken.ts          # Guest token helpers (now no-ops; cookie-based)\n  pages/\n    MergePage.tsx          # One page per tool, lazy-loaded\n    docs/                  # DocsIndexPage, DocsPage, DevDocsIndexPage, DevDocsPage\n    auth/                  # SignIn, SignUp\n    admin/                 # AdminDashboard, BusinessPage, GrowthPage, etc.\n  types/\n    index.ts               # Shared TypeScript types (ToolId, Job, FileUpload, etc.)',
+        content: 'fyredocs_frontend/src/\n  App.tsx                  # Root component: providers, routing, layout\n  auth/\n    authContext.tsx         # AuthProvider with login/logout/refresh state\n    authClient.ts          # API calls: login, signup, logout, refreshSession, getMe\n    authGuard.tsx           # ProtectedRoute, PublicOnlyRoute, RoleRoute components\n    useAuth.ts             # useContext(AuthContext) convenience hook\n  components/\n    common/                # PageSkeleton, ErrorBoundary, shared UI\n    tools/                 # Per-tool option components (SplitOptions, CompressOptions, etc.)\n    ui/                    # shadcn/ui primitives (Button, Dialog, Toaster, etc.)\n  config/\n    tools.ts               # TOOLS registry: every tool\'s constraints and metadata\n    toolCategories.ts      # Navigation grouping for the tools mega-menu\n    docs.ts                # User-facing feature documentation entries\n    developerDocs.ts       # This file — super-admin developer documentation\n  hooks/\n    useFileUpload.ts       # Chunked upload with pause/resume/retry\n    useJob.ts              # Single job creation, SSE, polling\n    useBatchJob.ts         # Batch processing (one job per file)\n  lib/\n    apiClient.ts           # fetch wrapper with auth, refresh, error parsing\n    toolApi.ts             # TOOL_API_CONFIG mapping + path builders\n    guestToken.ts          # Guest token helpers (now no-ops; cookie-based)\n  pages/\n    MergePage.tsx          # One page per tool, lazy-loaded\n    docs/                  # DocsIndexPage, DocsPage, DevDocsIndexPage, DevDocsPage\n    auth/                  # SignIn, SignUp\n    admin/                 # AdminDashboard, BusinessPage, GrowthPage, etc.\n  types/\n    index.ts               # Shared TypeScript types (ToolId, Job, FileUpload, etc.)',
         type: 'code',
         language: 'Directory',
       },
@@ -1826,7 +1826,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: '401 handling',
-        content: 'When apiClient receives a 401 response, it dispatches a custom DOM event: window.dispatchEvent(new CustomEvent("esydocs:unauthorized")). The AuthProvider listens for this event and responds by calling clearAuth() (resets user/role/plan/isAuthenticated to defaults) and navigating to /signin with replace: true. This pattern decouples the HTTP layer from React state — the API client does not need to import React hooks.',
+        content: 'When apiClient receives a 401 response, it dispatches a custom DOM event: window.dispatchEvent(new CustomEvent("fyredocs:unauthorized")). The AuthProvider listens for this event and responds by calling clearAuth() (resets user/role/plan/isAuthenticated to defaults) and navigating to /signin with replace: true. This pattern decouples the HTTP layer from React state — the API client does not need to import React hooks.',
         type: 'paragraph',
       },
       {
@@ -2035,12 +2035,12 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: '401 token refresh with shared lock',
-        content: 'When a 401 is received (and skipRefresh is not set), the client attempts a token refresh. A module-level refreshPromise variable acts as a lock — if a refresh is already in-flight, subsequent 401 handlers await the same promise instead of making parallel refresh calls. The refresh POSTs to /auth/refresh with credentials: "include". If successful, the original request is retried with skipRefresh: true to prevent infinite loops. If refresh fails, a custom "esydocs:unauthorized" event is dispatched to trigger logout.',
+        content: 'When a 401 is received (and skipRefresh is not set), the client attempts a token refresh. A module-level refreshPromise variable acts as a lock — if a refresh is already in-flight, subsequent 401 handlers await the same promise instead of making parallel refresh calls. The refresh POSTs to /auth/refresh with credentials: "include". If successful, the original request is retried with skipRefresh: true to prevent infinite loops. If refresh fails, a custom "fyredocs:unauthorized" event is dispatched to trigger logout.',
         type: 'paragraph',
       },
       {
         heading: 'Refresh lock pattern',
-        content: '// Shared refresh lock — prevents multiple concurrent refresh calls\nlet refreshPromise: Promise<boolean> | null = null;\n\n// Inside apiRequest, on 401:\nif (!refreshPromise) {\n  refreshPromise = attemptRefresh().finally(() => { refreshPromise = null; });\n}\nconst refreshed = await refreshPromise;\nif (refreshed) {\n  return apiRequest<T>(path, { ...options, skipRefresh: true });\n}\n// If refresh failed:\nwindow.dispatchEvent(new CustomEvent(\'esydocs:unauthorized\'));',
+        content: '// Shared refresh lock — prevents multiple concurrent refresh calls\nlet refreshPromise: Promise<boolean> | null = null;\n\n// Inside apiRequest, on 401:\nif (!refreshPromise) {\n  refreshPromise = attemptRefresh().finally(() => { refreshPromise = null; });\n}\nconst refreshed = await refreshPromise;\nif (refreshed) {\n  return apiRequest<T>(path, { ...options, skipRefresh: true });\n}\n// If refresh failed:\nwindow.dispatchEvent(new CustomEvent(\'fyredocs:unauthorized\'));',
         type: 'code',
         language: 'TypeScript',
       },
@@ -2051,7 +2051,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: '403 handling',
-        content: 'A 403 Forbidden response (distinct from 401) also triggers the "esydocs:unauthorized" event, which navigates the user to /signin. This handles cases where the user is authenticated but their permissions have been revoked server-side.',
+        content: 'A 403 Forbidden response (distinct from 401) also triggers the "fyredocs:unauthorized" event, which navigates the user to /signin. This handles cases where the user is authenticated but their permissions have been revoked server-side.',
         type: 'paragraph',
       },
     ],
@@ -2132,7 +2132,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Step 1: Backend — Add to ToolServiceMap',
-        content: 'In esydocs_backend/job-service/internal/routing/routing.go, add the new tool to ToolServiceMap. The key is the tool type string, the value is the target service name. This determines which NATS subject the job is published to.',
+        content: 'In fyredocs_backend/job-service/internal/routing/routing.go, add the new tool to ToolServiceMap. The key is the tool type string, the value is the target service name. This determines which NATS subject the job is published to.',
         type: 'paragraph',
       },
       {
@@ -2164,7 +2164,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Step 5: Frontend — Add to TOOLS registry',
-        content: 'In esydocs_frontend/src/config/tools.ts, add a new entry to the TOOLS object.',
+        content: 'In fyredocs_frontend/src/config/tools.ts, add a new entry to the TOOLS object.',
         type: 'paragraph',
       },
       {
@@ -2175,7 +2175,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Step 6: Frontend — Add to TOOL_API_CONFIG',
-        content: 'In esydocs_frontend/src/lib/toolApi.ts, add the mapping from the ToolId to its API path.',
+        content: 'In fyredocs_frontend/src/lib/toolApi.ts, add the mapping from the ToolId to its API path.',
         type: 'paragraph',
       },
       {
@@ -2186,7 +2186,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Step 7: Frontend — Add to toolCategories.ts',
-        content: 'In esydocs_frontend/src/config/toolCategories.ts, add the tool to the appropriate category group for the navigation mega-menu.',
+        content: 'In fyredocs_frontend/src/config/toolCategories.ts, add the tool to the appropriate category group for the navigation mega-menu.',
         type: 'paragraph',
       },
       {
@@ -2197,7 +2197,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Step 8: Frontend — Create tool page',
-        content: 'Create a new page component in esydocs_frontend/src/pages/. Most tool pages follow the same pattern: use useFileUpload for uploads, useJob or useBatchJob for processing, and render a ToolLayout with the file drop zone and options panel.',
+        content: 'Create a new page component in fyredocs_frontend/src/pages/. Most tool pages follow the same pattern: use useFileUpload for uploads, useJob or useBatchJob for processing, and render a ToolLayout with the file drop zone and options panel.',
         type: 'paragraph',
       },
       {
@@ -2208,7 +2208,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Step 9: Frontend — Add route to App.tsx',
-        content: 'In esydocs_frontend/src/App.tsx, add a lazy import and a Route inside the ProtectedRoute group.',
+        content: 'In fyredocs_frontend/src/App.tsx, add a lazy import and a Route inside the ProtectedRoute group.',
         type: 'paragraph',
       },
       {
@@ -2256,7 +2256,7 @@ export const developerDocs: DevDocEntry[] = [
     sections: [
       {
         heading: 'Overview',
-        content: 'Each backend service in EsyDocs is a fully independent Go application with its own database schema, configuration, Dockerfile, and API contract. This guide walks through creating a new service from scratch following the project conventions in CLAUDE.md.',
+        content: 'Each backend service in Fyredocs is a fully independent Go application with its own database schema, configuration, Dockerfile, and API contract. This guide walks through creating a new service from scratch following the project conventions in CLAUDE.md.',
         type: 'paragraph',
       },
       {
@@ -2300,13 +2300,13 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Step 6: Dockerfile',
-        content: '# Multi-stage build for small final image\nFROM golang:1.25-bookworm AS builder\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN CGO_ENABLED=0 go build -o /service main.go\n\n# If the service needs system tools (LibreOffice, Ghostscript, etc.),\n# use the esydocs-base image instead of scratch/alpine:\n# FROM esydocs-base AS runtime\nFROM gcr.io/distroless/static-debian12\nCOPY --from=builder /service /service\nEXPOSE 8088\nENTRYPOINT ["/service"]',
+        content: '# Multi-stage build for small final image\nFROM golang:1.25-bookworm AS builder\nWORKDIR /app\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN CGO_ENABLED=0 go build -o /service main.go\n\n# If the service needs system tools (LibreOffice, Ghostscript, etc.),\n# use the fyredocs-base image instead of scratch/alpine:\n# FROM fyredocs-base AS runtime\nFROM gcr.io/distroless/static-debian12\nCOPY --from=builder /service /service\nEXPOSE 8088\nENTRYPOINT ["/service"]',
         type: 'code',
         language: 'Dockerfile',
       },
       {
         heading: 'Step 7: Documentation',
-        content: 'After creating the service, update these documentation files: (1) Add service to esydocs_backend/README.md service list, (2) Create esydocs_backend/docs/developer/services/new-service.md with responsibility, routes, DB schema, and error flows, (3) Update Mermaid architecture diagrams in docs/developer/mermaid/, (4) Add to this developer docs file (developerDocs.ts) in the Services nav group and entries.',
+        content: 'After creating the service, update these documentation files: (1) Add service to fyredocs_backend/README.md service list, (2) Create fyredocs_backend/docs/developer/services/new-service.md with responsibility, routes, DB schema, and error flows, (3) Update Mermaid architecture diagrams in docs/developer/mermaid/, (4) Add to this developer docs file (developerDocs.ts) in the Services nav group and entries.',
         type: 'paragraph',
       },
       {
@@ -2325,13 +2325,13 @@ export const developerDocs: DevDocEntry[] = [
         content: '',
         type: 'steps',
         items: [
-          'Create directory structure under esydocs_backend/{service-name}/',
+          'Create directory structure under fyredocs_backend/{service-name}/',
           'Implement main.go with Gin server, DB connection, NATS connection, health endpoints',
           'Define GORM models in internal/model/ (UUIDv7 PKs, soft deletes)',
           'Implement handlers in internal/handler/ with standard response format',
           'Set up NATS consumer if processing async jobs',
           'Register proxy route in API Gateway',
-          'Create Dockerfile (multi-stage, distroless or esydocs-base)',
+          'Create Dockerfile (multi-stage, distroless or fyredocs-base)',
           'Write tests for all handlers and business logic',
           'Update README.md, service docs, Mermaid diagrams, and developer docs',
           'Run go build ./..., go vet ./..., go test ./... to verify',
@@ -2377,7 +2377,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Running backend tests',
-        content: '# Single service\ncd esydocs_backend/job-service && go test ./...\n\n# With verbose output\ngo test -v ./...\n\n# With coverage\ngo test -cover ./...\n\n# All services\nfor dir in api-gateway auth-service job-service convert-to-pdf \\\n  convert-from-pdf organize-pdf optimize-pdf \\\n  analytics-service cleanup-worker; do\n  echo "Testing $dir..." && cd "esydocs_backend/$dir" && go test ./... && cd ../..\ndone',
+        content: '# Single service\ncd fyredocs_backend/job-service && go test ./...\n\n# With verbose output\ngo test -v ./...\n\n# With coverage\ngo test -cover ./...\n\n# All services\nfor dir in api-gateway auth-service job-service convert-to-pdf \\\n  convert-from-pdf organize-pdf optimize-pdf \\\n  analytics-service cleanup-worker; do\n  echo "Testing $dir..." && cd "fyredocs_backend/$dir" && go test ./... && cd ../..\ndone',
         type: 'code',
         language: 'Bash',
       },
@@ -2407,7 +2407,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Running frontend tests',
-        content: '# Run all tests\ncd esydocs_frontend && npx vitest run\n\n# Watch mode (re-runs on file changes)\nnpx vitest\n\n# With coverage\nnpx vitest run --coverage\n\n# Single file\nnpx vitest run src/hooks/useFileUpload.test.ts',
+        content: '# Run all tests\ncd fyredocs_frontend && npx vitest run\n\n# Watch mode (re-runs on file changes)\nnpx vitest\n\n# With coverage\nnpx vitest run --coverage\n\n# Single file\nnpx vitest run src/hooks/useFileUpload.test.ts',
         type: 'code',
         language: 'Bash',
       },
@@ -2438,14 +2438,14 @@ export const developerDocs: DevDocEntry[] = [
     sections: [
       {
         heading: 'About These Diagrams',
-        content: 'These diagrams show how the EsyDocs platform is structured at the system level — the service topology, how data flows from upload to download, NATS JetStream stream architecture, and the authentication flow. Use these to orient yourself before diving into individual service flows.',
+        content: 'These diagrams show how the Fyredocs platform is structured at the system level — the service topology, how data flows from upload to download, NATS JetStream stream architecture, and the authentication flow. Use these to orient yourself before diving into individual service flows.',
         type: 'paragraph',
       },
 
       // ── Service Topology ──────────────────────────────────────────────
       {
         heading: 'Why a Microservice Topology?',
-        content: 'EsyDocs is decomposed into single-responsibility services so that each conversion format (PDF-to-X, X-to-PDF) can scale independently based on actual workload. The API Gateway is the only internet-facing service — every other component sits behind it, communicating over an internal Docker network. This means you can horizontally scale a hot path like Convert-to-PDF without touching Auth or Analytics.',
+        content: 'Fyredocs is decomposed into single-responsibility services so that each conversion format (PDF-to-X, X-to-PDF) can scale independently based on actual workload. The API Gateway is the only internet-facing service — every other component sits behind it, communicating over an internal Docker network. This means you can horizontally scale a hot path like Convert-to-PDF without touching Auth or Analytics.',
         type: 'paragraph',
       },
       getMermaidSections('architecture')[0],
@@ -2471,7 +2471,7 @@ export const developerDocs: DevDocEntry[] = [
       // ── NATS JetStream Streams ────────────────────────────────────────
       {
         heading: 'How Async Job Dispatch Works',
-        content: 'NATS JetStream is the backbone of all asynchronous work in EsyDocs. Rather than point-to-point HTTP calls between services, the API Gateway publishes a message to a subject like JOBS.convert-to-pdf, and the corresponding worker picks it up via a durable consumer. This pattern means workers can crash and restart without losing jobs — JetStream handles redelivery automatically after an ack timeout.',
+        content: 'NATS JetStream is the backbone of all asynchronous work in Fyredocs. Rather than point-to-point HTTP calls between services, the API Gateway publishes a message to a subject like JOBS.convert-to-pdf, and the corresponding worker picks it up via a durable consumer. This pattern means workers can crash and restart without losing jobs — JetStream handles redelivery automatically after an ack timeout.',
         type: 'paragraph',
       },
       getMermaidSections('architecture')[2],
@@ -2484,7 +2484,7 @@ export const developerDocs: DevDocEntry[] = [
       // ── Authentication Flow ───────────────────────────────────────────
       {
         heading: 'JWT Auth with Token Rotation',
-        content: 'EsyDocs uses a dual-token JWT strategy: a short-lived access token (15 minutes) for API authorization and a longer-lived refresh token (7 days) for silent renewal. This limits the blast radius of a leaked access token while keeping the user experience seamless. The refresh token is stored in an httpOnly cookie so it is inaccessible to client-side JavaScript, mitigating XSS-based token theft.',
+        content: 'Fyredocs uses a dual-token JWT strategy: a short-lived access token (15 minutes) for API authorization and a longer-lived refresh token (7 days) for silent renewal. This limits the blast radius of a leaked access token while keeping the user experience seamless. The refresh token is stored in an httpOnly cookie so it is inaccessible to client-side JavaScript, mitigating XSS-based token theft.',
         type: 'paragraph',
       },
       getMermaidSections('architecture')[3],
