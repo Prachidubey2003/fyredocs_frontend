@@ -12,14 +12,14 @@ const TermsPage = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
               <p className="text-muted-foreground">
-                By accessing and using Esydocs's services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
+                By accessing and using Fyredocs's services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
               <p className="text-muted-foreground">
-                Esydocs provides online PDF tools including but not limited to: PDF merging, splitting, compression, conversion, OCR, and security features. Our services are provided "as is" and we reserve the right to modify or discontinue any feature at any time.
+                Fyredocs provides online PDF tools including but not limited to: PDF merging, splitting, compression, conversion, OCR, and security features. Our services are provided "as is" and we reserve the right to modify or discontinue any feature at any time.
               </p>
             </section>
 
@@ -45,7 +45,7 @@ const TermsPage = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">5. Limitation of Liability</h2>
               <p className="text-muted-foreground">
-                Esydocs is not liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our services. Our total liability shall not exceed the amount you paid for the service in the past 12 months.
+                Fyredocs is not liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our services. Our total liability shall not exceed the amount you paid for the service in the past 12 months.
               </p>
             </section>
 
@@ -73,7 +73,7 @@ const TermsPage = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">9. Contact</h2>
               <p className="text-muted-foreground">
-                For questions about these Terms of Service, please contact us at legal@esydocs.com.
+                For questions about these Terms of Service, please contact us at legal@fyredocs.com.
               </p>
             </section>
           </div>

@@ -88,7 +88,7 @@ export const Footer = () => {
               <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center">
                 <FileText className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span>Esydocs</span>
+              <span>Fyredocs</span>
             </Link>
             <p className="text-sm text-muted-foreground mb-5 max-w-sm">
               Free online PDF tools to merge, split, compress, and convert your
@@ -146,7 +146,7 @@ export const Footer = () => {
         {/* Tier 3: Bottom Bar */}
         <div className="mt-8 pt-6 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} Esydocs. All rights reserved.
+            &copy; {new Date().getFullYear()} Fyredocs. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5" />

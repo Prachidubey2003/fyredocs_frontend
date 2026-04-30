@@ -135,18 +135,18 @@ export const docs: DocEntry[] = [
   // ──────────────────────────────────────
   {
     slug: 'getting-started',
-    title: 'Getting Started with EsyDocs',
-    description: 'Learn how to use EsyDocs to work with your PDF files quickly and easily.',
+    title: 'Getting Started with Fyredocs',
+    description: 'Learn how to use Fyredocs to work with your PDF files quickly and easily.',
     category: 'getting-started',
     sections: [
       {
-        heading: 'What is EsyDocs?',
-        content: 'EsyDocs is a free online platform that lets you work with PDF files right in your browser. You can merge, split, compress, convert, and edit PDFs without installing any software. Every tool runs on the server, so your computer\'s speed and operating system do not matter.',
+        heading: 'What is Fyredocs?',
+        content: 'Fyredocs is a free online platform that lets you work with PDF files right in your browser. You can merge, split, compress, convert, and edit PDFs without installing any software. Every tool runs on the server, so your computer\'s speed and operating system do not matter.',
         type: 'paragraph',
       },
       {
         heading: 'How it works',
-        content: 'Every tool on EsyDocs follows the same workflow:',
+        content: 'Every tool on Fyredocs follows the same workflow:',
         type: 'steps',
         items: [
           'Choose a tool from the homepage or navigation menu',
@@ -158,12 +158,12 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'No account required',
-        content: 'You can use every tool on EsyDocs as a guest without signing up. Guest files are automatically deleted after 2 hours. Create a free account if you want longer file retention and access to your job history across sessions.',
+        content: 'You can use every tool on Fyredocs as a guest without signing up. Guest files are automatically deleted after 2 hours. Create a free account if you want longer file retention and access to your job history across sessions.',
         type: 'tip',
       },
       {
         heading: 'Your files are safe',
-        content: 'All uploads travel over HTTPS. Files are processed on isolated server instances and automatically deleted — after 2 hours for guests, or according to plan retention for registered users. EsyDocs never reads, indexes, or shares your document content. See the Security & Privacy page for the full details.',
+        content: 'All uploads travel over HTTPS. Files are processed on isolated server instances and automatically deleted — after 2 hours for guests, or according to plan retention for registered users. Fyredocs never reads, indexes, or shares your document content. See the Security & Privacy page for the full details.',
         type: 'paragraph',
       },
     ],
@@ -399,7 +399,7 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Page syntax',
-        content: 'The same syntax used across EsyDocs page-based tools:',
+        content: 'The same syntax used across Fyredocs page-based tools:',
         type: 'list',
         items: [
           'Individual pages: 1,3,5 — extracts only those three pages',
@@ -1531,7 +1531,7 @@ export const docs: DocEntry[] = [
   {
     slug: 'security-privacy',
     title: 'Security & Privacy',
-    description: 'How EsyDocs protects your files during upload, processing, and storage.',
+    description: 'How Fyredocs protects your files during upload, processing, and storage.',
     category: 'concept',
     sections: [
       {
@@ -1581,7 +1581,7 @@ export const docs: DocEntry[] = [
     sections: [
       {
         heading: 'Guest access',
-        content: 'You can use every tool on EsyDocs without creating an account. Guest sessions are identified by a temporary browser token. You get full access to all tools with the same processing capabilities as registered users. The main limitation is that your files are automatically deleted after 2 hours and you have no job history.',
+        content: 'You can use every tool on Fyredocs without creating an account. Guest sessions are identified by a temporary browser token. You get full access to all tools with the same processing capabilities as registered users. The main limitation is that your files are automatically deleted after 2 hours and you have no job history.',
         type: 'paragraph',
       },
       {
@@ -1615,12 +1615,12 @@ export const docs: DocEntry[] = [
   {
     slug: 'faq',
     title: 'Frequently Asked Questions',
-    description: 'Answers to the most common questions about EsyDocs.',
+    description: 'Answers to the most common questions about Fyredocs.',
     category: 'faq',
     sections: [
       {
-        heading: 'Is EsyDocs free?',
-        content: 'Yes. Every tool on EsyDocs is free to use, with no hidden limits or paywalled features. You can process files as a guest without creating an account.',
+        heading: 'Is Fyredocs free?',
+        content: 'Yes. Every tool on Fyredocs is free to use, with no hidden limits or paywalled features. You can process files as a guest without creating an account.',
         type: 'paragraph',
       },
       {
@@ -1650,7 +1650,7 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'What browsers are supported?',
-        content: 'EsyDocs works in all modern browsers: Chrome, Firefox, Safari, and Edge. We recommend using the latest version of your browser for the best experience. Internet Explorer is not supported.',
+        content: 'Fyredocs works in all modern browsers: Chrome, Firefox, Safari, and Edge. We recommend using the latest version of your browser for the best experience. Internet Explorer is not supported.',
         type: 'paragraph',
       },
       {

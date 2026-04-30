@@ -21,7 +21,7 @@ const DocsPage = () => {
   return (
     <DocsLayout sidebar={<DocsSidebar />} activeTab="features">
       <Helmet>
-        <title>{doc.title} - EsyDocs Docs</title>
+        <title>{doc.title} - Fyredocs Docs</title>
         <meta name="description" content={doc.description} />
       </Helmet>
 

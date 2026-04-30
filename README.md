@@ -1,8 +1,8 @@
-# Esydocs
+# Fyredocs
 
 ## Project info
 
-This repository contains the Esydocs frontend.
+This repository contains the Fyredocs frontend.
 
 ## Development
 

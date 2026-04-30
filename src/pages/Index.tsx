@@ -13,7 +13,7 @@ const Index = () => {
   return (
     <Layout>
       <Helmet>
-        <title>Esydocs — Free Online PDF Tools</title>
+        <title>Fyredocs — Free Online PDF Tools</title>
         <meta name="description" content="Merge, split, compress, and convert PDFs online for free. Fast, secure, no installation required." />
       </Helmet>
       {/* Hero Section */}
