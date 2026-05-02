@@ -1,5 +1,4 @@
 import { Helmet } from 'react-helmet-async';
-import { Layout } from '@/components/layout/Layout';
 import { Hero } from '@/components/home/Hero';
 import { ToolGrid } from '@/components/home/ToolGrid';
 import { FeaturesSection } from '@/components/home/FeaturesSection';
@@ -11,7 +10,7 @@ const Index = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
   return (
-    <Layout>
+    <>
       <Helmet>
         <title>Fyredocs — Free Online PDF Tools</title>
         <meta name="description" content="Merge, split, compress, and convert PDFs online for free. Fast, secure, no installation required." />
@@ -77,7 +76,7 @@ const Index = () => {
           </div>
         </div>
       </section>
-    </Layout>
+    </>
   );
 };
 

@@ -1,4 +1,3 @@
-import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
@@ -49,7 +48,7 @@ const blogPosts = [
 
 const BlogPage = () => {
   return (
-    <Layout>
+    <>
       <div className="container py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -91,7 +90,7 @@ const BlogPage = () => {
           ))}
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

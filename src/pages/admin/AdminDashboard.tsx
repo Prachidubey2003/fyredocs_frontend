@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -357,7 +356,7 @@ const AdminDashboard = () => {
   }, [queryClient]);
 
   return (
-    <Layout>
+    <>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
         <div className="flex items-center justify-between">
           <div>
@@ -381,7 +380,7 @@ const AdminDashboard = () => {
           <ApiPerfCard />
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

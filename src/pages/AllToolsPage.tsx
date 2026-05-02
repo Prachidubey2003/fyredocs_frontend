@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Layout } from '@/components/layout/Layout';
 import { ToolCard } from '@/components/home/ToolCard';
 import { toolCategories } from '@/config/toolCategories';
 import { getAllTools } from '@/config/tools';
@@ -15,7 +14,7 @@ const AllToolsPage = () => {
     : toolCategories;
 
   return (
-    <Layout>
+    <>
       <div className="container py-12">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-3">All PDF Tools</h1>
@@ -67,7 +66,7 @@ const AllToolsPage = () => {
           );
         })}
       </div>
-    </Layout>
+    </>
   );
 };
 

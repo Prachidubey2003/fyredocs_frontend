@@ -1,6 +1,5 @@
 import { useLocation, Link } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { FileText, ArrowLeft, Layers, Scissors, Minimize2 } from 'lucide-react';
 
@@ -18,7 +17,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <Layout>
+    <>
       <main className="flex flex-1 items-center justify-center px-4 py-24">
         <div className="text-center max-w-md">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
@@ -50,7 +49,7 @@ const NotFound = () => {
           </div>
         </div>
       </main>
-    </Layout>
+    </>
   );
 };
 

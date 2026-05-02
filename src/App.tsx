@@ -4,13 +4,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/auth/authContext";
 import { ThemeProvider } from "next-themes";
 import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from "@/auth/authGuard";
 import { PageSkeleton } from "@/components/common/PageSkeleton";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
-import { AnimatePresence, motion } from "framer-motion";
+import { Layout } from "@/components/layout/Layout";
+import { DocsLayout } from "@/components/layout/DocsLayout";
 
 const Index = lazy(() => import("./pages/Index"));
 const MergePage = lazy(() => import("./pages/MergePage"));
@@ -77,94 +78,6 @@ const ApiPerformancePage = lazy(() => import("./pages/admin/ApiPerformancePage")
 
 const queryClient = new QueryClient();
 
-const AnimatedRoutes = () => {
-  const location = useLocation();
-
-  return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={location.pathname}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2, ease: "easeInOut" }}
-      >
-        <Routes location={location}>
-          <Route path="/" element={<Index />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/merge" element={<MergePage />} />
-            <Route path="/split" element={<SplitPage />} />
-            <Route path="/compress" element={<CompressPage />} />
-            <Route path="/convert" element={<ConvertPage />} />
-            <Route path="/pdf-to-word" element={<PdfToWordPage />} />
-            <Route path="/word-to-pdf" element={<WordToPdfPage />} />
-            <Route path="/pdf-to-excel" element={<PdfToExcelPage />} />
-            <Route path="/excel-to-pdf" element={<ExcelToPdfPage />} />
-            <Route path="/pdf-to-image" element={<PdfToImagePage />} />
-            <Route path="/image-to-pdf" element={<ImageToPdfPage />} />
-            <Route path="/ocr" element={<OcrPage />} />
-            <Route path="/watermark" element={<WatermarkPage />} />
-            <Route path="/protect" element={<ProtectPage />} />
-            <Route path="/rotate" element={<RotatePage />} />
-            <Route path="/reorder" element={<ReorderPage />} />
-            <Route path="/remove-pages" element={<RemovePagesPage />} />
-            <Route path="/extract-pages" element={<ExtractPagesPage />} />
-            <Route path="/scan-to-pdf" element={<ScanToPdfPage />} />
-            <Route path="/pdf-to-ppt" element={<PdfToPptPage />} />
-            <Route path="/pdf-to-html" element={<PdfToHtmlPage />} />
-            <Route path="/pdf-to-pdfa" element={<PdfToPdfaPage />} />
-            <Route path="/powerpoint-to-pdf" element={<PowerpointToPdfPage />} />
-            <Route path="/html-to-pdf" element={<HtmlToPdfPage />} />
-            <Route path="/repair-pdf" element={<RepairPdfPage />} />
-            <Route path="/pdf-to-text" element={<PdfToTextPage />} />
-            <Route path="/unlock" element={<UnlockPage />} />
-            <Route path="/add-page-numbers" element={<AddPageNumbersPage />} />
-            <Route path="/sign-pdf" element={<SignPdfPage />} />
-            <Route path="/edit-pdf" element={<EditPdfPage />} />
-            <Route path="/pdf-to-odt" element={<PdfToOdtPage />} />
-            <Route path="/pdf-to-ods" element={<PdfToOdsPage />} />
-            <Route path="/pdf-to-odp" element={<PdfToOdpPage />} />
-            <Route path="/word-to-odt" element={<WordToOdtPage />} />
-            <Route path="/excel-to-ods" element={<ExcelToOdsPage />} />
-            <Route path="/powerpoint-to-odp" element={<PowerpointToOdpPage />} />
-            <Route path="/odt-to-pdf" element={<OdtToPdfPage />} />
-            <Route path="/ods-to-pdf" element={<OdsToPdfPage />} />
-            <Route path="/odp-to-pdf" element={<OdpToPdfPage />} />
-          </Route>
-          <Route path="/all-tools" element={<AllToolsPage />} />
-          <Route path="/docs" element={<DocsIndexPage />} />
-          <Route path="/docs/:slug" element={<DocsPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/cookies" element={<CookiePage />} />
-          <Route element={<RoleRoute allowedRoles={['super-admin']} />}>
-            <Route path="/dev-docs" element={<DevDocsIndexPage />} />
-            <Route path="/dev-docs/:slug" element={<DevDocsPage />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/business" element={<BusinessPage />} />
-            <Route path="/admin/growth" element={<GrowthPage />} />
-            <Route path="/admin/engagement" element={<EngagementPage />} />
-            <Route path="/admin/reliability" element={<ReliabilityPage />} />
-            <Route path="/admin/system" element={<SystemPage />} />
-            <Route path="/admin/server-performance" element={<ServerPerformancePage />} />
-            <Route path="/admin/api-performance" element={<ApiPerformancePage />} />
-          </Route>
-          <Route element={<PublicOnlyRoute />}>
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-          </Route>
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </motion.div>
-    </AnimatePresence>
-  );
-};
-
 const App = () => (
   <HelmetProvider>
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -176,7 +89,83 @@ const App = () => (
           <AuthProvider>
             <ErrorBoundary>
               <Suspense fallback={<PageSkeleton />}>
-                <AnimatedRoutes />
+                <Routes>
+                  <Route element={<Layout />}>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/all-tools" element={<AllToolsPage />} />
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/merge" element={<MergePage />} />
+                      <Route path="/split" element={<SplitPage />} />
+                      <Route path="/compress" element={<CompressPage />} />
+                      <Route path="/convert" element={<ConvertPage />} />
+                      <Route path="/pdf-to-word" element={<PdfToWordPage />} />
+                      <Route path="/word-to-pdf" element={<WordToPdfPage />} />
+                      <Route path="/pdf-to-excel" element={<PdfToExcelPage />} />
+                      <Route path="/excel-to-pdf" element={<ExcelToPdfPage />} />
+                      <Route path="/pdf-to-image" element={<PdfToImagePage />} />
+                      <Route path="/image-to-pdf" element={<ImageToPdfPage />} />
+                      <Route path="/ocr" element={<OcrPage />} />
+                      <Route path="/watermark" element={<WatermarkPage />} />
+                      <Route path="/protect" element={<ProtectPage />} />
+                      <Route path="/rotate" element={<RotatePage />} />
+                      <Route path="/reorder" element={<ReorderPage />} />
+                      <Route path="/remove-pages" element={<RemovePagesPage />} />
+                      <Route path="/extract-pages" element={<ExtractPagesPage />} />
+                      <Route path="/scan-to-pdf" element={<ScanToPdfPage />} />
+                      <Route path="/pdf-to-ppt" element={<PdfToPptPage />} />
+                      <Route path="/pdf-to-html" element={<PdfToHtmlPage />} />
+                      <Route path="/pdf-to-pdfa" element={<PdfToPdfaPage />} />
+                      <Route path="/powerpoint-to-pdf" element={<PowerpointToPdfPage />} />
+                      <Route path="/html-to-pdf" element={<HtmlToPdfPage />} />
+                      <Route path="/repair-pdf" element={<RepairPdfPage />} />
+                      <Route path="/pdf-to-text" element={<PdfToTextPage />} />
+                      <Route path="/unlock" element={<UnlockPage />} />
+                      <Route path="/add-page-numbers" element={<AddPageNumbersPage />} />
+                      <Route path="/sign-pdf" element={<SignPdfPage />} />
+                      <Route path="/edit-pdf" element={<EditPdfPage />} />
+                      <Route path="/pdf-to-odt" element={<PdfToOdtPage />} />
+                      <Route path="/pdf-to-ods" element={<PdfToOdsPage />} />
+                      <Route path="/pdf-to-odp" element={<PdfToOdpPage />} />
+                      <Route path="/word-to-odt" element={<WordToOdtPage />} />
+                      <Route path="/excel-to-ods" element={<ExcelToOdsPage />} />
+                      <Route path="/powerpoint-to-odp" element={<PowerpointToOdpPage />} />
+                      <Route path="/odt-to-pdf" element={<OdtToPdfPage />} />
+                      <Route path="/ods-to-pdf" element={<OdsToPdfPage />} />
+                      <Route path="/odp-to-pdf" element={<OdpToPdfPage />} />
+                    </Route>
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/blog" element={<BlogPage />} />
+                    <Route path="/pricing" element={<PricingPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/privacy" element={<PrivacyPage />} />
+                    <Route path="/terms" element={<TermsPage />} />
+                    <Route path="/cookies" element={<CookiePage />} />
+                    <Route element={<RoleRoute allowedRoles={['super-admin']} />}>
+                      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                      <Route path="/admin/business" element={<BusinessPage />} />
+                      <Route path="/admin/growth" element={<GrowthPage />} />
+                      <Route path="/admin/engagement" element={<EngagementPage />} />
+                      <Route path="/admin/reliability" element={<ReliabilityPage />} />
+                      <Route path="/admin/system" element={<SystemPage />} />
+                      <Route path="/admin/server-performance" element={<ServerPerformancePage />} />
+                      <Route path="/admin/api-performance" element={<ApiPerformancePage />} />
+                    </Route>
+                    <Route element={<PublicOnlyRoute />}>
+                      <Route path="/signin" element={<SignIn />} />
+                      <Route path="/signup" element={<SignUp />} />
+                    </Route>
+                    <Route element={<DocsLayout />}>
+                      <Route path="/docs" element={<DocsIndexPage />} />
+                      <Route path="/docs/:slug" element={<DocsPage />} />
+                      <Route element={<RoleRoute allowedRoles={['super-admin']} />}>
+                        <Route path="/dev-docs" element={<DevDocsIndexPage />} />
+                        <Route path="/dev-docs/:slug" element={<DevDocsPage />} />
+                      </Route>
+                    </Route>
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
+                </Routes>
               </Suspense>
             </ErrorBoundary>
           </AuthProvider>

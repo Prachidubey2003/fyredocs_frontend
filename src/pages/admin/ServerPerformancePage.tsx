@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
 import { ProgressRing } from '@/components/admin/ProgressRing';
@@ -22,7 +21,7 @@ const ServerPerformancePage = () => {
   const lastUpdated = dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : null;
 
   return (
-    <Layout>
+    <>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
         <div className="flex items-start justify-between gap-4">
           <AdminPageHeader title="Server Performance" description="CPU, memory, storage, and service availability" onRefresh={handleRefresh} />
@@ -193,7 +192,7 @@ const ServerPerformancePage = () => {
           </>
         )}
       </div>
-    </Layout>
+    </>
   );
 };
 

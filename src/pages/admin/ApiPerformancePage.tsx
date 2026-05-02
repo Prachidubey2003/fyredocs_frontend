@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -63,7 +62,7 @@ const ApiPerformancePage = () => {
   const pageCount = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
 
   return (
-    <Layout>
+    <>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
         <AdminPageHeader title="API Performance" description="Request latency, throughput, and error rates per endpoint" onRefresh={handleRefresh} />
 
@@ -150,7 +149,7 @@ const ApiPerformancePage = () => {
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </>
   );
 };
 

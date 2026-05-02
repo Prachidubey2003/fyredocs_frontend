@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
 import { ProgressRing } from '@/components/admin/ProgressRing';
@@ -29,7 +28,7 @@ const ReliabilityPage = () => {
   const rate = (d?.jobRate?.successRate ?? 0) * 100;
 
   return (
-    <Layout>
+    <>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
         <AdminPageHeader title="Reliability Metrics" description="Job success rates, processing time, and error analysis" onRefresh={handleRefresh} />
 
@@ -121,7 +120,7 @@ const ReliabilityPage = () => {
           </Card>
         )}
       </div>
-    </Layout>
+    </>
   );
 };
 

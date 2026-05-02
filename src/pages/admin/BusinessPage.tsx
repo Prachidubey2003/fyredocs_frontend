@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
 import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
@@ -47,7 +46,7 @@ const BusinessPage = () => {
   const conversionRate = d?.conversionRate?.rate ?? 0;
 
   return (
-    <Layout>
+    <>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
         <AdminPageHeader
           title="Business Metrics"
@@ -224,7 +223,7 @@ const BusinessPage = () => {
           </Card>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

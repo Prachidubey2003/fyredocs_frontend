@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/auth/useAuth';
 import { isAuthError } from '@/auth/authErrors';
-import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,7 +56,7 @@ const SignIn = () => {
   };
 
   return (
-    <Layout>
+    <>
       <div className="flex min-h-[70vh] items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader>
@@ -124,7 +123,7 @@ const SignIn = () => {
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </>
   );
 };
 

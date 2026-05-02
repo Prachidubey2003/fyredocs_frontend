@@ -1,8 +1,7 @@
-import { Layout } from '@/components/layout/Layout';
 
 const TermsPage = () => {
   return (
-    <Layout>
+    <>
       <div className="container py-16 md:py-24">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
@@ -79,7 +78,7 @@ const TermsPage = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 
