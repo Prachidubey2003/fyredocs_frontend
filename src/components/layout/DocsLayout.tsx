@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
@@ -8,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/auth/useAuth';
 import { DocsSidebar } from '@/components/docs/DocsSidebar';
 import { DevDocsSidebar } from '@/components/docs/DevDocsSidebar';
+import { PageSkeleton } from '@/components/common/PageSkeleton';
 
 export type DocsTab = 'features' | 'api' | 'architecture';
 
@@ -87,17 +87,9 @@ export const DocsLayout = () => {
 
         {/* Main content area */}
         <main className="flex-1 min-w-0">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: 'easeInOut' }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <Suspense fallback={<PageSkeleton />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

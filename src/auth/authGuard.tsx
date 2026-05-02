@@ -1,12 +1,9 @@
 import { type ReactNode } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/auth/useAuth';
+import { PageSkeleton } from '@/components/common/PageSkeleton';
 
-const LoadingState = () => (
-  <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
-    Checking session...
-  </div>
-);
+const LoadingState = () => <PageSkeleton />;
 
 type GuardProps = {
   redirectTo?: string;

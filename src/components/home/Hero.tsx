@@ -29,7 +29,7 @@ export const Hero = () => {
       <div className="container relative py-8">
         <div className="max-w-3xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -38,19 +38,19 @@ export const Hero = () => {
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 animate-slide-up">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
             Your documents,{' '}
             <span className="gradient-text">simplified</span>
           </h1>
 
           {/* Subheadline */}
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-slide-up [animation-delay:100ms]">
+          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Edit, convert, merge, compress — handle any PDF task in seconds.
             No installs needed. Fast, free, and fully secure.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-slide-up [animation-delay:200ms]">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
             <Button
               size="lg"
               className="bg-gradient-primary hover:opacity-90 transition-opacity text-base h-12 px-8"
@@ -72,7 +72,7 @@ export const Hero = () => {
           </div>
 
           {/* Trust indicators */}
-          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 animate-slide-up [animation-delay:300ms]">
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
             {features.map((feature) => (
               <div
                 key={feature.label}

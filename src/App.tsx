@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,7 +8,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/auth/authContext";
 import { ThemeProvider } from "next-themes";
 import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from "@/auth/authGuard";
-import { PageSkeleton } from "@/components/common/PageSkeleton";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { Layout } from "@/components/layout/Layout";
 import { DocsLayout } from "@/components/layout/DocsLayout";
@@ -88,8 +87,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <ErrorBoundary>
-              <Suspense fallback={<PageSkeleton />}>
-                <Routes>
+              <Routes>
                   <Route element={<Layout />}>
                     <Route path="/" element={<Index />} />
                     <Route path="/all-tools" element={<AllToolsPage />} />
@@ -165,8 +163,7 @@ const App = () => (
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Route>
-                </Routes>
-              </Suspense>
+              </Routes>
             </ErrorBoundary>
           </AuthProvider>
         </BrowserRouter>
