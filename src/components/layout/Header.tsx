@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FileText, Menu, User, X, ChevronDown, Shield, LogOut } from 'lucide-react';
+import { Menu, User, X, ChevronDown, Shield, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -154,11 +154,8 @@ export const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 font-bold text-xl">
-          <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center">
-            <FileText className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="hidden sm:inline">Fyredocs</span>
+        <Link to="/" className="flex items-center" aria-label="Fyredocs home">
+          <img src="/logo.png" alt="Fyredocs" className="h-16 w-auto" />
         </Link>
 
         {/* Desktop Navigation */}
