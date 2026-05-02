@@ -1,19 +1,15 @@
-import { ReactNode, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Header } from './Header';
+import { useState } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/auth/useAuth';
+import { DocsSidebar } from '@/components/docs/DocsSidebar';
+import { DevDocsSidebar } from '@/components/docs/DevDocsSidebar';
 
 export type DocsTab = 'features' | 'api' | 'architecture';
-
-interface DocsLayoutProps {
-  sidebar: ReactNode;
-  children: ReactNode;
-  activeTab?: DocsTab;
-}
 
 const tabs: { id: DocsTab; label: string; href: string }[] = [
   { id: 'features', label: 'Features', href: '/docs' },
@@ -21,27 +17,28 @@ const tabs: { id: DocsTab; label: string; href: string }[] = [
   { id: 'architecture', label: 'Architecture', href: '/dev-docs/architecture' },
 ];
 
-export const DocsLayout = ({ sidebar, children, activeTab }: DocsLayoutProps) => {
+const deriveTab = (pathname: string): DocsTab => {
+  if (pathname.startsWith('/dev-docs/api')) return 'api';
+  if (pathname.startsWith('/dev-docs')) return 'architecture';
+  return 'features';
+};
+
+export const DocsLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
 
   const isSuperAdmin = user?.role === 'super-admin';
+  const currentTab = deriveTab(location.pathname);
 
-  // Determine active tab from prop or route
-  const currentTab: DocsTab =
-    activeTab ?? (location.pathname.startsWith('/dev-docs') ? 'architecture' : 'features');
+  const sidebar = location.pathname.startsWith('/dev-docs') ? (
+    <DevDocsSidebar filter={currentTab === 'api' ? 'api' : 'architecture'} />
+  ) : (
+    <DocsSidebar />
+  );
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:text-sm focus:font-medium"
-      >
-        Skip to content
-      </a>
-      <Header />
-
+    <div className="flex-1 flex flex-col">
       {/* Tab bar — only visible for super-admin */}
       {isSuperAdmin && (
         <div className="border-b bg-background">
@@ -89,8 +86,18 @@ export const DocsLayout = ({ sidebar, children, activeTab }: DocsLayoutProps) =>
         </div>
 
         {/* Main content area */}
-        <main id="main-content" className="flex-1 min-w-0">
-          {children}
+        <main className="flex-1 min-w-0">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>

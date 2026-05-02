@@ -1,6 +1,4 @@
 import { useParams, Navigate, Link } from 'react-router-dom';
-import { DocsLayout } from '@/components/layout/DocsLayout';
-import { DocsSidebar } from '@/components/docs/DocsSidebar';
 import { DocsContent } from '@/components/docs/DocsContent';
 import { getDocBySlug } from '@/config/docs';
 import { TOOLS } from '@/config/tools';
@@ -19,7 +17,7 @@ const DocsPage = () => {
   const linkedTool = doc.toolId ? TOOLS[doc.toolId] : undefined;
 
   return (
-    <DocsLayout sidebar={<DocsSidebar />} activeTab="features">
+    <>
       <Helmet>
         <title>{doc.title} - Fyredocs Docs</title>
         <meta name="description" content={doc.description} />
@@ -44,7 +42,7 @@ const DocsPage = () => {
         {/* Doc body */}
         <DocsContent sections={doc.sections} />
       </div>
-    </DocsLayout>
+    </>
   );
 };
 

@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
 import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
@@ -51,7 +50,7 @@ const GrowthPage = () => {
   const d = data;
 
   return (
-    <Layout>
+    <>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
         <AdminPageHeader
           title="Growth Metrics"
@@ -269,7 +268,7 @@ const GrowthPage = () => {
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </>
   );
 };
 

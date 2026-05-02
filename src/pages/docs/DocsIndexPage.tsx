@@ -1,5 +1,3 @@
-import { DocsLayout } from '@/components/layout/DocsLayout';
-import { DocsSidebar } from '@/components/docs/DocsSidebar';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { BookOpen, Wrench, FileText, Shield, HelpCircle } from 'lucide-react';
@@ -45,7 +43,7 @@ const categories = [
 
 const DocsIndexPage = () => {
   return (
-    <DocsLayout sidebar={<DocsSidebar />} activeTab="features">
+    <>
       <Helmet>
         <title>Documentation - Fyredocs</title>
         <meta name="description" content="Learn how to use Fyredocs PDF tools. Browse tool guides, supported formats, security info, and FAQ." />
@@ -74,7 +72,7 @@ const DocsIndexPage = () => {
           ))}
         </div>
       </div>
-    </DocsLayout>
+    </>
   );
 };
 

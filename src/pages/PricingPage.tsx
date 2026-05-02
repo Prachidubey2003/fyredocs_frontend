@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, Zap, Building, Infinity as InfinityIcon } from 'lucide-react';
@@ -66,7 +65,7 @@ const plans = [
 
 const PricingPage = () => {
   return (
-    <Layout>
+    <>
       <Helmet>
         <title>Pricing — Fyredocs</title>
         <meta name="description" content="Simple, transparent pricing for Fyredocs PDF tools. Free plan available. Upgrade anytime." />
@@ -141,7 +140,7 @@ const PricingPage = () => {
           </p>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

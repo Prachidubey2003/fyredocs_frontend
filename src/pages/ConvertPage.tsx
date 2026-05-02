@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Layout } from '@/components/layout/Layout';
 import { getAllTools } from '@/config/tools';
 import { ToolCard } from '@/components/home/ToolCard';
 import { ArrowLeftRight } from 'lucide-react';
@@ -8,7 +7,7 @@ const ConvertPage = () => {
   const convertTools = getAllTools().filter((tool) => tool.category === 'convert');
 
   return (
-    <Layout>
+    <>
       <section className="py-12 md:py-20">
         <div className="container">
           {/* Header */}
@@ -33,7 +32,7 @@ const ConvertPage = () => {
           </div>
         </div>
       </section>
-    </Layout>
+    </>
   );
 };
 

@@ -1,5 +1,3 @@
-import { DocsLayout } from '@/components/layout/DocsLayout';
-import { DevDocsSidebar } from '@/components/docs/DevDocsSidebar';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { Server, Code, Layers, Database, ShieldCheck, GitBranch } from 'lucide-react';
@@ -52,7 +50,7 @@ const categories = [
 
 const DevDocsIndexPage = () => {
   return (
-    <DocsLayout sidebar={<DevDocsSidebar />} activeTab="architecture">
+    <>
       <Helmet>
         <title>Developer Documentation - Fyredocs</title>
         <meta name="description" content="Internal developer documentation for the Fyredocs platform." />
@@ -81,7 +79,7 @@ const DevDocsIndexPage = () => {
           ))}
         </div>
       </div>
-    </DocsLayout>
+    </>
   );
 };
 

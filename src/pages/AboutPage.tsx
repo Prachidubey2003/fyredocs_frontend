@@ -1,9 +1,8 @@
-import { Layout } from '@/components/layout/Layout';
 import { Users, Target, Zap, Shield } from 'lucide-react';
 
 const AboutPage = () => {
   return (
-    <Layout>
+    <>
       <div className="container py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -67,7 +66,7 @@ const AboutPage = () => {
           </p>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

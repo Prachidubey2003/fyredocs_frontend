@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Layout } from '@/components/layout/Layout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -30,7 +29,7 @@ const SystemPage = () => {
     (d?.processingLag?.avgSeconds ?? 0) > 1 ? 'text-yellow-600' : 'text-green-600';
 
   return (
-    <Layout>
+    <>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
         <AdminPageHeader title="System Health" description="Event ingestion, processing lag, and live activity" onRefresh={handleRefresh} />
 
@@ -127,7 +126,7 @@ const SystemPage = () => {
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </>
   );
 };
 

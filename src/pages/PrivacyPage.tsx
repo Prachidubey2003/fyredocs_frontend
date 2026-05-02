@@ -1,8 +1,7 @@
-import { Layout } from '@/components/layout/Layout';
 
 const PrivacyPage = () => {
   return (
-    <Layout>
+    <>
       <div className="container py-16 md:py-24">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
@@ -70,7 +69,7 @@ const PrivacyPage = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

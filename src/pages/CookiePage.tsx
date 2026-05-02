@@ -1,8 +1,7 @@
-import { Layout } from '@/components/layout/Layout';
 
 const CookiePage = () => {
   return (
-    <Layout>
+    <>
       <div className="container py-16 md:py-24">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-4xl font-bold mb-8">Cookie Policy</h1>
@@ -99,7 +98,7 @@ const CookiePage = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

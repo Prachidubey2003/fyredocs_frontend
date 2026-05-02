@@ -4,7 +4,6 @@ import { Helmet } from 'react-helmet-async';
 import { ChevronLeft } from 'lucide-react';
 import { ToolDefinition } from '@/types';
 import { ToolIcon } from '@/components/icons/ToolIcon';
-import { Layout } from '@/components/layout/Layout';
 import { cn } from '@/lib/utils';
 
 interface ToolPageLayoutProps {
@@ -31,7 +30,7 @@ export const ToolPageLayout = ({
   className,
 }: ToolPageLayoutProps) => {
   return (
-    <Layout>
+    <>
       <Helmet>
         <title>{tool.name} — Fyredocs</title>
         <meta name="description" content={tool.description} />
@@ -75,6 +74,6 @@ export const ToolPageLayout = ({
 
       {/* Tool content */}
       <div className={cn('container py-8', className)}>{children}</div>
-    </Layout>
+    </>
   );
 };
