@@ -86,6 +86,8 @@ export default {
           "ocr-light": "hsl(var(--tool-ocr-light))",
           watermark: "hsl(var(--tool-watermark))",
           "watermark-light": "hsl(var(--tool-watermark-light))",
+          edit: "hsl(var(--tool-edit))",
+          "edit-light": "hsl(var(--tool-edit-light))",
         },
         // State colors
         upload: {
