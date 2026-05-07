@@ -18,6 +18,7 @@ const categoryBgClasses: Record<string, string> = {
   security: 'bg-tool-security-light group-hover:bg-tool-security/10',
   ocr: 'bg-tool-ocr-light group-hover:bg-tool-ocr/10',
   watermark: 'bg-tool-watermark-light group-hover:bg-tool-watermark/10',
+  edit: 'bg-tool-edit-light group-hover:bg-tool-edit/10',
 };
 
 const categoryIconBgClasses: Record<string, string> = {
@@ -29,6 +30,7 @@ const categoryIconBgClasses: Record<string, string> = {
   security: 'bg-tool-security/10 group-hover:bg-tool-security/20',
   ocr: 'bg-tool-ocr/10 group-hover:bg-tool-ocr/20',
   watermark: 'bg-tool-watermark/10 group-hover:bg-tool-watermark/20',
+  edit: 'bg-tool-edit/10 group-hover:bg-tool-edit/20',
 };
 
 export const ToolCard = ({ tool, className }: ToolCardProps) => {

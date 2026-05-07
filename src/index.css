@@ -52,6 +52,8 @@
     --tool-ocr-light: 340 100% 97%;
     --tool-watermark: 280 67% 47%;
     --tool-watermark-light: 280 100% 97%;
+    --tool-edit: 230 82% 58%;
+    --tool-edit-light: 230 100% 97%;
 
     /* Upload states */
     --upload-idle: 220 14% 96%;

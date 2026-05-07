@@ -79,6 +79,7 @@ const categoryColors: Record<ToolCategory, string> = {
   security: 'text-tool-security',
   ocr: 'text-tool-ocr',
   watermark: 'text-tool-watermark',
+  edit: 'text-tool-edit',
 };
 
 export const ToolIcon = ({ icon, category, size = 'md', className }: ToolIconProps) => {
