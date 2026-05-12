@@ -2,12 +2,12 @@ import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
-import { ProgressRing } from '@/components/admin/ProgressRing';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { CheckCircle2, XCircle, Clock, ShieldCheck } from 'lucide-react';
 import { useReliability } from '@/hooks/useAdminMetrics';
 
 const errorTrendConfig = {
@@ -29,20 +29,62 @@ const ReliabilityPage = () => {
 
   return (
     <>
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <div className="space-y-6 px-4 py-8">
         <AdminPageHeader title="Reliability Metrics" description="Job success rates, processing time, and error analysis" onRefresh={handleRefresh} />
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-          <Card className="flex items-center justify-center p-6">
-            {isLoading ? <Skeleton className="h-16 w-16 rounded-full" /> : (
-              <ProgressRing value={rate} size={80} strokeWidth={8}
-                color={rate >= 95 ? 'hsl(142, 71%, 45%)' : rate >= 80 ? 'hsl(48, 96%, 53%)' : 'hsl(0, 84%, 60%)'} />
-            )}
+          <Card className="overflow-hidden">
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10">
+                <ShieldCheck className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs leading-tight text-muted-foreground">Success Rate</p>
+                {isLoading ? (
+                  <Skeleton className="mt-1 h-8 w-20" />
+                ) : (
+                  <p className={`text-3xl font-bold leading-tight ${rate >= 95 ? 'text-green-600' : rate >= 80 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    {rate.toFixed(1)}%
+                  </p>
+                )}
+              </div>
+            </CardContent>
           </Card>
-          <StatCard label="Completed" value={d?.jobRate?.completed} color="text-green-600" isLoading={isLoading} />
-          <StatCard label="Failed" value={d?.jobRate?.failed} color="text-red-600" isLoading={isLoading} />
-          <StatCard label="P50 Latency" value={`${(d?.processingTime?.p50Seconds ?? 0).toFixed(2)}s`} isLoading={isLoading} />
-          <StatCard label="P95 Latency" value={`${(d?.processingTime?.p95Seconds ?? 0).toFixed(2)}s`} color="text-orange-600" isLoading={isLoading} />
+          <StatCard
+            label="Completed"
+            value={d?.jobRate?.completed}
+            icon={CheckCircle2}
+            iconColor="text-emerald-600"
+            iconBg="bg-emerald-500/10"
+            color="text-green-600"
+            isLoading={isLoading}
+          />
+          <StatCard
+            label="Failed"
+            value={d?.jobRate?.failed}
+            icon={XCircle}
+            iconColor="text-red-600"
+            iconBg="bg-red-500/10"
+            color="text-red-600"
+            isLoading={isLoading}
+          />
+          <StatCard
+            label="P50 Latency"
+            value={`${(d?.processingTime?.p50Seconds ?? 0).toFixed(2)}s`}
+            icon={Clock}
+            iconColor="text-sky-600"
+            iconBg="bg-sky-500/10"
+            isLoading={isLoading}
+          />
+          <StatCard
+            label="P95 Latency"
+            value={`${(d?.processingTime?.p95Seconds ?? 0).toFixed(2)}s`}
+            icon={Clock}
+            iconColor="text-orange-600"
+            iconBg="bg-orange-500/10"
+            color="text-orange-600"
+            isLoading={isLoading}
+          />
         </div>
 
         <Card>
@@ -101,14 +143,14 @@ const ReliabilityPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Plan</TableHead>
-                    <TableHead className="text-right">Hits</TableHead>
+                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Date</TableHead>
+                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Plan</TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Hits</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {d?.planLimitHits?.map((row, i) => (
-                    <TableRow key={i}>
+                    <TableRow key={i} className="hover:bg-muted/50 transition-colors">
                       <TableCell>{row.date}</TableCell>
                       <TableCell className="capitalize">{row.planName}</TableCell>
                       <TableCell className="text-right font-medium text-orange-600">{row.hits}</TableCell>

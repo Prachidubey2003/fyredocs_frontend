@@ -1,11 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
 import { SummaryCard } from '@/components/admin/SummaryCard';
 import { ProgressRing } from '@/components/admin/ProgressRing';
-import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
+import { StatCard } from '@/components/admin/StatCard';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import {
   useOverview,
@@ -25,7 +23,6 @@ import {
   Activity,
   Server,
   Gauge,
-  RefreshCw,
   UserPlus,
   Users,
   Briefcase,
@@ -52,29 +49,19 @@ function QuickStats() {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {items.map((item) => {
-        const Icon = item.icon;
-        return (
-          <Card key={item.label} className="relative overflow-hidden">
-            <CardHeader className="flex flex-row items-center gap-3 px-4 pb-1 pt-4">
-              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${item.bg}`}>
-                <Icon className={`h-4 w-4 ${item.color}`} />
-              </div>
-              <CardDescription className="text-xs leading-tight">{item.label}</CardDescription>
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              {isLoading ? (
-                <Skeleton className="h-7 w-14" />
-              ) : (
-                <p className={`text-2xl font-bold ${item.color}`}>
-                  <AnimatedNumber value={item.value ?? 0} />
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
+      {items.map((item) => (
+        <StatCard
+          key={item.label}
+          label={item.label}
+          value={item.value}
+          icon={item.icon}
+          iconColor={item.color}
+          iconBg={item.bg}
+          color={item.color}
+          isLoading={isLoading}
+        />
+      ))}
     </div>
   );
 }
@@ -347,30 +334,24 @@ function ApiPerfCard() {
 
 const AdminDashboard = () => {
   const queryClient = useQueryClient();
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = useCallback(() => {
-    setIsRefreshing(true);
     queryClient.resetQueries({ queryKey: ['admin'] });
-    setTimeout(() => setIsRefreshing(false), 1000);
   }, [queryClient]);
 
   return (
     <>
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Platform overview — click any card for details</p>
-          </div>
-          <Button variant="outline" size="icon" onClick={handleRefresh} title="Refresh all data">
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </Button>
-        </div>
+      <div className="space-y-6 px-4 py-8">
+        <AdminPageHeader
+          title="Admin Dashboard"
+          description="Platform overview — click any card for details"
+          onRefresh={handleRefresh}
+          backTo={null}
+        />
 
         <QuickStats />
 
-        <div className="grid gap-4">
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
           <BusinessCard />
           <GrowthCard />
           <EngagementCard />

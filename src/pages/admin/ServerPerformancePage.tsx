@@ -7,7 +7,7 @@ import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Server, Cpu, MemoryStick, HardDrive } from 'lucide-react';
 import { useServerPerformance } from '@/hooks/useAdminMetrics';
 
 const ServerPerformancePage = () => {
@@ -22,7 +22,7 @@ const ServerPerformancePage = () => {
 
   return (
     <>
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <div className="space-y-6 px-4 py-8">
         <div className="flex items-start justify-between gap-4">
           <AdminPageHeader title="Server Performance" description="CPU, memory, storage, and service availability" onRefresh={handleRefresh} />
           <div className="flex items-center gap-2 shrink-0 mt-2">
@@ -36,38 +36,50 @@ const ServerPerformancePage = () => {
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-32" />)}
-          </div>
-        ) : (
+        {/* System overview */}
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard
+            label="System Uptime"
+            value={sys?.uptime ?? 'N/A'}
+            icon={Server}
+            iconColor="text-emerald-600"
+            iconBg="bg-emerald-500/10"
+            isLoading={isLoading}
+          />
+          <StatCard
+            label="CPU"
+            value={sys?.cpu?.usagePercent != null ? `${sys.cpu.usagePercent.toFixed(0)}%` : 'N/A'}
+            icon={Cpu}
+            iconColor="text-blue-600"
+            iconBg="bg-blue-500/10"
+            color={(sys?.cpu?.usagePercent ?? 0) > 80 ? 'text-red-600' : 'text-foreground'}
+            subtitle={sys?.cpu?.count != null ? `${sys.cpu.count} cores` : undefined}
+            isLoading={isLoading}
+          />
+          <StatCard
+            label="Memory"
+            value={sys?.memory?.usagePercent != null ? `${sys.memory.usagePercent.toFixed(0)}%` : 'N/A'}
+            icon={MemoryStick}
+            iconColor="text-emerald-600"
+            iconBg="bg-emerald-500/10"
+            color={(sys?.memory?.usagePercent ?? 0) > 80 ? 'text-red-600' : 'text-foreground'}
+            subtitle={sys?.memory ? `${((sys.memory.usedMB ?? 0) / 1024).toFixed(1)} / ${((sys.memory.totalMB ?? 0) / 1024).toFixed(1)} GB` : undefined}
+            isLoading={isLoading}
+          />
+          <StatCard
+            label="Storage"
+            value={sys?.storage?.usagePercent != null ? `${sys.storage.usagePercent.toFixed(0)}%` : 'N/A'}
+            icon={HardDrive}
+            iconColor="text-purple-600"
+            iconBg="bg-purple-500/10"
+            color={(sys?.storage?.usagePercent ?? 0) > 80 ? 'text-red-600' : 'text-foreground'}
+            subtitle={sys?.storage ? `${(sys.storage.usedGB ?? 0).toFixed(1)} / ${(sys.storage.totalGB ?? 0).toFixed(1)} GB` : undefined}
+            isLoading={isLoading}
+          />
+        </div>
+
+        {isLoading ? null : (
           <>
-            {/* System overview */}
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-              <StatCard label="System Uptime" value={sys?.uptime ?? 'N/A'} />
-              <Card className="flex flex-col items-center justify-center gap-2 p-4">
-                <span className="text-sm text-muted-foreground">CPU</span>
-                <ProgressRing value={sys?.cpu?.usagePercent ?? 0} size={72} strokeWidth={7}
-                  color={(sys?.cpu?.usagePercent ?? 0) > 80 ? 'hsl(0, 84%, 60%)' : 'hsl(217, 91%, 60%)'} />
-                <span className="text-xs text-muted-foreground">{sys?.cpu?.count} cores</span>
-              </Card>
-              <Card className="flex flex-col items-center justify-center gap-2 p-4">
-                <span className="text-sm text-muted-foreground">Memory</span>
-                <ProgressRing value={sys?.memory?.usagePercent ?? 0} size={72} strokeWidth={7}
-                  color={(sys?.memory?.usagePercent ?? 0) > 80 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)'} />
-                <span className="text-xs text-muted-foreground">
-                  <AnimatedNumber value={(sys?.memory?.usedMB ?? 0) / 1024} decimals={1} /> / <AnimatedNumber value={(sys?.memory?.totalMB ?? 0) / 1024} decimals={1} /> GB
-                </span>
-              </Card>
-              <Card className="flex flex-col items-center justify-center gap-2 p-4">
-                <span className="text-sm text-muted-foreground">Storage</span>
-                <ProgressRing value={sys?.storage?.usagePercent ?? 0} size={72} strokeWidth={7}
-                  color={(sys?.storage?.usagePercent ?? 0) > 80 ? 'hsl(0, 84%, 60%)' : 'hsl(262, 83%, 58%)'} />
-                <span className="text-xs text-muted-foreground">
-                  <AnimatedNumber value={sys?.storage?.usedGB ?? 0} decimals={1} /> / <AnimatedNumber value={sys?.storage?.totalGB ?? 0} decimals={1} /> GB
-                </span>
-              </Card>
-            </div>
 
             {/* Load averages */}
             <Card>

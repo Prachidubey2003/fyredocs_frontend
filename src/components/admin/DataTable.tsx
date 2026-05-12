@@ -12,7 +12,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from '@/components/ui/pagination';
-import { Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, Inbox } from 'lucide-react';
 import { useDataTable } from '@/hooks/useDataTable';
 
 export interface Column<T> {
@@ -129,7 +129,48 @@ function TableRenderer<T extends Record<string, unknown>>({
   emptyMessage: string;
   showSearch: boolean;
 }) {
-  if (isLoading) return <Skeleton className="h-[300px] w-full" />;
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {showSearch && (
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-9 w-full max-w-sm" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+        )}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {columns.map((col) => (
+                  <TableHead
+                    key={String(col.key)}
+                    className={`text-xs font-medium uppercase tracking-wide text-muted-foreground ${col.align === 'right' ? 'text-right' : ''}`}
+                  >
+                    {col.label}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <TableRow key={i}>
+                  {columns.map((col) => (
+                    <TableCell
+                      key={String(col.key)}
+                      className={col.align === 'right' ? 'text-right' : ''}
+                    >
+                      <Skeleton className={`h-4 ${col.align === 'right' ? 'ml-auto w-12' : 'w-24'}`} />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>
@@ -152,7 +193,10 @@ function TableRenderer<T extends Record<string, unknown>>({
         )}
 
         {totalRows === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">{emptyMessage}</p>
+          <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
+            <Inbox className="h-8 w-8 opacity-50" />
+            <p className="text-sm">{emptyMessage}</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
@@ -161,7 +205,7 @@ function TableRenderer<T extends Record<string, unknown>>({
                   {columns.map((col) => (
                     <TableHead
                       key={String(col.key)}
-                      className={`${col.align === 'right' ? 'text-right' : ''} ${col.sortable ? 'cursor-pointer select-none' : ''}`}
+                      className={`text-xs font-medium uppercase tracking-wide text-muted-foreground ${col.align === 'right' ? 'text-right' : ''} ${col.sortable ? 'cursor-pointer select-none' : ''}`}
                       onClick={col.sortable ? () => toggleSort(col.key) : undefined}
                     >
                       {col.label}
@@ -172,7 +216,7 @@ function TableRenderer<T extends Record<string, unknown>>({
               </TableHeader>
               <TableBody>
                 {rows.map((row, i) => (
-                  <TableRow key={i}>
+                  <TableRow key={i} className="hover:bg-muted/50 transition-colors">
                     {columns.map((col) => {
                       const raw = row[col.key];
                       let content: ReactNode;
@@ -261,7 +305,7 @@ export function DataTable<T extends Record<string, unknown>>(props: DataTablePro
     );
   }
 
-  return <ClientDataTable {...props} />;
+  return <ClientDataTable {...(props as ClientSideProps<T>)} />;
 }
 
 function ClientDataTable<T extends Record<string, unknown>>({
