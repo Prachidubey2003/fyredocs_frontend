@@ -47,6 +47,8 @@ interface ApiJob {
   Progress?: number | string;
   fileName?: string;
   FileName?: string;
+  outputFileName?: string;
+  OutputFileName?: string;
   fileSize?: number | string;
   FileSize?: number | string;
   failureReason?: string;

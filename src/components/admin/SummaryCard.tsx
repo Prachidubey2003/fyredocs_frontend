@@ -52,10 +52,18 @@ export function SummaryCard({ title, icon, to, stats, chart, isLoading }: Summar
       </CardHeader>
       <CardContent className="flex flex-1 flex-col justify-between gap-4">
         {isLoading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-24" />
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-4 w-28" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="flex items-baseline justify-between gap-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-5 w-16" />
+                </div>
+              ))}
+            </div>
+            <div className="flex h-24 items-center justify-center">
+              <Skeleton className="h-20 w-full max-w-[200px] rounded-md" />
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

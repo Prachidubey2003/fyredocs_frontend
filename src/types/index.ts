@@ -205,7 +205,7 @@ export interface OcrOptions {
 
 export interface RotateOptions {
   rotation: 90 | 180 | 270;
-  applyToPages: 'all' | 'odd' | 'even' | number[];
+  applyToPages?: string;
 }
 
 export interface ReorderOptions {

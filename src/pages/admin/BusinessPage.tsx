@@ -24,7 +24,7 @@ import {
   Cell,
 } from 'recharts';
 import { ProgressRing } from '@/components/admin/ProgressRing';
-import { DollarSign } from 'lucide-react';
+import { DollarSign, UserPlus, TrendingDown, Percent, ArrowUpCircle } from 'lucide-react';
 import { useBusiness } from '@/hooks/useAdminMetrics';
 
 const signupsChartConfig = {
@@ -47,7 +47,7 @@ const BusinessPage = () => {
 
   return (
     <>
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <div className="space-y-6 px-4 py-8">
         <AdminPageHeader
           title="Business Metrics"
           description="Signups, plan changes, churn, and conversion"
@@ -59,23 +59,35 @@ const BusinessPage = () => {
           <StatCard
             label="Total Signups"
             value={d?.signups?.total}
+            icon={UserPlus}
+            iconColor="text-green-600"
+            iconBg="bg-green-500/10"
             color="text-green-600"
             isLoading={isLoading}
           />
           <StatCard
             label="Churn Rate"
             value={`${(churnRate * 100).toFixed(1)}%`}
+            icon={TrendingDown}
+            iconColor="text-rose-600"
+            iconBg="bg-rose-500/10"
             color={churnRate > 0.1 ? 'text-red-600' : 'text-foreground'}
             isLoading={isLoading}
           />
           <StatCard
             label="Conversion Rate"
             value={`${(conversionRate * 100).toFixed(1)}%`}
+            icon={Percent}
+            iconColor="text-sky-600"
+            iconBg="bg-sky-500/10"
             isLoading={isLoading}
           />
           <StatCard
             label="Free Upgrades"
             value={d?.conversionRate?.freeUpgrades}
+            icon={ArrowUpCircle}
+            iconColor="text-blue-600"
+            iconBg="bg-blue-500/10"
             isLoading={isLoading}
           />
         </div>
@@ -90,9 +102,9 @@ const BusinessPage = () => {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <Skeleton className="h-64 w-full" />
+                <Skeleton className="h-[300px] w-full" />
               ) : (
-                <ChartContainer config={signupsChartConfig} className="h-64 w-full">
+                <ChartContainer config={signupsChartConfig} className="h-[300px] w-full">
                   <AreaChart data={d?.signups?.daily ?? []}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis
@@ -128,9 +140,9 @@ const BusinessPage = () => {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <Skeleton className="h-64 w-full" />
+                <Skeleton className="h-[300px] w-full" />
               ) : (
-                <ChartContainer config={planChangesChartConfig} className="h-64 w-full">
+                <ChartContainer config={planChangesChartConfig} className="h-[300px] w-full">
                   <BarChart data={d?.planChanges ?? []}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis
@@ -162,10 +174,16 @@ const BusinessPage = () => {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="space-y-4">
-                  <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-16 w-16 mx-auto rounded-full" />
+                <div className="flex items-center gap-6">
+                  <div className="flex-1 space-y-3">
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} className="flex items-center justify-between border-b pb-3 last:border-0">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-5 w-16" />
+                      </div>
+                    ))}
+                  </div>
+                  <Skeleton className="h-20 w-20 shrink-0 rounded-full" />
                 </div>
               ) : (
                 <div className="flex items-center gap-6">
@@ -173,12 +191,12 @@ const BusinessPage = () => {
                     <div className="flex items-center justify-between border-b pb-3">
                       <span className="text-sm text-muted-foreground">Churned Users</span>
                       <span className="text-lg font-semibold text-red-600">
-                        <AnimatedNumber value={d?.churn?.churned ?? 0} />
+                        <AnimatedNumber value={d?.churn?.churnedUsers ?? 0} />
                       </span>
                     </div>
                     <div className="flex items-center justify-between border-b pb-3">
                       <span className="text-sm text-muted-foreground">Previous Active</span>
-                      <span className="text-lg font-semibold"><AnimatedNumber value={d?.churn?.previousActive ?? 0} /></span>
+                      <span className="text-lg font-semibold"><AnimatedNumber value={d?.churn?.previousActiveUsers ?? 0} /></span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Churn Rate</span>
@@ -208,13 +226,14 @@ const BusinessPage = () => {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <Skeleton className="h-20 w-full" />
+                <div className="flex flex-col items-center justify-center gap-2 py-6 text-center">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-6 text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-3">
-                    <DollarSign className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                <div className="flex flex-col items-center justify-center gap-2 py-12 text-center text-muted-foreground">
+                  <DollarSign className="h-8 w-8 opacity-50" />
+                  <p className="text-sm">
                     {d?.revenue?.note ?? 'Revenue tracking is not yet available.'}
                   </p>
                 </div>

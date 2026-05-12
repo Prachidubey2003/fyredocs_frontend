@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
+import { Briefcase, UserCheck, UserCircle } from 'lucide-react';
 import { useEngagement } from '@/hooks/useAdminMetrics';
 
 const COLORS = ['hsl(24, 95%, 53%)', 'hsl(217, 91%, 60%)'];
@@ -77,7 +78,7 @@ const EngagementPage = () => {
 
   return (
     <>
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <div className="space-y-6 px-4 py-8">
         <AdminPageHeader
           title="Engagement Metrics"
           description="Tool adoption, usage patterns, and power users"
@@ -89,21 +90,33 @@ const EngagementPage = () => {
           <StatCard
             label="Avg Jobs/User"
             value={d?.jobsPerUser?.average != null ? d.jobsPerUser.average.toFixed(1) : undefined}
+            icon={Briefcase}
+            iconColor="text-purple-600"
+            iconBg="bg-purple-500/10"
             isLoading={isLoading}
           />
           <StatCard
             label="Median Jobs/User"
             value={d?.jobsPerUser?.median ?? undefined}
+            icon={Briefcase}
+            iconColor="text-fuchsia-600"
+            iconBg="bg-fuchsia-500/10"
             isLoading={isLoading}
           />
           <StatCard
             label="Unique Registered Users"
-            value={d?.uniqueRegisteredUsers ?? undefined}
+            value={d?.guestVsRegistered?.uniqueRegistered ?? undefined}
+            icon={UserCheck}
+            iconColor="text-emerald-600"
+            iconBg="bg-emerald-500/10"
             isLoading={isLoading}
           />
           <StatCard
             label="Guest Events"
             value={d?.guestVsRegistered?.guestEvents ?? undefined}
+            icon={UserCircle}
+            iconColor="text-slate-600"
+            iconBg="bg-slate-500/10"
             isLoading={isLoading}
           />
         </div>
@@ -195,24 +208,37 @@ const EngagementPage = () => {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-8 w-full" />
-                ))}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12 text-xs font-medium uppercase tracking-wide text-muted-foreground">#</TableHead>
+                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">User ID</TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Job Count</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="ml-auto h-4 w-12" /></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12">#</TableHead>
-                    <TableHead>User ID</TableHead>
-                    <TableHead className="text-right">Job Count</TableHead>
+                    <TableHead className="w-12 text-xs font-medium uppercase tracking-wide text-muted-foreground">#</TableHead>
+                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">User ID</TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Job Count</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {(d?.powerUsers ?? []).slice(0, 20).map(
                     (user: { userId: string; jobCount: number }, index: number) => (
-                      <TableRow key={index}>
+                      <TableRow key={index} className="hover:bg-muted/50 transition-colors">
                         <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
                         <TableCell className="font-mono text-sm">
                           {user.userId.length > 12

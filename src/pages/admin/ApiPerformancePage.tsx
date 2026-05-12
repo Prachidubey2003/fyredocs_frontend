@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { TrendingUp, Gauge, Clock, AlertCircle } from 'lucide-react';
 import { useApiPerformance } from '@/hooks/useAdminMetrics';
 import { DataTable, type Column } from '@/components/admin/DataTable';
 import { useServerDataTable } from '@/hooks/useDataTable';
@@ -63,18 +64,54 @@ const ApiPerformancePage = () => {
 
   return (
     <>
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <div className="space-y-6 px-4 py-8">
         <AdminPageHeader title="API Performance" description="Request latency, throughput, and error rates per endpoint" onRefresh={handleRefresh} />
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-          <StatCard label="Total Requests" value={d?.summary?.totalRequests?.toLocaleString()} isLoading={isLoading} />
-          <StatCard label="Avg Latency" value={`${(d?.summary?.avgLatencyMs ?? 0).toFixed(0)}ms`}
+          <StatCard
+            label="Total Requests"
+            value={d?.summary?.totalRequests?.toLocaleString()}
+            icon={TrendingUp}
+            iconColor="text-indigo-600"
+            iconBg="bg-indigo-500/10"
+            isLoading={isLoading}
+          />
+          <StatCard
+            label="Avg Latency"
+            value={`${(d?.summary?.avgLatencyMs ?? 0).toFixed(0)}ms`}
+            icon={Gauge}
+            iconColor="text-blue-600"
+            iconBg="bg-blue-500/10"
             color={(d?.summary?.avgLatencyMs ?? 0) > 500 ? 'text-red-600' : (d?.summary?.avgLatencyMs ?? 0) > 100 ? 'text-yellow-600' : 'text-green-600'}
-            isLoading={isLoading} />
-          <StatCard label="P95 Latency" value={`${(d?.summary?.p95LatencyMs ?? 0).toFixed(0)}ms`} color="text-orange-600" isLoading={isLoading} />
-          <StatCard label="P99 Latency" value={`${(d?.summary?.p99LatencyMs ?? 0).toFixed(0)}ms`} color="text-red-600" isLoading={isLoading} />
-          <StatCard label="Error Rate" value={`${((d?.summary?.errorRate ?? 0) * 100).toFixed(2)}%`}
-            color={(d?.summary?.errorRate ?? 0) > 0.05 ? 'text-red-600' : 'text-green-600'} isLoading={isLoading} />
+            isLoading={isLoading}
+          />
+          <StatCard
+            label="P95 Latency"
+            value={`${(d?.summary?.p95LatencyMs ?? 0).toFixed(0)}ms`}
+            icon={Clock}
+            iconColor="text-orange-600"
+            iconBg="bg-orange-500/10"
+            color="text-orange-600"
+            isLoading={isLoading}
+          />
+          <StatCard
+            label="P99 Latency"
+            value={`${(d?.summary?.p99LatencyMs ?? 0).toFixed(0)}ms`}
+            icon={Clock}
+            iconColor="text-red-600"
+            iconBg="bg-red-500/10"
+            color="text-red-600"
+            isLoading={isLoading}
+          />
+          <StatCard
+            label="Error Rate"
+            value={`${((d?.summary?.errorRate ?? 0) * 100).toFixed(2)}%`}
+            icon={AlertCircle}
+            iconColor="text-red-600"
+            iconBg="bg-red-500/10"
+            color={(d?.summary?.errorRate ?? 0) > 0.05 ? 'text-red-600' : 'text-green-600'}
+            isLoading={isLoading}
+          />
         </div>
 
         {/* Slowest Endpoints */}
@@ -84,8 +121,8 @@ const ApiPerformancePage = () => {
             <CardDescription>Top 5 by P95 latency</CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? <Skeleton className="h-[250px] w-full" /> : (
-              <ChartContainer config={latencyConfig} className="h-[250px] w-full">
+            {isLoading ? <Skeleton className="h-[300px] w-full" /> : (
+              <ChartContainer config={latencyConfig} className="h-[300px] w-full">
                 <BarChart data={d?.slowestEndpoints ?? []} layout="vertical" margin={{ top: 4, right: 20, bottom: 0, left: 120 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" tickLine={false} axisLine={false} fontSize={12} />
@@ -107,7 +144,7 @@ const ApiPerformancePage = () => {
               <CardDescription>Top 5 by error rate (min 10 requests)</CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={errorConfig} className="h-[250px] w-full">
+              <ChartContainer config={errorConfig} className="h-[300px] w-full">
                 <BarChart
                   data={(d?.highestErrorEndpoints ?? []).map(e => ({ ...e, errorRate: e.errorRate * 100 }))}
                   layout="vertical" margin={{ top: 4, right: 20, bottom: 0, left: 120 }}>

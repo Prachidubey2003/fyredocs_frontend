@@ -7,9 +7,10 @@ interface AdminPageHeaderProps {
   title: string;
   description: string;
   onRefresh?: () => void;
+  backTo?: string | null;
 }
 
-export function AdminPageHeader({ title, description, onRefresh }: AdminPageHeaderProps) {
+export function AdminPageHeader({ title, description, onRefresh, backTo = '/admin/dashboard' }: AdminPageHeaderProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = useCallback(() => {
@@ -21,11 +22,13 @@ export function AdminPageHeader({ title, description, onRefresh }: AdminPageHead
 
   return (
     <div className="flex items-start gap-4">
-      <Button variant="ghost" size="icon" asChild className="mt-1 shrink-0">
-        <Link to="/admin/dashboard">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-      </Button>
+      {backTo !== null && (
+        <Button variant="ghost" size="icon" asChild className="mt-1 shrink-0">
+          <Link to={backTo}>
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+        </Button>
+      )}
       <div className="flex-1">
         <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
         <p className="text-muted-foreground">{description}</p>

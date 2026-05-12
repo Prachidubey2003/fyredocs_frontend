@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Users, Repeat } from 'lucide-react';
 import { useGrowth } from '@/hooks/useAdminMetrics';
 
 const dauChartConfig = {
@@ -51,7 +52,7 @@ const GrowthPage = () => {
 
   return (
     <>
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <div className="space-y-6 px-4 py-8">
         <AdminPageHeader
           title="Growth Metrics"
           description="DAU/WAU/MAU, activation, retention, and conversion funnel"
@@ -63,22 +64,34 @@ const GrowthPage = () => {
           <StatCard
             label="DAU"
             value={d?.dau}
+            icon={Users}
+            iconColor="text-blue-600"
+            iconBg="bg-blue-500/10"
             color="text-blue-600"
             isLoading={isLoading}
           />
           <StatCard
             label="WAU"
             value={d?.wau}
+            icon={Users}
+            iconColor="text-cyan-600"
+            iconBg="bg-cyan-500/10"
             isLoading={isLoading}
           />
           <StatCard
             label="MAU"
             value={d?.mau}
+            icon={Users}
+            iconColor="text-indigo-600"
+            iconBg="bg-indigo-500/10"
             isLoading={isLoading}
           />
           <StatCard
             label="Stickiness Ratio"
             value={d?.stickiness != null ? `${(d.stickiness * 100).toFixed(1)}%` : null}
+            icon={Repeat}
+            iconColor="text-violet-600"
+            iconBg="bg-violet-500/10"
             subtitle="DAU / MAU"
             isLoading={isLoading}
           />
@@ -129,9 +142,18 @@ const GrowthPage = () => {
             <CardContent>
               {isLoading ? (
                 <div className="space-y-4">
-                  <Skeleton className="h-6 w-40" />
-                  <Skeleton className="h-6 w-40" />
-                  <Skeleton className="h-10 w-32" />
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-9 w-24" />
+                  </div>
                 </div>
               ) : d?.activationRate ? (
                 <div className="space-y-4">
@@ -166,9 +188,9 @@ const GrowthPage = () => {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <Skeleton className="h-[200px] w-full" />
+                <Skeleton className="h-[300px] w-full" />
               ) : d?.funnel ? (
-                <ChartContainer config={funnelChartConfig} className="h-[200px] w-full">
+                <ChartContainer config={funnelChartConfig} className="h-[300px] w-full">
                   <BarChart
                     layout="vertical"
                     data={[
@@ -208,34 +230,51 @@ const GrowthPage = () => {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-10 w-full" />
-                ))}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Cohort Date</TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Size</TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D1 (%)</TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D7 (%)</TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D30 (%)</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="ml-auto h-4 w-12" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="ml-auto h-5 w-14" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="ml-auto h-5 w-14" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="ml-auto h-5 w-14" /></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             ) : d?.retention?.length ? (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Cohort Date</TableHead>
-                    <TableHead className="text-right">Size</TableHead>
-                    <TableHead className="text-right">D1 (%)</TableHead>
-                    <TableHead className="text-right">D7 (%)</TableHead>
-                    <TableHead className="text-right">D30 (%)</TableHead>
+                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Cohort Date</TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Size</TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D1 (%)</TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D7 (%)</TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D30 (%)</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {d.retention.map(
                     (cohort: {
                       cohortDate: string;
-                      size: number;
+                      cohortSize: number;
                       d1: number;
                       d7: number;
                       d30: number;
                     }) => (
-                      <TableRow key={cohort.cohortDate}>
+                      <TableRow key={cohort.cohortDate} className="hover:bg-muted/50 transition-colors">
                         <TableCell className="font-medium">{cohort.cohortDate}</TableCell>
-                        <TableCell className="text-right">{cohort.size}</TableCell>
+                        <TableCell className="text-right">{cohort.cohortSize}</TableCell>
                         <TableCell className="text-right">
                           <Badge variant={retentionBadgeVariant(cohort.d1)}>
                             <span className={retentionColor(cohort.d1)}>
