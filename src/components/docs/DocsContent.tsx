@@ -4,7 +4,7 @@ import { Lightbulb, AlertTriangle } from 'lucide-react';
 import { CodeBlock } from './CodeBlock';
 
 const SectionMermaid = lazy(() =>
-  import('./SectionMermaid').then((mod) => ({ default: mod.SectionMermaid })),
+  import('./SectionMermaid').then((mod) => ({ default: mod.SectionMermaid }))
 );
 
 interface DocsContentProps {
@@ -39,13 +39,20 @@ const SectionList = ({ items }: { items: string[] }) => (
   </ul>
 );
 
-const SectionTable = ({ tableData }: { tableData: { headers: string[]; rows: string[][] } }) => (
+const SectionTable = ({
+  tableData,
+}: {
+  tableData: { headers: string[]; rows: string[][] };
+}) => (
   <div className="overflow-x-auto rounded-lg border">
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b bg-muted/50">
           {tableData.headers.map((header, i) => (
-            <th key={i} className="px-4 py-2.5 text-left font-semibold text-foreground">
+            <th
+              key={i}
+              className="px-4 py-2.5 text-left font-semibold text-foreground"
+            >
               {header}
             </th>
           ))}
@@ -80,7 +87,6 @@ const SectionWarning = ({ content }: { content: string }) => (
   </div>
 );
 
-
 export const DocsContent = ({ sections }: DocsContentProps) => {
   return (
     <div className="space-y-8">
@@ -89,16 +95,34 @@ export const DocsContent = ({ sections }: DocsContentProps) => {
           {section.heading && (
             <h2 className="text-lg font-semibold mb-3">{section.heading}</h2>
           )}
-          {section.type === 'paragraph' && <SectionParagraph content={section.content} />}
-          {section.type === 'steps' && section.items && <SectionSteps items={section.items} />}
-          {section.type === 'list' && section.items && <SectionList items={section.items} />}
-          {section.type === 'table' && section.tableData && <SectionTable tableData={section.tableData} />}
+          {section.type === 'paragraph' && (
+            <SectionParagraph content={section.content} />
+          )}
+          {section.type === 'steps' && section.items && (
+            <SectionSteps items={section.items} />
+          )}
+          {section.type === 'list' && section.items && (
+            <SectionList items={section.items} />
+          )}
+          {section.type === 'table' && section.tableData && (
+            <SectionTable tableData={section.tableData} />
+          )}
           {section.type === 'tip' && <SectionTip content={section.content} />}
-          {section.type === 'warning' && <SectionWarning content={section.content} />}
-          {section.type === 'code' && <CodeBlock content={section.content} language={section.language} />}
-          {section.type === 'formats' && section.content && <SectionParagraph content={section.content} />}
+          {section.type === 'warning' && (
+            <SectionWarning content={section.content} />
+          )}
+          {section.type === 'code' && (
+            <CodeBlock content={section.content} language={section.language} />
+          )}
+          {section.type === 'formats' && section.content && (
+            <SectionParagraph content={section.content} />
+          )}
           {section.type === 'mermaid' && (
-            <Suspense fallback={<div className="h-48 rounded-lg border bg-muted/50 animate-pulse" />}>
+            <Suspense
+              fallback={
+                <div className="h-48 rounded-lg border bg-muted/50 animate-pulse" />
+              }
+            >
               <SectionMermaid content={section.content} />
             </Suspense>
           )}

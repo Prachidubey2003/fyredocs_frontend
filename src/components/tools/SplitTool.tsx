@@ -68,12 +68,18 @@ export const SplitTool = () => {
       return;
     }
 
-    if (splitMode === 'extract' && (!extractCount.trim() || Number(extractCount) < 1)) {
+    if (
+      splitMode === 'extract' &&
+      (!extractCount.trim() || Number(extractCount) < 1)
+    ) {
       toast.error('Please enter a valid page count per chunk');
       return;
     }
 
-    if (splitMode === 'equal' && (!equalParts.trim() || Number(equalParts) < 2)) {
+    if (
+      splitMode === 'equal' &&
+      (!equalParts.trim() || Number(equalParts) < 2)
+    ) {
       toast.error('Please enter at least 2 parts');
       return;
     }
@@ -94,11 +100,7 @@ export const SplitTool = () => {
       ...(splitMode === 'equal' ? { span: Number(equalParts) } : {}),
     };
 
-    createJob(
-      tool.id,
-      uploadIds,
-      options
-    );
+    createJob(tool.id, uploadIds, options);
   };
 
   const handleStartOver = () => {
@@ -170,13 +172,22 @@ export const SplitTool = () => {
 
                     <RadioGroup
                       value={splitMode}
-                      onValueChange={(value) => setSplitMode(value as SplitMode)}
+                      onValueChange={(value) =>
+                        setSplitMode(value as SplitMode)
+                      }
                       className="space-y-4"
                     >
                       <div className="flex items-start space-x-3 p-4 rounded-lg border-2 border-muted hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-gradient-to-r has-[[data-state=checked]]:from-primary/5 has-[[data-state=checked]]:to-secondary/5 transition-colors cursor-pointer">
-                        <RadioGroupItem value="all" id="all" className="mt-0.5" />
+                        <RadioGroupItem
+                          value="all"
+                          id="all"
+                          className="mt-0.5"
+                        />
                         <div className="flex-1">
-                          <Label htmlFor="all" className="font-medium cursor-pointer">
+                          <Label
+                            htmlFor="all"
+                            className="font-medium cursor-pointer"
+                          >
                             Split all pages
                           </Label>
                           <p className="text-sm text-muted-foreground">
@@ -186,9 +197,16 @@ export const SplitTool = () => {
                       </div>
 
                       <div className="flex items-start space-x-3 p-4 rounded-lg border-2 border-muted hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-gradient-to-r has-[[data-state=checked]]:from-primary/5 has-[[data-state=checked]]:to-secondary/5 transition-colors cursor-pointer">
-                        <RadioGroupItem value="range" id="range" className="mt-0.5" />
+                        <RadioGroupItem
+                          value="range"
+                          id="range"
+                          className="mt-0.5"
+                        />
                         <div className="flex-1">
-                          <Label htmlFor="range" className="font-medium cursor-pointer">
+                          <Label
+                            htmlFor="range"
+                            className="font-medium cursor-pointer"
+                          >
                             Split by range
                           </Label>
                           <p className="text-sm text-muted-foreground mb-3">
@@ -206,9 +224,16 @@ export const SplitTool = () => {
                       </div>
 
                       <div className="flex items-start space-x-3 p-4 rounded-lg border-2 border-muted hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-gradient-to-r has-[[data-state=checked]]:from-primary/5 has-[[data-state=checked]]:to-secondary/5 transition-colors cursor-pointer">
-                        <RadioGroupItem value="extract" id="extract" className="mt-0.5" />
+                        <RadioGroupItem
+                          value="extract"
+                          id="extract"
+                          className="mt-0.5"
+                        />
                         <div className="flex-1">
-                          <Label htmlFor="extract" className="font-medium cursor-pointer">
+                          <Label
+                            htmlFor="extract"
+                            className="font-medium cursor-pointer"
+                          >
                             Split by page count
                           </Label>
                           <p className="text-sm text-muted-foreground mb-3">
@@ -228,9 +253,16 @@ export const SplitTool = () => {
                       </div>
 
                       <div className="flex items-start space-x-3 p-4 rounded-lg border-2 border-muted hover:bg-muted/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-gradient-to-r has-[[data-state=checked]]:from-primary/5 has-[[data-state=checked]]:to-secondary/5 transition-colors cursor-pointer">
-                        <RadioGroupItem value="equal" id="equal" className="mt-0.5" />
+                        <RadioGroupItem
+                          value="equal"
+                          id="equal"
+                          className="mt-0.5"
+                        />
                         <div className="flex-1">
-                          <Label htmlFor="equal" className="font-medium cursor-pointer">
+                          <Label
+                            htmlFor="equal"
+                            className="font-medium cursor-pointer"
+                          >
                             Split into equal parts
                           </Label>
                           <p className="text-sm text-muted-foreground mb-3">
@@ -263,7 +295,14 @@ export const SplitTool = () => {
                     <Button
                       className="flex-1 bg-gradient-primary hover:opacity-90"
                       onClick={handleSplit}
-                      disabled={!canProceed || (splitMode === 'range' && !rangeInput.trim()) || (splitMode === 'extract' && (!extractCount.trim() || Number(extractCount) < 1)) || (splitMode === 'equal' && (!equalParts.trim() || Number(equalParts) < 2))}
+                      disabled={
+                        !canProceed ||
+                        (splitMode === 'range' && !rangeInput.trim()) ||
+                        (splitMode === 'extract' &&
+                          (!extractCount.trim() || Number(extractCount) < 1)) ||
+                        (splitMode === 'equal' &&
+                          (!equalParts.trim() || Number(equalParts) < 2))
+                      }
                     >
                       <Scissors className="w-4 h-4 mr-2" />
                       Split PDF

@@ -3,7 +3,8 @@ type ApiRequestOptions = RequestInit & {
 };
 
 const getBaseUrl = () => {
-  const envUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
+  const envUrl =
+    (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
   return envUrl.trim().length > 0 ? envUrl : '';
 };
 
@@ -90,7 +91,9 @@ export const apiRequest = async <T>(
   // On 401: try to refresh the access token, then retry the original request
   if (response.status === 401 && !skipRefresh) {
     if (!refreshPromise) {
-      refreshPromise = attemptRefresh().finally(() => { refreshPromise = null; });
+      refreshPromise = attemptRefresh().finally(() => {
+        refreshPromise = null;
+      });
     }
     const refreshed = await refreshPromise;
     if (refreshed) {

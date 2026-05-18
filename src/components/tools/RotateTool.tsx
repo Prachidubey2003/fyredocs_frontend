@@ -202,17 +202,23 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
                       <button
                         onClick={() => setRotation(90)}
                         className={`flex flex-col items-center justify-center rounded-lg border-2 p-6 cursor-pointer transition-colors ${
-                          rotation === 90 ? 'border-primary bg-primary/5' : 'border-muted hover:bg-muted/50'
+                          rotation === 90
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted hover:bg-muted/50'
                         }`}
                       >
                         <RotateCw className="w-8 h-8 mb-2" />
                         <span className="font-medium">90°</span>
-                        <span className="text-xs text-muted-foreground">Clockwise</span>
+                        <span className="text-xs text-muted-foreground">
+                          Clockwise
+                        </span>
                       </button>
                       <button
                         onClick={() => setRotation(180)}
                         className={`flex flex-col items-center justify-center rounded-lg border-2 p-6 cursor-pointer transition-colors ${
-                          rotation === 180 ? 'border-primary bg-primary/5' : 'border-muted hover:bg-muted/50'
+                          rotation === 180
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted hover:bg-muted/50'
                         }`}
                       >
                         <div className="flex gap-1 mb-2">
@@ -220,17 +226,23 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
                           <RotateCw className="w-6 h-6" />
                         </div>
                         <span className="font-medium">180°</span>
-                        <span className="text-xs text-muted-foreground">Upside Down</span>
+                        <span className="text-xs text-muted-foreground">
+                          Upside Down
+                        </span>
                       </button>
                       <button
                         onClick={() => setRotation(270)}
                         className={`flex flex-col items-center justify-center rounded-lg border-2 p-6 cursor-pointer transition-colors ${
-                          rotation === 270 ? 'border-primary bg-primary/5' : 'border-muted hover:bg-muted/50'
+                          rotation === 270
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted hover:bg-muted/50'
                         }`}
                       >
                         <RotateCcw className="w-8 h-8 mb-2" />
                         <span className="font-medium">270°</span>
-                        <span className="text-xs text-muted-foreground">Counter-clockwise</span>
+                        <span className="text-xs text-muted-foreground">
+                          Counter-clockwise
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -239,32 +251,52 @@ export const RotateTool = ({ tool }: RotateToolProps) => {
                     <Label>Apply To</Label>
                     <RadioGroup
                       value={applyTo}
-                      onValueChange={(v) => setApplyTo(v as 'all' | 'odd' | 'even')}
+                      onValueChange={(v) =>
+                        setApplyTo(v as 'all' | 'odd' | 'even')
+                      }
                       className="grid grid-cols-3 gap-4"
                     >
                       <Label
                         htmlFor="all-pages"
                         className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-4 cursor-pointer hover:bg-muted/50 has-[[data-state=checked]]:border-primary"
                       >
-                        <RadioGroupItem value="all" id="all-pages" className="sr-only" />
+                        <RadioGroupItem
+                          value="all"
+                          id="all-pages"
+                          className="sr-only"
+                        />
                         <span className="font-medium">All Pages</span>
-                        <span className="text-xs text-muted-foreground">Rotate every page</span>
+                        <span className="text-xs text-muted-foreground">
+                          Rotate every page
+                        </span>
                       </Label>
                       <Label
                         htmlFor="odd-pages"
                         className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-4 cursor-pointer hover:bg-muted/50 has-[[data-state=checked]]:border-primary"
                       >
-                        <RadioGroupItem value="odd" id="odd-pages" className="sr-only" />
+                        <RadioGroupItem
+                          value="odd"
+                          id="odd-pages"
+                          className="sr-only"
+                        />
                         <span className="font-medium">Odd Pages</span>
-                        <span className="text-xs text-muted-foreground">1, 3, 5, 7...</span>
+                        <span className="text-xs text-muted-foreground">
+                          1, 3, 5, 7...
+                        </span>
                       </Label>
                       <Label
                         htmlFor="even-pages"
                         className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-4 cursor-pointer hover:bg-muted/50 has-[[data-state=checked]]:border-primary"
                       >
-                        <RadioGroupItem value="even" id="even-pages" className="sr-only" />
+                        <RadioGroupItem
+                          value="even"
+                          id="even-pages"
+                          className="sr-only"
+                        />
                         <span className="font-medium">Even Pages</span>
-                        <span className="text-xs text-muted-foreground">2, 4, 6, 8...</span>
+                        <span className="text-xs text-muted-foreground">
+                          2, 4, 6, 8...
+                        </span>
                       </Label>
                     </RadioGroup>
                   </div>

@@ -1,5 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Job, JobState, SplitOptions, WatermarkOptions, ToolId, ToolOptions } from '@/types';
+import {
+  Job,
+  JobState,
+  SplitOptions,
+  WatermarkOptions,
+  ToolId,
+  ToolOptions,
+} from '@/types';
 import { apiJson, apiRequest, buildApiUrl } from '@/lib/apiClient';
 import { buildDownloadPath, buildJobPath } from '@/lib/toolApi';
 import { setGuestToken } from '@/lib/guestToken';
@@ -62,7 +69,10 @@ const parseFileSize = (value: unknown) => {
   if (typeof value === 'number') return value;
   if (typeof value !== 'string') return 0;
 
-  const match = value.trim().toUpperCase().match(/([\d.]+)\s*(B|KB|MB|GB)/);
+  const match = value
+    .trim()
+    .toUpperCase()
+    .match(/([\d.]+)\s*(B|KB|MB|GB)/);
   if (!match) {
     const parsed = Number(value);
     return Number.isNaN(parsed) ? 0 : parsed;
@@ -166,7 +176,10 @@ export const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
     case 'scan-to-pdf': {
       const opts = options as { ocr?: boolean; language?: string };
       if (!opts.ocr) return undefined;
-      return { ocr: true, ...(opts.language ? { language: opts.language } : {}) };
+      return {
+        ocr: true,
+        ...(opts.language ? { language: opts.language } : {}),
+      };
     }
     case 'password-protect': {
       const password = (options as { password?: string }).password;
@@ -180,7 +193,10 @@ export const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
       if (!opts.rotation) {
         throw new Error('Rotation angle is required.');
       }
-      return { rotation: opts.rotation, applyToPages: opts.applyToPages || 'all' };
+      return {
+        rotation: opts.rotation,
+        applyToPages: opts.applyToPages || 'all',
+      };
     }
     case 'watermark': {
       const opts = options as WatermarkOptions;
@@ -192,8 +208,12 @@ export const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
       }
       return {
         type: opts.type,
-        ...(opts.type === 'text' ? { text: opts.text, fontSize: opts.fontSize, color: opts.color } : {}),
-        ...(opts.type === 'image' ? { imageData: opts.imageData, scale: opts.scale } : {}),
+        ...(opts.type === 'text'
+          ? { text: opts.text, fontSize: opts.fontSize, color: opts.color }
+          : {}),
+        ...(opts.type === 'image'
+          ? { imageData: opts.imageData, scale: opts.scale }
+          : {}),
         position: opts.position,
         opacity: opts.opacity,
       };
@@ -229,31 +249,45 @@ const mapApiJob = (
   const id = apiJob.id ?? apiJob.ID ?? `job-${Date.now()}`;
   const status = apiJob.status ?? apiJob.Status ?? 'queued';
   const state = mapStatus(status);
-  const progressValue = parseProgress(apiJob.progress ?? apiJob.Progress, state);
+  const progressValue = parseProgress(
+    apiJob.progress ?? apiJob.Progress,
+    state
+  );
   const totalSteps = 3;
   const completedSteps =
     state === 'completed'
       ? totalSteps
       : progressValue > 0
-      ? Math.max(1, Math.floor((progressValue / 100) * totalSteps))
-      : 0;
+        ? Math.max(1, Math.floor((progressValue / 100) * totalSteps))
+        : 0;
   const currentStep =
     state === 'queued'
       ? 'Queued'
       : state === 'processing'
-      ? 'Processing'
-      : state === 'completed'
-      ? 'Completed'
-      : state === 'failed'
-      ? 'Failed'
-      : 'Pending';
+        ? 'Processing'
+        : state === 'completed'
+          ? 'Completed'
+          : state === 'failed'
+            ? 'Failed'
+            : 'Pending';
 
-  const fileName = apiJob.outputFileName ?? apiJob.OutputFileName ?? apiJob.fileName ?? apiJob.FileName ?? 'output.pdf';
+  const fileName =
+    apiJob.outputFileName ??
+    apiJob.OutputFileName ??
+    apiJob.fileName ??
+    apiJob.FileName ??
+    'output.pdf';
   const fileSize = parseFileSize(apiJob.fileSize ?? apiJob.FileSize);
   const downloadUrl = buildApiUrl(buildDownloadPath(toolId, id));
 
-  const createdAt = parseDate(apiJob.createdAt ?? apiJob.CreatedAt, fallbackTime);
-  const updatedAt = parseDate(apiJob.updatedAt ?? apiJob.UpdatedAt, fallbackTime);
+  const createdAt = parseDate(
+    apiJob.createdAt ?? apiJob.CreatedAt,
+    fallbackTime
+  );
+  const updatedAt = parseDate(
+    apiJob.updatedAt ?? apiJob.UpdatedAt,
+    fallbackTime
+  );
   const completedAt =
     state === 'completed'
       ? parseDate(apiJob.completedAt ?? apiJob.CompletedAt, updatedAt)
@@ -331,14 +365,26 @@ export const useJob = ({
   }, []);
 
   const startPolling = useCallback(
-    (toolId: ToolId, jobId: string, fileIds: string[], options: ToolOptions) => {
+    (
+      toolId: ToolId,
+      jobId: string,
+      fileIds: string[],
+      options: ToolOptions
+    ) => {
       stopPolling();
       setIsPolling(true);
 
       const poll = async () => {
         try {
-          const apiResponse = await apiRequest<{ data: ApiJob }>(buildJobPath(toolId, jobId));
-          const mappedJob = mapApiJob(apiResponse.data, toolId, fileIds, options);
+          const apiResponse = await apiRequest<{ data: ApiJob }>(
+            buildJobPath(toolId, jobId)
+          );
+          const mappedJob = mapApiJob(
+            apiResponse.data,
+            toolId,
+            fileIds,
+            options
+          );
 
           // Enforce monotonic progress — never show regression to the user.
           if (mappedJob.state === 'failed') {
@@ -359,7 +405,9 @@ export const useJob = ({
 
           if (mappedJob.state === 'failed') {
             stopPolling();
-            onError?.(mappedJob.error?.message ?? 'The job failed to complete.');
+            onError?.(
+              mappedJob.error?.message ?? 'The job failed to complete.'
+            );
             return;
           }
 
@@ -368,7 +416,9 @@ export const useJob = ({
           attemptsRef.current += 1;
           if (attemptsRef.current >= maxPollingAttempts) {
             const message =
-              error instanceof Error ? error.message : 'Failed to poll job status.';
+              error instanceof Error
+                ? error.message
+                : 'Failed to poll job status.';
             setJob((prev) =>
               prev
                 ? {
@@ -397,7 +447,12 @@ export const useJob = ({
   );
 
   const startSSE = useCallback(
-    (toolId: ToolId, jobId: string, fileIds: string[], options: ToolOptions) => {
+    (
+      toolId: ToolId,
+      jobId: string,
+      fileIds: string[],
+      options: ToolOptions
+    ) => {
       stopPolling();
       sseTerminalRef.current = false;
       setIsPolling(true);
@@ -451,18 +506,18 @@ export const useJob = ({
               state === 'completed'
                 ? totalSteps
                 : pct > 0
-                ? Math.max(1, Math.floor((pct / 100) * totalSteps))
-                : prev.progress.completedSteps;
+                  ? Math.max(1, Math.floor((pct / 100) * totalSteps))
+                  : prev.progress.completedSteps;
             const currentStep =
               state === 'queued'
                 ? 'Queued'
                 : state === 'processing'
-                ? 'Processing'
-                : state === 'completed'
-                ? 'Completed'
-                : state === 'failed'
-                ? 'Failed'
-                : 'Pending';
+                  ? 'Processing'
+                  : state === 'completed'
+                    ? 'Completed'
+                    : state === 'failed'
+                      ? 'Failed'
+                      : 'Pending';
 
             const downloadUrl = buildApiUrl(buildDownloadPath(toolId, prev.id));
 
@@ -476,7 +531,8 @@ export const useJob = ({
                 percentage: state === 'completed' ? 100 : pct,
               },
               updatedAt: new Date(),
-              completedAt: state === 'completed' ? new Date() : prev.completedAt,
+              completedAt:
+                state === 'completed' ? new Date() : prev.completedAt,
               result:
                 state === 'completed'
                   ? {
@@ -503,8 +559,15 @@ export const useJob = ({
             stopPolling();
             // Fetch full job data to get file metadata (size, name)
             try {
-              const apiResponse = await apiRequest<{ data: ApiJob }>(buildJobPath(toolId, jobId));
-              const finalJob = mapApiJob(apiResponse.data, toolId, fileIds, options);
+              const apiResponse = await apiRequest<{ data: ApiJob }>(
+                buildJobPath(toolId, jobId)
+              );
+              const finalJob = mapApiJob(
+                apiResponse.data,
+                toolId,
+                fileIds,
+                options
+              );
               setJob(finalJob);
               onComplete?.(finalJob);
             } catch {
@@ -589,14 +652,19 @@ export const useJob = ({
             uploadId?: string;
             uploadIds?: string[];
             options?: Record<string, unknown>;
-          } = normalizedIds.length > 1 ? { uploadIds: normalizedIds } : { uploadId: normalizedIds[0] };
+          } =
+            normalizedIds.length > 1
+              ? { uploadIds: normalizedIds }
+              : { uploadId: normalizedIds[0] };
 
           const normalizedOptions = normalizeOptions(toolId, options);
           if (normalizedOptions && Object.keys(normalizedOptions).length > 0) {
             payload.options = normalizedOptions;
           }
 
-          const apiResponse = await apiJson<{ data: ApiJob & { guestToken?: string } }>(buildJobPath(toolId), {
+          const apiResponse = await apiJson<{
+            data: ApiJob & { guestToken?: string };
+          }>(buildJobPath(toolId), {
             method: 'POST',
             body: JSON.stringify(payload),
           });
@@ -605,7 +673,12 @@ export const useJob = ({
             setGuestToken(apiResponse.data.guestToken);
           }
 
-          const mappedJob = mapApiJob(apiResponse.data, toolId, normalizedIds, options);
+          const mappedJob = mapApiJob(
+            apiResponse.data,
+            toolId,
+            normalizedIds,
+            options
+          );
           setJob(mappedJob);
           startSSE(toolId, mappedJob.id, normalizedIds, options);
         } catch (error) {
@@ -631,7 +704,9 @@ export const useJob = ({
   const cancelJob = useCallback(() => {
     if (!job) return;
     stopPolling();
-    void apiRequest(buildJobPath(job.toolId, job.id), { method: 'DELETE' }).catch(() => undefined);
+    void apiRequest(buildJobPath(job.toolId, job.id), {
+      method: 'DELETE',
+    }).catch(() => undefined);
     setJob({
       ...job,
       state: 'failed',

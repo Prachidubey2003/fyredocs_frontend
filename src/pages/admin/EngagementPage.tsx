@@ -2,7 +2,13 @@ import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   ChartContainer,
@@ -10,7 +16,16 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { Bar, BarChart, Pie, PieChart, Cell, CartesianGrid, XAxis, YAxis } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  Pie,
+  PieChart,
+  Cell,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import {
   Table,
   TableBody,
@@ -58,7 +73,10 @@ const pieChartConfig: ChartConfig = {
 
 const EngagementPage = () => {
   const queryClient = useQueryClient();
-  const handleRefresh = useCallback(() => queryClient.resetQueries({ queryKey: ['admin', 'engagement'] }), [queryClient]);
+  const handleRefresh = useCallback(
+    () => queryClient.resetQueries({ queryKey: ['admin', 'engagement'] }),
+    [queryClient]
+  );
   const { data, isLoading } = useEngagement(30);
   const d = data;
 
@@ -66,7 +84,7 @@ const EngagementPage = () => {
     (item: { bucket: string; count: number }) => ({
       ...item,
       bucket: formatBucket(item.bucket),
-    }),
+    })
   );
 
   const pieData = d?.guestVsRegistered
@@ -89,7 +107,11 @@ const EngagementPage = () => {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             label="Avg Jobs/User"
-            value={d?.jobsPerUser?.average != null ? d.jobsPerUser.average.toFixed(1) : undefined}
+            value={
+              d?.jobsPerUser?.average != null
+                ? d.jobsPerUser.average.toFixed(1)
+                : undefined
+            }
             icon={Briefcase}
             iconColor="text-purple-600"
             iconBg="bg-purple-500/10"
@@ -127,20 +149,36 @@ const EngagementPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>File Size Distribution</CardTitle>
-              <CardDescription>Number of jobs by uploaded file size</CardDescription>
+              <CardDescription>
+                Number of jobs by uploaded file size
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <Skeleton className="h-[300px] w-full" />
               ) : (
-                <ChartContainer config={fileSizeChartConfig} className="h-[300px] w-full">
+                <ChartContainer
+                  config={fileSizeChartConfig}
+                  className="h-[300px] w-full"
+                >
                   <BarChart data={fileSizeData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="bucket" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
+                    <XAxis
+                      dataKey="bucket"
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
                     <YAxis tickLine={false} axisLine={false} />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="count" fill="var(--color-count)" radius={[4, 4, 0, 0]}
-                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
+                    <Bar
+                      dataKey="count"
+                      fill="var(--color-count)"
+                      radius={[4, 4, 0, 0]}
+                      isAnimationActive
+                      animationDuration={800}
+                      animationEasing="ease-out"
+                    />
                   </BarChart>
                 </ChartContainer>
               )}
@@ -158,7 +196,10 @@ const EngagementPage = () => {
                 <Skeleton className="h-[300px] w-full" />
               ) : (
                 <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-8 h-[300px] justify-center">
-                  <ChartContainer config={pieChartConfig} className="h-[250px] w-[250px]">
+                  <ChartContainer
+                    config={pieChartConfig}
+                    className="h-[250px] w-[250px]"
+                  >
                     <PieChart>
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Pie
@@ -175,22 +216,39 @@ const EngagementPage = () => {
                         animationEasing="ease-out"
                       >
                         {pieData.map((_entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
                         ))}
                       </Pie>
                     </PieChart>
                   </ChartContainer>
                   <div className="space-y-3">
                     {pieData.map((entry, i) => (
-                      <div key={entry.name} className="flex items-center gap-2 text-sm">
-                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                        <span className="text-muted-foreground">{entry.name}</span>
-                        <span className="font-semibold"><AnimatedNumber value={entry.value} /></span>
+                      <div
+                        key={entry.name}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        <div
+                          className="h-3 w-3 rounded-full"
+                          style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                        />
+                        <span className="text-muted-foreground">
+                          {entry.name}
+                        </span>
+                        <span className="font-semibold">
+                          <AnimatedNumber value={entry.value} />
+                        </span>
                       </div>
                     ))}
                     {d?.guestVsRegistered && (
                       <div className="text-xs text-muted-foreground pt-1 border-t">
-                        Guest ratio: {((d.guestVsRegistered.guestRatio ?? 0) * 100).toFixed(0)}%
+                        Guest ratio:{' '}
+                        {((d.guestVsRegistered.guestRatio ?? 0) * 100).toFixed(
+                          0
+                        )}
+                        %
                       </div>
                     )}
                   </div>
@@ -211,17 +269,29 @@ const EngagementPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12 text-xs font-medium uppercase tracking-wide text-muted-foreground">#</TableHead>
-                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">User ID</TableHead>
-                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Job Count</TableHead>
+                    <TableHead className="w-12 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      #
+                    </TableHead>
+                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      User ID
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Job Count
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {Array.from({ length: 6 }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                      <TableCell className="text-right"><Skeleton className="ml-auto h-4 w-12" /></TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-4" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="ml-auto h-4 w-12" />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -230,27 +300,43 @@ const EngagementPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12 text-xs font-medium uppercase tracking-wide text-muted-foreground">#</TableHead>
-                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">User ID</TableHead>
-                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Job Count</TableHead>
+                    <TableHead className="w-12 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      #
+                    </TableHead>
+                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      User ID
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Job Count
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(d?.powerUsers ?? []).slice(0, 20).map(
-                    (user: { userId: string; jobCount: number }, index: number) => (
-                      <TableRow key={index} className="hover:bg-muted/50 transition-colors">
-                        <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {user.userId.length > 12
-                            ? `${user.userId.slice(0, 8)}...${user.userId.slice(-4)}`
-                            : user.userId}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {user.jobCount.toLocaleString()}
-                        </TableCell>
-                      </TableRow>
-                    ),
-                  )}
+                  {(d?.powerUsers ?? [])
+                    .slice(0, 20)
+                    .map(
+                      (
+                        user: { userId: string; jobCount: number },
+                        index: number
+                      ) => (
+                        <TableRow
+                          key={index}
+                          className="hover:bg-muted/50 transition-colors"
+                        >
+                          <TableCell className="text-muted-foreground font-medium">
+                            {index + 1}
+                          </TableCell>
+                          <TableCell className="font-mono text-sm">
+                            {user.userId.length > 12
+                              ? `${user.userId.slice(0, 8)}...${user.userId.slice(-4)}`
+                              : user.userId}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {user.jobCount.toLocaleString()}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    )}
                 </TableBody>
               </Table>
             )}

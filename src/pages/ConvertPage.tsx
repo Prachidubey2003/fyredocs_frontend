@@ -4,7 +4,9 @@ import { ToolCard } from '@/components/home/ToolCard';
 import { ArrowLeftRight } from 'lucide-react';
 
 const ConvertPage = () => {
-  const convertTools = getAllTools().filter((tool) => tool.category === 'convert');
+  const convertTools = getAllTools().filter(
+    (tool) => tool.category === 'convert'
+  );
 
   return (
     <>
@@ -19,8 +21,8 @@ const ConvertPage = () => {
               PDF Conversion Tools
             </h1>
             <p className="text-lg text-muted-foreground">
-              Convert PDFs to and from Word, Excel, and images. 
-              Fast, accurate, and completely free.
+              Convert PDFs to and from Word, Excel, and images. Fast, accurate,
+              and completely free.
             </p>
           </div>
 

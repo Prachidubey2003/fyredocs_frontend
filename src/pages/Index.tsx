@@ -13,7 +13,10 @@ const Index = () => {
     <>
       <Helmet>
         <title>Fyredocs — Free Online PDF Tools</title>
-        <meta name="description" content="Merge, split, compress, and convert PDFs online for free. Fast, secure, no installation required." />
+        <meta
+          name="description"
+          content="Merge, split, compress, and convert PDFs online for free. Fast, secure, no installation required."
+        />
       </Helmet>
       {/* Hero Section */}
       <Hero />
@@ -68,7 +71,8 @@ const Index = () => {
               Ready to work with your PDFs?
             </h2>
             <p className="text-muted-foreground mb-6">
-              Browse our complete suite of PDF tools — no sign-up required to get started.
+              Browse our complete suite of PDF tools — no sign-up required to
+              get started.
             </p>
             <Button className="bg-gradient-primary" asChild>
               <Link to="/all-tools">Get started</Link>

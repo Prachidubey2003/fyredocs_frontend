@@ -1,4 +1,9 @@
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { BookOpen, Wrench, FileText, Shield, HelpCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
@@ -6,14 +11,16 @@ import { Helmet } from 'react-helmet-async';
 const categories = [
   {
     title: 'Getting Started',
-    description: 'Learn how Fyredocs works and start using PDF tools in minutes.',
+    description:
+      'Learn how Fyredocs works and start using PDF tools in minutes.',
     icon: BookOpen,
     href: '/docs/getting-started',
     color: 'text-primary',
   },
   {
     title: 'Tool Guides',
-    description: 'Detailed guides for every PDF tool — merge, split, compress, convert, and more.',
+    description:
+      'Detailed guides for every PDF tool — merge, split, compress, convert, and more.',
     icon: Wrench,
     href: '/docs/merge-pdf',
     color: 'text-orange-500',
@@ -27,7 +34,8 @@ const categories = [
   },
   {
     title: 'Security & Privacy',
-    description: 'How we keep your files safe, encrypted, and automatically deleted.',
+    description:
+      'How we keep your files safe, encrypted, and automatically deleted.',
     icon: Shield,
     href: '/docs/security-privacy',
     color: 'text-green-500',
@@ -46,7 +54,10 @@ const DocsIndexPage = () => {
     <>
       <Helmet>
         <title>Documentation - Fyredocs</title>
-        <meta name="description" content="Learn how to use Fyredocs PDF tools. Browse tool guides, supported formats, security info, and FAQ." />
+        <meta
+          name="description"
+          content="Learn how to use Fyredocs PDF tools. Browse tool guides, supported formats, security info, and FAQ."
+        />
       </Helmet>
       <div className="px-8 py-16">
         <div className="max-w-3xl mx-auto text-center mb-16">

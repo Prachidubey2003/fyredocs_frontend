@@ -86,7 +86,11 @@ export const JobProgress = ({
           )}
         >
           <Icon
-            className={cn('w-6 h-6', config.color, isAnimating && 'animate-spin')}
+            className={cn(
+              'w-6 h-6',
+              config.color,
+              isAnimating && 'animate-spin'
+            )}
           />
         </div>
 
@@ -111,7 +115,8 @@ export const JobProgress = ({
             <Progress value={job.progress.percentage} className="h-2" />
             <div className="flex justify-between mt-2 text-sm text-muted-foreground">
               <span>
-                Step {job.progress.completedSteps + 1} of {job.progress.totalSteps}
+                Step {job.progress.completedSteps + 1} of{' '}
+                {job.progress.totalSteps}
               </span>
               <span>{job.progress.percentage}%</span>
             </div>
@@ -151,7 +156,10 @@ export const JobProgress = ({
                     {(job.result.fileSize / (1024 * 1024)).toFixed(2)} MB
                   </p>
                 </div>
-                <Button onClick={handleDownload} className="bg-gradient-primary">
+                <Button
+                  onClick={handleDownload}
+                  className="bg-gradient-primary"
+                >
                   Download
                 </Button>
               </div>

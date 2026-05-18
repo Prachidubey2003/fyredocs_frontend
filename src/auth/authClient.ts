@@ -27,7 +27,8 @@ export type AuthSignupCredentials = AuthCredentials & {
 type AuthResponse = Record<string, unknown> | null;
 
 const getBaseUrl = () => {
-  const envUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
+  const envUrl =
+    (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
   return envUrl.trim();
 };
 
@@ -85,14 +86,13 @@ const normalizeUser = (data: AuthResponse): AuthUser | null => {
 const extractAccessExpiresAt = (data: AuthResponse): number | null => {
   if (!data || typeof data !== 'object') return null;
   const nested = data.data as Record<string, unknown> | undefined;
-  const ms = (nested?.accessExpiresAt ?? data.accessExpiresAt) as number | undefined;
+  const ms = (nested?.accessExpiresAt ?? data.accessExpiresAt) as
+    | number
+    | undefined;
   return typeof ms === 'number' && ms > 0 ? ms : null;
 };
 
-const authRequest = async (
-  path: string,
-  options: RequestInit = {}
-) => {
+const authRequest = async (path: string, options: RequestInit = {}) => {
   const headers = new Headers(options.headers);
 
   if (!headers.has('Content-Type') && options.body) {
@@ -121,7 +121,10 @@ export const login = async (credentials: AuthCredentials) => {
 
   const user = normalizeUser(data);
   if (!user) {
-    throw new AuthError('SERVER_ERROR', 'Invalid user data returned from server.');
+    throw new AuthError(
+      'SERVER_ERROR',
+      'Invalid user data returned from server.'
+    );
   }
 
   const accessExpiresAt = extractAccessExpiresAt(data);
@@ -136,7 +139,10 @@ export const signup = async (credentials: AuthSignupCredentials) => {
 
   const user = normalizeUser(data);
   if (!user) {
-    throw new AuthError('SERVER_ERROR', 'Invalid user data returned from server.');
+    throw new AuthError(
+      'SERVER_ERROR',
+      'Invalid user data returned from server.'
+    );
   }
 
   const accessExpiresAt = extractAccessExpiresAt(data);
@@ -161,7 +167,10 @@ export const getMe = async () => {
   return user;
 };
 
-export const refreshSession = async (): Promise<{ user: AuthUser; accessExpiresAt: number | null } | null> => {
+export const refreshSession = async (): Promise<{
+  user: AuthUser;
+  accessExpiresAt: number | null;
+} | null> => {
   const data = await authRequest('/auth/refresh', { method: 'POST' });
   const user = normalizeUser(data);
   if (!user) return null;

@@ -5,7 +5,13 @@ import { JobProgress } from '@/components/common/JobProgress';
 import { BatchProgress } from '@/components/common/BatchProgress';
 import { BatchModeToggle } from '@/components/common/BatchModeToggle';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { AnimatedSwitch } from '@/components/ui/animated';
 import { useFileUpload } from '@/hooks/useFileUpload';
@@ -214,8 +220,7 @@ export const OcrTool = ({ tool }: OcrToolProps) => {
                       </p>
                     </div>
 
-                    <div className="space-y-4">
-                    </div>
+                    <div className="space-y-4"></div>
                   </div>
 
                   <Button

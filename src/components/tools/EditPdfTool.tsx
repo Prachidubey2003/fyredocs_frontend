@@ -6,7 +6,13 @@ import { AnimatedSwitch } from '@/components/ui/animated';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
 import { ToolDefinition, ToolOptions } from '@/types';
@@ -66,8 +72,14 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
     ]);
   };
 
-  const updateAnnotation = (id: string, field: keyof Annotation, value: string | number) => {
-    setAnnotations(annotations.map((a) => (a.id === id ? { ...a, [field]: value } : a)));
+  const updateAnnotation = (
+    id: string,
+    field: keyof Annotation,
+    value: string | number
+  ) => {
+    setAnnotations(
+      annotations.map((a) => (a.id === id ? { ...a, [field]: value } : a))
+    );
   };
 
   const removeAnnotation = (id: string) => {
@@ -101,7 +113,8 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
   };
 
   const hasFiles = files.length > 0;
-  const hasAnnotations = annotations.length > 0 && annotations.every((a) => a.content.trim() !== '');
+  const hasAnnotations =
+    annotations.length > 0 && annotations.every((a) => a.content.trim() !== '');
   const isProcessing = job?.state === 'processing' || job?.state === 'queued';
   const viewKey = job ? 'progress' : 'upload';
 
@@ -156,14 +169,22 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
                     <div className="text-center py-8 text-muted-foreground">
                       <Type className="w-12 h-12 mx-auto mb-3 opacity-50" />
                       <p>No annotations added yet.</p>
-                      <p className="text-sm">Click &quot;Add Text&quot; to add text annotations to your PDF.</p>
+                      <p className="text-sm">
+                        Click &quot;Add Text&quot; to add text annotations to
+                        your PDF.
+                      </p>
                     </div>
                   )}
 
                   {annotations.map((ann) => (
-                    <div key={ann.id} className="rounded-lg border p-4 space-y-4">
+                    <div
+                      key={ann.id}
+                      className="rounded-lg border p-4 space-y-4"
+                    >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Text Annotation</span>
+                        <span className="text-sm font-medium">
+                          Text Annotation
+                        </span>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -178,7 +199,9 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
                         <Label>Text Content</Label>
                         <Input
                           value={ann.content}
-                          onChange={(e) => updateAnnotation(ann.id, 'content', e.target.value)}
+                          onChange={(e) =>
+                            updateAnnotation(ann.id, 'content', e.target.value)
+                          }
                           placeholder="Enter text to add..."
                         />
                       </div>
@@ -190,7 +213,13 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
                             type="number"
                             min={1}
                             value={ann.page}
-                            onChange={(e) => updateAnnotation(ann.id, 'page', parseInt(e.target.value) || 1)}
+                            onChange={(e) =>
+                              updateAnnotation(
+                                ann.id,
+                                'page',
+                                parseInt(e.target.value) || 1
+                              )
+                            }
                           />
                         </div>
 
@@ -198,7 +227,9 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
                           <Label>Position</Label>
                           <Select
                             value={ann.position}
-                            onValueChange={(v) => updateAnnotation(ann.id, 'position', v)}
+                            onValueChange={(v) =>
+                              updateAnnotation(ann.id, 'position', v)
+                            }
                           >
                             <SelectTrigger>
                               <SelectValue />
@@ -222,7 +253,13 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
                             min={8}
                             max={72}
                             value={ann.fontSize}
-                            onChange={(e) => updateAnnotation(ann.id, 'fontSize', parseInt(e.target.value) || 12)}
+                            onChange={(e) =>
+                              updateAnnotation(
+                                ann.id,
+                                'fontSize',
+                                parseInt(e.target.value) || 12
+                              )
+                            }
                           />
                         </div>
                       </div>
@@ -231,7 +268,12 @@ export const EditPdfTool = ({ tool }: EditPdfToolProps) => {
 
                   <Button
                     onClick={handleProcess}
-                    disabled={!hasFiles || isProcessing || !hasAnnotations || !canProceed}
+                    disabled={
+                      !hasFiles ||
+                      isProcessing ||
+                      !hasAnnotations ||
+                      !canProceed
+                    }
                     className="w-full bg-gradient-primary"
                     size="lg"
                   >

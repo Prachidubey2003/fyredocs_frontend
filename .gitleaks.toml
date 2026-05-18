@@ -1,0 +1,35 @@
+# gitleaks configuration for fyredocs_frontend.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for files that legitimately contain example tokens"
+
+paths = [
+  # Example env / config templates.
+  "(.*)\\.env\\.example$",
+  "(.*)\\.env\\.sample$",
+
+  # Vite uses VITE_* env vars; .env.example would expose them.
+  "\\.env\\.example$",
+
+  # Test files: random secrets used in unit tests are not real.
+  ".*\\.test\\.[jt]sx?$",
+  ".*\\.spec\\.[jt]sx?$",
+  "src/test/.*",
+
+  # SBOM artifacts.
+  "sbom-.*\\.spdx\\.json$",
+
+  # Build output should never appear in git, but if a stray commit happens,
+  # we don't want gitleaks to false-positive on bundled third-party code.
+  "dist/.*",
+]
+
+regexes = [
+  "(?i)example[_-]?(secret|password|token|key)",
+  "(?i)placeholder[_-]?(secret|password|token|key)",
+  "AKIAIOSFODNN7EXAMPLE",
+  "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+]

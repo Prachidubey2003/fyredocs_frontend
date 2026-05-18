@@ -6,7 +6,13 @@ import { AnimatedSwitch } from '@/components/ui/animated';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
 import { usePdfPageCount } from '@/hooks/usePdfPageCount';
@@ -156,9 +162,15 @@ export const AddPageNumbersTool = ({ tool }: AddPageNumbersToolProps) => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="{n}">1, 2, 3...</SelectItem>
-                          <SelectItem value="Page {n}">Page 1, Page 2...</SelectItem>
-                          <SelectItem value="Page {n} of {total}">Page 1 of N</SelectItem>
-                          <SelectItem value="- {n} -">- 1 -, - 2 -...</SelectItem>
+                          <SelectItem value="Page {n}">
+                            Page 1, Page 2...
+                          </SelectItem>
+                          <SelectItem value="Page {n} of {total}">
+                            Page 1 of N
+                          </SelectItem>
+                          <SelectItem value="- {n} -">
+                            - 1 -, - 2 -...
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -170,7 +182,9 @@ export const AddPageNumbersTool = ({ tool }: AddPageNumbersToolProps) => {
                         type="number"
                         min={1}
                         value={startNumber}
-                        onChange={(e) => setStartNumber(parseInt(e.target.value) || 1)}
+                        onChange={(e) =>
+                          setStartNumber(parseInt(e.target.value) || 1)
+                        }
                       />
                     </div>
 
@@ -182,7 +196,9 @@ export const AddPageNumbersTool = ({ tool }: AddPageNumbersToolProps) => {
                         min={8}
                         max={48}
                         value={fontSize}
-                        onChange={(e) => setFontSize(parseInt(e.target.value) || 12)}
+                        onChange={(e) =>
+                          setFontSize(parseInt(e.target.value) || 12)
+                        }
                       />
                     </div>
                   </div>

@@ -38,14 +38,62 @@ function QuickStats() {
   const d = data;
 
   const items = [
-    { label: 'Signups Today', value: d?.signups, color: 'text-green-600', bg: 'bg-green-500/10', icon: UserPlus },
-    { label: 'DAU', value: d?.dau, color: 'text-blue-600', bg: 'bg-blue-500/10', icon: Users },
-    { label: 'Jobs Created', value: d?.jobsCreated, color: 'text-purple-600', bg: 'bg-purple-500/10', icon: Briefcase },
-    { label: 'Jobs Failed', value: d?.jobsFailed, color: 'text-red-600', bg: 'bg-red-500/10', icon: AlertTriangle },
-    { label: 'Logins', value: d?.logins, color: 'text-sky-600', bg: 'bg-sky-500/10', icon: LogIn },
-    { label: 'Guest Sessions', value: d?.guestSessions, color: 'text-slate-600', bg: 'bg-slate-500/10', icon: UserCircle },
-    { label: 'Jobs Completed', value: d?.jobsCompleted, color: 'text-emerald-600', bg: 'bg-emerald-500/10', icon: CheckCircle2 },
-    { label: 'Plan Limit Hits', value: d?.planLimitHits, color: 'text-orange-600', bg: 'bg-orange-500/10', icon: Zap },
+    {
+      label: 'Signups Today',
+      value: d?.signups,
+      color: 'text-green-600',
+      bg: 'bg-green-500/10',
+      icon: UserPlus,
+    },
+    {
+      label: 'DAU',
+      value: d?.dau,
+      color: 'text-blue-600',
+      bg: 'bg-blue-500/10',
+      icon: Users,
+    },
+    {
+      label: 'Jobs Created',
+      value: d?.jobsCreated,
+      color: 'text-purple-600',
+      bg: 'bg-purple-500/10',
+      icon: Briefcase,
+    },
+    {
+      label: 'Jobs Failed',
+      value: d?.jobsFailed,
+      color: 'text-red-600',
+      bg: 'bg-red-500/10',
+      icon: AlertTriangle,
+    },
+    {
+      label: 'Logins',
+      value: d?.logins,
+      color: 'text-sky-600',
+      bg: 'bg-sky-500/10',
+      icon: LogIn,
+    },
+    {
+      label: 'Guest Sessions',
+      value: d?.guestSessions,
+      color: 'text-slate-600',
+      bg: 'bg-slate-500/10',
+      icon: UserCircle,
+    },
+    {
+      label: 'Jobs Completed',
+      value: d?.jobsCompleted,
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-500/10',
+      icon: CheckCircle2,
+    },
+    {
+      label: 'Plan Limit Hits',
+      value: d?.planLimitHits,
+      color: 'text-orange-600',
+      bg: 'bg-orange-500/10',
+      icon: Zap,
+    },
   ];
 
   return (
@@ -66,13 +114,30 @@ function QuickStats() {
   );
 }
 
-function MiniRings({ items }: { items: { label: string; value: number; color: string; displayLabel?: string }[] }) {
+function MiniRings({
+  items,
+}: {
+  items: {
+    label: string;
+    value: number;
+    color: string;
+    displayLabel?: string;
+  }[];
+}) {
   return (
     <div className="flex items-center justify-around gap-2">
       {items.map((item) => (
         <div key={item.label} className="flex flex-col items-center gap-1">
-          <ProgressRing size={56} strokeWidth={5} value={item.value} color={item.color} label={item.displayLabel} />
-          <span className="text-[9px] text-muted-foreground leading-none">{item.label}</span>
+          <ProgressRing
+            size={56}
+            strokeWidth={5}
+            value={item.value}
+            color={item.color}
+            label={item.displayLabel}
+          />
+          <span className="text-[9px] text-muted-foreground leading-none">
+            {item.label}
+          </span>
         </div>
       ))}
     </div>
@@ -93,15 +158,30 @@ function BusinessCard() {
       isLoading={isLoading}
       stats={[
         { label: 'Total Signups', value: signups },
-        { label: 'Churn Rate', value: `${churn.toFixed(1)}%`, color: churn > 10 ? 'text-red-600' : 'text-green-600' },
+        {
+          label: 'Churn Rate',
+          value: `${churn.toFixed(1)}%`,
+          color: churn > 10 ? 'text-red-600' : 'text-green-600',
+        },
         { label: 'Conversion', value: `${conversion.toFixed(1)}%` },
       ]}
       chart={
-        <MiniRings items={[
-          { label: 'Signups', value: Math.min((signups / 100) * 100, 100), color: 'hsl(142, 71%, 45%)', displayLabel: String(signups) },
-          { label: 'Churn', value: churn, color: churn > 10 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)' },
-          { label: 'Conv.', value: conversion, color: 'hsl(217, 91%, 60%)' },
-        ]} />
+        <MiniRings
+          items={[
+            {
+              label: 'Signups',
+              value: Math.min((signups / 100) * 100, 100),
+              color: 'hsl(142, 71%, 45%)',
+              displayLabel: String(signups),
+            },
+            {
+              label: 'Churn',
+              value: churn,
+              color: churn > 10 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)',
+            },
+            { label: 'Conv.', value: conversion, color: 'hsl(217, 91%, 60%)' },
+          ]}
+        />
       }
     />
   );
@@ -119,7 +199,10 @@ function GrowthCard() {
       stats={[
         { label: 'DAU', value: d?.dau ?? 0, color: 'text-blue-600' },
         { label: 'WAU / MAU', value: `${d?.wau ?? 0} / ${d?.mau ?? 0}` },
-        { label: 'Stickiness', value: `${((d?.stickiness ?? 0) * 100).toFixed(1)}%` },
+        {
+          label: 'Stickiness',
+          value: `${((d?.stickiness ?? 0) * 100).toFixed(1)}%`,
+        },
       ]}
       chart={
         <div className="w-full space-y-2">
@@ -161,7 +244,11 @@ function EngagementCard() {
     { name: 'Registered', value: registered || 1 },
     { name: 'Power', value: power || 1 },
   ];
-  const COLORS = ['hsl(271, 91%, 65%)', 'hsl(271, 71%, 50%)', 'hsl(271, 50%, 35%)'];
+  const COLORS = [
+    'hsl(271, 91%, 65%)',
+    'hsl(271, 71%, 50%)',
+    'hsl(271, 50%, 35%)',
+  ];
   return (
     <SummaryCard
       title="Engagement"
@@ -169,14 +256,29 @@ function EngagementCard() {
       to="/admin/engagement"
       isLoading={isLoading}
       stats={[
-        { label: 'Avg Jobs/User', value: (d?.jobsPerUser?.average ?? 0).toFixed(1) },
-        { label: 'Guest Ratio', value: `${((d?.guestVsRegistered?.guestRatio ?? 0) * 100).toFixed(0)}%` },
+        {
+          label: 'Avg Jobs/User',
+          value: (d?.jobsPerUser?.average ?? 0).toFixed(1),
+        },
+        {
+          label: 'Guest Ratio',
+          value: `${((d?.guestVsRegistered?.guestRatio ?? 0) * 100).toFixed(0)}%`,
+        },
         { label: 'Power Users', value: power },
       ]}
       chart={
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={20} outerRadius={40} strokeWidth={0} animationDuration={800}>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              cx="50%"
+              cy="50%"
+              innerRadius={20}
+              outerRadius={40}
+              strokeWidth={0}
+              animationDuration={800}
+            >
               {pieData.map((_, i) => (
                 <Cell key={i} fill={COLORS[i]} />
               ))}
@@ -202,16 +304,46 @@ function ReliabilityCard() {
       to="/admin/reliability"
       isLoading={isLoading}
       stats={[
-        { label: 'Success Rate', value: `${rate.toFixed(1)}%`, color: rate >= 95 ? 'text-green-600' : rate >= 80 ? 'text-yellow-600' : 'text-red-600' },
+        {
+          label: 'Success Rate',
+          value: `${rate.toFixed(1)}%`,
+          color:
+            rate >= 95
+              ? 'text-green-600'
+              : rate >= 80
+                ? 'text-yellow-600'
+                : 'text-red-600',
+        },
         { label: 'P95 Latency', value: `${p95.toFixed(1)}s` },
         { label: 'Failed Jobs', value: failed, color: 'text-red-600' },
       ]}
       chart={
-        <MiniRings items={[
-          { label: 'Success', value: rate, color: rate >= 95 ? 'hsl(142, 71%, 45%)' : rate >= 80 ? 'hsl(48, 96%, 53%)' : 'hsl(0, 84%, 60%)' },
-          { label: 'P95', value: Math.max(100 - (p95 / 10) * 100, 0), color: p95 > 5 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)', displayLabel: `${p95.toFixed(1)}s` },
-          { label: 'Failed', value: total > 0 ? (failed / total) * 100 : 0, color: failed > 0 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)', displayLabel: String(failed) },
-        ]} />
+        <MiniRings
+          items={[
+            {
+              label: 'Success',
+              value: rate,
+              color:
+                rate >= 95
+                  ? 'hsl(142, 71%, 45%)'
+                  : rate >= 80
+                    ? 'hsl(48, 96%, 53%)'
+                    : 'hsl(0, 84%, 60%)',
+            },
+            {
+              label: 'P95',
+              value: Math.max(100 - (p95 / 10) * 100, 0),
+              color: p95 > 5 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)',
+              displayLabel: `${p95.toFixed(1)}s`,
+            },
+            {
+              label: 'Failed',
+              value: total > 0 ? (failed / total) * 100 : 0,
+              color: failed > 0 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)',
+              displayLabel: String(failed),
+            },
+          ]}
+        />
       }
     />
   );
@@ -237,9 +369,24 @@ function SystemCard() {
       chart={
         <div className="w-full space-y-2">
           {[
-            { label: 'Events/h', value: Math.min((events / 1000) * 100, 100), display: String(events), color: 'bg-cyan-500' },
-            { label: 'Active', value: Math.min((active / 100) * 100, 100), display: String(active), color: 'bg-green-500' },
-            { label: 'Lag', value: Math.max(100 - lag * 10, 0), display: `${lag.toFixed(2)}s`, color: lag > 5 ? 'bg-red-500' : 'bg-yellow-500' },
+            {
+              label: 'Events/h',
+              value: Math.min((events / 1000) * 100, 100),
+              display: String(events),
+              color: 'bg-cyan-500',
+            },
+            {
+              label: 'Active',
+              value: Math.min((active / 100) * 100, 100),
+              display: String(active),
+              color: 'bg-green-500',
+            },
+            {
+              label: 'Lag',
+              value: Math.max(100 - lag * 10, 0),
+              display: `${lag.toFixed(2)}s`,
+              color: lag > 5 ? 'bg-red-500' : 'bg-yellow-500',
+            },
           ].map((item) => (
             <div key={item.label} className="space-y-0.5">
               <div className="flex justify-between text-[10px] text-muted-foreground">
@@ -274,16 +421,40 @@ function ServerPerfCard() {
       to="/admin/server-performance"
       isLoading={isLoading}
       stats={[
-        { label: 'CPU', value: `${cpu.toFixed(0)}%`, color: cpu > 80 ? 'text-red-600' : '' },
-        { label: 'Memory', value: `${mem.toFixed(0)}%`, color: mem > 80 ? 'text-red-600' : '' },
-        { label: 'Disk', value: `${disk.toFixed(0)}%`, color: disk > 80 ? 'text-red-600' : '' },
+        {
+          label: 'CPU',
+          value: `${cpu.toFixed(0)}%`,
+          color: cpu > 80 ? 'text-red-600' : '',
+        },
+        {
+          label: 'Memory',
+          value: `${mem.toFixed(0)}%`,
+          color: mem > 80 ? 'text-red-600' : '',
+        },
+        {
+          label: 'Disk',
+          value: `${disk.toFixed(0)}%`,
+          color: disk > 80 ? 'text-red-600' : '',
+        },
       ]}
       chart={
         <div className="w-full space-y-2">
           {[
-            { label: 'CPU', value: cpu, color: cpu > 80 ? 'bg-red-500' : 'bg-blue-500' },
-            { label: 'Mem', value: mem, color: mem > 80 ? 'bg-red-500' : 'bg-emerald-500' },
-            { label: 'Disk', value: disk, color: disk > 80 ? 'bg-red-500' : 'bg-orange-500' },
+            {
+              label: 'CPU',
+              value: cpu,
+              color: cpu > 80 ? 'bg-red-500' : 'bg-blue-500',
+            },
+            {
+              label: 'Mem',
+              value: mem,
+              color: mem > 80 ? 'bg-red-500' : 'bg-emerald-500',
+            },
+            {
+              label: 'Disk',
+              value: disk,
+              color: disk > 80 ? 'bg-red-500' : 'bg-orange-500',
+            },
           ].map((item) => (
             <div key={item.label} className="space-y-0.5">
               <div className="flex justify-between text-[10px] text-muted-foreground">
@@ -319,14 +490,37 @@ function ApiPerfCard() {
       stats={[
         { label: 'Requests', value: requests },
         { label: 'Avg Latency', value: `${latency.toFixed(0)}ms` },
-        { label: 'Error Rate', value: `${errorRate.toFixed(1)}%`, color: errorRate > 5 ? 'text-red-600' : 'text-green-600' },
+        {
+          label: 'Error Rate',
+          value: `${errorRate.toFixed(1)}%`,
+          color: errorRate > 5 ? 'text-red-600' : 'text-green-600',
+        },
       ]}
       chart={
-        <MiniRings items={[
-          { label: 'Reqs', value: Math.min((requests / 10000) * 100, 100), color: 'hsl(239, 84%, 67%)', displayLabel: requests > 999 ? `${(requests / 1000).toFixed(1)}k` : String(requests) },
-          { label: 'Latency', value: Math.max(100 - (latency / 1000) * 100, 0), color: latency > 500 ? 'hsl(38, 92%, 50%)' : 'hsl(142, 71%, 45%)', displayLabel: `${latency.toFixed(0)}ms` },
-          { label: 'Errors', value: errorRate, color: errorRate > 5 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)' },
-        ]} />
+        <MiniRings
+          items={[
+            {
+              label: 'Reqs',
+              value: Math.min((requests / 10000) * 100, 100),
+              color: 'hsl(239, 84%, 67%)',
+              displayLabel:
+                requests > 999
+                  ? `${(requests / 1000).toFixed(1)}k`
+                  : String(requests),
+            },
+            {
+              label: 'Latency',
+              value: Math.max(100 - (latency / 1000) * 100, 0),
+              color: latency > 500 ? 'hsl(38, 92%, 50%)' : 'hsl(142, 71%, 45%)',
+              displayLabel: `${latency.toFixed(0)}ms`,
+            },
+            {
+              label: 'Errors',
+              value: errorRate,
+              color: errorRate > 5 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)',
+            },
+          ]}
+        />
       }
     />
   );

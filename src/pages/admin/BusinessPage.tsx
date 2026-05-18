@@ -3,7 +3,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
 import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   ChartContainer,
@@ -24,7 +30,13 @@ import {
   Cell,
 } from 'recharts';
 import { ProgressRing } from '@/components/admin/ProgressRing';
-import { DollarSign, UserPlus, TrendingDown, Percent, ArrowUpCircle } from 'lucide-react';
+import {
+  DollarSign,
+  UserPlus,
+  TrendingDown,
+  Percent,
+  ArrowUpCircle,
+} from 'lucide-react';
 import { useBusiness } from '@/hooks/useAdminMetrics';
 
 const signupsChartConfig = {
@@ -38,7 +50,10 @@ const planChangesChartConfig = {
 
 const BusinessPage = () => {
   const queryClient = useQueryClient();
-  const handleRefresh = useCallback(() => queryClient.resetQueries({ queryKey: ['admin', 'business'] }), [queryClient]);
+  const handleRefresh = useCallback(
+    () => queryClient.resetQueries({ queryKey: ['admin', 'business'] }),
+    [queryClient]
+  );
   const { data, isLoading } = useBusiness(30);
   const d = data;
 
@@ -98,13 +113,18 @@ const BusinessPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Signups Over Time</CardTitle>
-              <CardDescription>Daily signups for the last 30 days</CardDescription>
+              <CardDescription>
+                Daily signups for the last 30 days
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <Skeleton className="h-[300px] w-full" />
               ) : (
-                <ChartContainer config={signupsChartConfig} className="h-[300px] w-full">
+                <ChartContainer
+                  config={signupsChartConfig}
+                  className="h-[300px] w-full"
+                >
                   <AreaChart data={d?.signups?.daily ?? []}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis
@@ -136,13 +156,18 @@ const BusinessPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Plan Changes</CardTitle>
-              <CardDescription>Upgrades and downgrades over time</CardDescription>
+              <CardDescription>
+                Upgrades and downgrades over time
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <Skeleton className="h-[300px] w-full" />
               ) : (
-                <ChartContainer config={planChangesChartConfig} className="h-[300px] w-full">
+                <ChartContainer
+                  config={planChangesChartConfig}
+                  className="h-[300px] w-full"
+                >
                   <BarChart data={d?.planChanges ?? []}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis
@@ -153,10 +178,22 @@ const BusinessPage = () => {
                     />
                     <YAxis tickLine={false} axisLine={false} />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="upgrades" fill="var(--color-upgrades)" radius={[4, 4, 0, 0]}
-                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
-                    <Bar dataKey="downgrades" fill="var(--color-downgrades)" radius={[4, 4, 0, 0]}
-                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
+                    <Bar
+                      dataKey="upgrades"
+                      fill="var(--color-upgrades)"
+                      radius={[4, 4, 0, 0]}
+                      isAnimationActive
+                      animationDuration={800}
+                      animationEasing="ease-out"
+                    />
+                    <Bar
+                      dataKey="downgrades"
+                      fill="var(--color-downgrades)"
+                      radius={[4, 4, 0, 0]}
+                      isAnimationActive
+                      animationDuration={800}
+                      animationEasing="ease-out"
+                    />
                   </BarChart>
                 </ChartContainer>
               )}
@@ -170,14 +207,19 @@ const BusinessPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Churn Details</CardTitle>
-              <CardDescription>User churn breakdown for the period</CardDescription>
+              <CardDescription>
+                User churn breakdown for the period
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <div className="flex items-center gap-6">
                   <div className="flex-1 space-y-3">
                     {[0, 1, 2].map((i) => (
-                      <div key={i} className="flex items-center justify-between border-b pb-3 last:border-0">
+                      <div
+                        key={i}
+                        className="flex items-center justify-between border-b pb-3 last:border-0"
+                      >
                         <Skeleton className="h-4 w-28" />
                         <Skeleton className="h-5 w-16" />
                       </div>
@@ -189,19 +231,35 @@ const BusinessPage = () => {
                 <div className="flex items-center gap-6">
                   <div className="flex-1 space-y-3">
                     <div className="flex items-center justify-between border-b pb-3">
-                      <span className="text-sm text-muted-foreground">Churned Users</span>
+                      <span className="text-sm text-muted-foreground">
+                        Churned Users
+                      </span>
                       <span className="text-lg font-semibold text-red-600">
                         <AnimatedNumber value={d?.churn?.churnedUsers ?? 0} />
                       </span>
                     </div>
                     <div className="flex items-center justify-between border-b pb-3">
-                      <span className="text-sm text-muted-foreground">Previous Active</span>
-                      <span className="text-lg font-semibold"><AnimatedNumber value={d?.churn?.previousActiveUsers ?? 0} /></span>
+                      <span className="text-sm text-muted-foreground">
+                        Previous Active
+                      </span>
+                      <span className="text-lg font-semibold">
+                        <AnimatedNumber
+                          value={d?.churn?.previousActiveUsers ?? 0}
+                        />
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Churn Rate</span>
-                      <span className={`text-lg font-semibold ${churnRate > 0.1 ? 'text-red-600' : 'text-green-600'}`}>
-                        <AnimatedNumber value={churnRate * 100} decimals={1} suffix="%" />
+                      <span className="text-sm text-muted-foreground">
+                        Churn Rate
+                      </span>
+                      <span
+                        className={`text-lg font-semibold ${churnRate > 0.1 ? 'text-red-600' : 'text-green-600'}`}
+                      >
+                        <AnimatedNumber
+                          value={churnRate * 100}
+                          decimals={1}
+                          suffix="%"
+                        />
                       </span>
                     </div>
                   </div>
@@ -210,7 +268,11 @@ const BusinessPage = () => {
                       value={churnRate * 100}
                       size={80}
                       strokeWidth={8}
-                      color={churnRate > 0.1 ? 'hsl(0, 84%, 60%)' : 'hsl(142, 71%, 45%)'}
+                      color={
+                        churnRate > 0.1
+                          ? 'hsl(0, 84%, 60%)'
+                          : 'hsl(142, 71%, 45%)'
+                      }
                     />
                   </div>
                 </div>
@@ -234,7 +296,8 @@ const BusinessPage = () => {
                 <div className="flex flex-col items-center justify-center gap-2 py-12 text-center text-muted-foreground">
                   <DollarSign className="h-8 w-8 opacity-50" />
                   <p className="text-sm">
-                    {d?.revenue?.note ?? 'Revenue tracking is not yet available.'}
+                    {d?.revenue?.note ??
+                      'Revenue tracking is not yet available.'}
                   </p>
                 </div>
               )}

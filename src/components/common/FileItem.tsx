@@ -134,19 +134,34 @@ export const FileItem = ({
       {/* Actions */}
       <div className="flex items-center gap-1">
         {state === 'uploading' && onPause && (
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onPause}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onPause}
+          >
             <Pause className="h-4 w-4" />
           </Button>
         )}
 
         {state === 'paused' && onResume && (
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onResume}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onResume}
+          >
             <Play className="h-4 w-4" />
           </Button>
         )}
 
         {state === 'failed' && onRetry && (
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onRetry}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onRetry}
+          >
             <RotateCcw className="h-4 w-4" />
           </Button>
         )}

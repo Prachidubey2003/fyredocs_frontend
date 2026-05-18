@@ -26,11 +26,17 @@ export const DocsSidebar = ({ className, onNavigate }: DocsSidebarProps) => {
       <nav className="py-4 px-2">
         <Accordion
           type="multiple"
-          defaultValue={defaultOpen.length > 0 ? defaultOpen : ['Getting Started']}
+          defaultValue={
+            defaultOpen.length > 0 ? defaultOpen : ['Getting Started']
+          }
           className="space-y-1"
         >
           {docNavGroups.map((group) => (
-            <AccordionItem key={group.title} value={group.title} className="border-none">
+            <AccordionItem
+              key={group.title}
+              value={group.title}
+              className="border-none"
+            >
               <AccordionTrigger
                 className={cn(
                   'py-2 px-3 text-xs font-bold tracking-wider hover:no-underline rounded-md hover:bg-muted',

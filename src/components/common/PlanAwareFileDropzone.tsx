@@ -49,7 +49,8 @@ export const PlanAwareFileDropzone = ({
               <Link to="/signup" className="underline hover:text-foreground">
                 Sign up free
               </Link>{' '}
-              for {planData.maxFileSizeMb}MB uploads &amp; {planData.maxFilesPerJob}-file jobs.{' '}
+              for {planData.maxFileSizeMb}MB uploads &amp;{' '}
+              {planData.maxFilesPerJob}-file jobs.{' '}
               <Link to="/pricing" className="underline hover:text-foreground">
                 Upgrade to Pro
               </Link>{' '}

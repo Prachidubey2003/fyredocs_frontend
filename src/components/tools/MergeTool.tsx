@@ -60,11 +60,7 @@ export const MergeTool = () => {
     }
 
     // Create job with file IDs and merge order
-    createJob(
-      tool.id,
-      uploadIds,
-      { order: uploadIds }
-    );
+    createJob(tool.id, uploadIds, { order: uploadIds });
   };
 
   const handleStartOver = () => {
@@ -110,7 +106,8 @@ export const MergeTool = () => {
                     <div className="flex items-center gap-2">
                       <Layers className="w-5 h-5 text-tool-merge" />
                       <span className="font-medium">
-                        {files.length} file{files.length !== 1 ? 's' : ''} selected
+                        {files.length} file{files.length !== 1 ? 's' : ''}{' '}
+                        selected
                       </span>
                     </div>
                     <Button
@@ -147,7 +144,9 @@ export const MergeTool = () => {
                       variant="outline"
                       className="flex-1"
                       onClick={() =>
-                        document.querySelector<HTMLInputElement>('input[type="file"]')?.click()
+                        document
+                          .querySelector<HTMLInputElement>('input[type="file"]')
+                          ?.click()
                       }
                     >
                       <Plus className="w-4 h-4 mr-2" />

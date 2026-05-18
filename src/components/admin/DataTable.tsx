@@ -1,8 +1,20 @@
 import type { ReactNode } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   Pagination,
   PaginationContent,
@@ -73,8 +85,17 @@ function TruncatedCell({ value, max }: { value: string; max: number }) {
   );
 }
 
-function SortIcon<T>({ column, sortKey, sortDesc }: { column: keyof T; sortKey: keyof T | null; sortDesc: boolean }) {
-  if (sortKey !== column) return <ArrowUpDown className="ml-1 inline h-3 w-3 opacity-40" />;
+function SortIcon<T>({
+  column,
+  sortKey,
+  sortDesc,
+}: {
+  column: keyof T;
+  sortKey: keyof T | null;
+  sortDesc: boolean;
+}) {
+  if (sortKey !== column)
+    return <ArrowUpDown className="ml-1 inline h-3 w-3 opacity-40" />;
   return sortDesc ? (
     <ArrowDown className="ml-1 inline h-3 w-3" />
   ) : (
@@ -82,7 +103,10 @@ function SortIcon<T>({ column, sortKey, sortDesc }: { column: keyof T; sortKey: 
   );
 }
 
-function getPageNumbers(page: number, pageCount: number): (number | 'ellipsis')[] {
+function getPageNumbers(
+  page: number,
+  pageCount: number
+): (number | 'ellipsis')[] {
   if (pageCount <= 7) return Array.from({ length: pageCount }, (_, i) => i + 1);
   const pages: (number | 'ellipsis')[] = [1];
   if (page > 3) pages.push('ellipsis');
@@ -160,7 +184,9 @@ function TableRenderer<T extends Record<string, unknown>>({
                       key={String(col.key)}
                       className={col.align === 'right' ? 'text-right' : ''}
                     >
-                      <Skeleton className={`h-4 ${col.align === 'right' ? 'ml-auto w-12' : 'w-24'}`} />
+                      <Skeleton
+                        className={`h-4 ${col.align === 'right' ? 'ml-auto w-12' : 'w-24'}`}
+                      />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -206,17 +232,28 @@ function TableRenderer<T extends Record<string, unknown>>({
                     <TableHead
                       key={String(col.key)}
                       className={`text-xs font-medium uppercase tracking-wide text-muted-foreground ${col.align === 'right' ? 'text-right' : ''} ${col.sortable ? 'cursor-pointer select-none' : ''}`}
-                      onClick={col.sortable ? () => toggleSort(col.key) : undefined}
+                      onClick={
+                        col.sortable ? () => toggleSort(col.key) : undefined
+                      }
                     >
                       {col.label}
-                      {col.sortable && <SortIcon column={col.key} sortKey={sortKey} sortDesc={sortDesc} />}
+                      {col.sortable && (
+                        <SortIcon
+                          column={col.key}
+                          sortKey={sortKey}
+                          sortDesc={sortDesc}
+                        />
+                      )}
                     </TableHead>
                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.map((row, i) => (
-                  <TableRow key={i} className="hover:bg-muted/50 transition-colors">
+                  <TableRow
+                    key={i}
+                    className="hover:bg-muted/50 transition-colors"
+                  >
                     {columns.map((col) => {
                       const raw = row[col.key];
                       let content: ReactNode;
@@ -224,7 +261,9 @@ function TableRenderer<T extends Record<string, unknown>>({
                       if (col.render) {
                         content = col.render(raw, row);
                       } else if (col.truncate && typeof raw === 'string') {
-                        content = <TruncatedCell value={raw} max={col.truncate} />;
+                        content = (
+                          <TruncatedCell value={raw} max={col.truncate} />
+                        );
                       } else {
                         content = String(raw ?? '');
                       }
@@ -251,7 +290,11 @@ function TableRenderer<T extends Record<string, unknown>>({
               <PaginationItem>
                 <PaginationPrevious
                   onClick={() => setPage(Math.max(1, page - 1))}
-                  className={page <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  className={
+                    page <= 1
+                      ? 'pointer-events-none opacity-50'
+                      : 'cursor-pointer'
+                  }
                 />
               </PaginationItem>
               {getPageNumbers(page, pageCount).map((p, i) =>
@@ -261,16 +304,24 @@ function TableRenderer<T extends Record<string, unknown>>({
                   </PaginationItem>
                 ) : (
                   <PaginationItem key={p}>
-                    <PaginationLink isActive={p === page} onClick={() => setPage(p)} className="cursor-pointer">
+                    <PaginationLink
+                      isActive={p === page}
+                      onClick={() => setPage(p)}
+                      className="cursor-pointer"
+                    >
                       {p}
                     </PaginationLink>
                   </PaginationItem>
-                ),
+                )
               )}
               <PaginationItem>
                 <PaginationNext
                   onClick={() => setPage(Math.min(pageCount, page + 1))}
-                  className={page >= pageCount ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  className={
+                    page >= pageCount
+                      ? 'pointer-events-none opacity-50'
+                      : 'cursor-pointer'
+                  }
                 />
               </PaginationItem>
             </PaginationContent>
@@ -281,7 +332,9 @@ function TableRenderer<T extends Record<string, unknown>>({
   );
 }
 
-export function DataTable<T extends Record<string, unknown>>(props: DataTableProps<T>) {
+export function DataTable<T extends Record<string, unknown>>(
+  props: DataTableProps<T>
+) {
   if (props.serverSide) {
     return (
       <TableRenderer<T>
@@ -317,8 +370,18 @@ function ClientDataTable<T extends Record<string, unknown>>({
   isLoading,
   emptyMessage = 'No data available',
 }: ClientSideProps<T>) {
-  const { rows, search, setSearch, sortKey, sortDesc, toggleSort, page, setPage, pageCount, totalRows } =
-    useDataTable({ data, pageSize, searchableFields, defaultSort });
+  const {
+    rows,
+    search,
+    setSearch,
+    sortKey,
+    sortDesc,
+    toggleSort,
+    page,
+    setPage,
+    pageCount,
+    totalRows,
+  } = useDataTable({ data, pageSize, searchableFields, defaultSort });
 
   return (
     <TableRenderer<T>

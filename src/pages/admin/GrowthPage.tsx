@@ -3,7 +3,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
 import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -12,7 +18,15 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import {
   Table,
   TableBody,
@@ -38,7 +52,9 @@ function retentionColor(value: number): string {
   return 'text-red-600';
 }
 
-function retentionBadgeVariant(value: number): 'default' | 'secondary' | 'destructive' {
+function retentionBadgeVariant(
+  value: number
+): 'default' | 'secondary' | 'destructive' {
   if (value > 50) return 'default';
   if (value > 20) return 'secondary';
   return 'destructive';
@@ -46,7 +62,10 @@ function retentionBadgeVariant(value: number): 'default' | 'secondary' | 'destru
 
 const GrowthPage = () => {
   const queryClient = useQueryClient();
-  const handleRefresh = useCallback(() => queryClient.resetQueries({ queryKey: ['admin', 'growth'] }), [queryClient]);
+  const handleRefresh = useCallback(
+    () => queryClient.resetQueries({ queryKey: ['admin', 'growth'] }),
+    [queryClient]
+  );
   const { data, isLoading } = useGrowth(30);
   const d = data;
 
@@ -88,7 +107,11 @@ const GrowthPage = () => {
           />
           <StatCard
             label="Stickiness Ratio"
-            value={d?.stickiness != null ? `${(d.stickiness * 100).toFixed(1)}%` : null}
+            value={
+              d?.stickiness != null
+                ? `${(d.stickiness * 100).toFixed(1)}%`
+                : null
+            }
             icon={Repeat}
             iconColor="text-violet-600"
             iconBg="bg-violet-500/10"
@@ -101,14 +124,22 @@ const GrowthPage = () => {
         <Card>
           <CardHeader>
             <CardTitle>DAU Trend</CardTitle>
-            <CardDescription>Daily active users over the last 30 days</CardDescription>
+            <CardDescription>
+              Daily active users over the last 30 days
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <Skeleton className="h-[300px] w-full" />
             ) : d?.dauTrend ? (
-              <ChartContainer config={dauChartConfig} className="h-[300px] w-full">
-                <AreaChart data={d.dauTrend} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+              <ChartContainer
+                config={dauChartConfig}
+                className="h-[300px] w-full"
+              >
+                <AreaChart
+                  data={d.dauTrend}
+                  margin={{ top: 10, right: 10, bottom: 0, left: 0 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" tickLine={false} axisLine={false} />
                   <YAxis tickLine={false} axisLine={false} />
@@ -127,7 +158,9 @@ const GrowthPage = () => {
                 </AreaChart>
               </ChartContainer>
             ) : (
-              <p className="py-8 text-center text-muted-foreground">No trend data available</p>
+              <p className="py-8 text-center text-muted-foreground">
+                No trend data available
+              </p>
             )}
           </CardContent>
         </Card>
@@ -158,24 +191,38 @@ const GrowthPage = () => {
               ) : d?.activationRate ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Total Signups</span>
-                    <span className="text-lg font-semibold"><AnimatedNumber value={d.activationRate.signups} /></span>
+                    <span className="text-sm text-muted-foreground">
+                      Total Signups
+                    </span>
+                    <span className="text-lg font-semibold">
+                      <AnimatedNumber value={d.activationRate.signups} />
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Activated</span>
+                    <span className="text-sm text-muted-foreground">
+                      Activated
+                    </span>
                     <span className="text-lg font-semibold text-green-600">
                       <AnimatedNumber value={d.activationRate.activated} />
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Activation Rate</span>
+                    <span className="text-sm text-muted-foreground">
+                      Activation Rate
+                    </span>
                     <span className="text-3xl font-bold text-blue-600">
-                      <AnimatedNumber value={d.activationRate.rate * 100} decimals={1} suffix="%" />
+                      <AnimatedNumber
+                        value={d.activationRate.rate * 100}
+                        decimals={1}
+                        suffix="%"
+                      />
                     </span>
                   </div>
                 </div>
               ) : (
-                <p className="py-8 text-center text-muted-foreground">No activation data available</p>
+                <p className="py-8 text-center text-muted-foreground">
+                  No activation data available
+                </p>
               )}
             </CardContent>
           </Card>
@@ -184,13 +231,18 @@ const GrowthPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Conversion Funnel</CardTitle>
-              <CardDescription>User progression through key stages</CardDescription>
+              <CardDescription>
+                User progression through key stages
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <Skeleton className="h-[300px] w-full" />
               ) : d?.funnel ? (
-                <ChartContainer config={funnelChartConfig} className="h-[300px] w-full">
+                <ChartContainer
+                  config={funnelChartConfig}
+                  className="h-[300px] w-full"
+                >
                   <BarChart
                     layout="vertical"
                     data={[
@@ -211,12 +263,20 @@ const GrowthPage = () => {
                       width={75}
                     />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="value" fill="var(--color-value)" radius={[0, 4, 4, 0]}
-                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
+                    <Bar
+                      dataKey="value"
+                      fill="var(--color-value)"
+                      radius={[0, 4, 4, 0]}
+                      isAnimationActive
+                      animationDuration={800}
+                      animationEasing="ease-out"
+                    />
                   </BarChart>
                 </ChartContainer>
               ) : (
-                <p className="py-8 text-center text-muted-foreground">No funnel data available</p>
+                <p className="py-8 text-center text-muted-foreground">
+                  No funnel data available
+                </p>
               )}
             </CardContent>
           </Card>
@@ -233,21 +293,41 @@ const GrowthPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Cohort Date</TableHead>
-                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Size</TableHead>
-                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D1 (%)</TableHead>
-                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D7 (%)</TableHead>
-                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D30 (%)</TableHead>
+                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Cohort Date
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Size
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      D1 (%)
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      D7 (%)
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      D30 (%)
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                      <TableCell className="text-right"><Skeleton className="ml-auto h-4 w-12" /></TableCell>
-                      <TableCell className="text-right"><Skeleton className="ml-auto h-5 w-14" /></TableCell>
-                      <TableCell className="text-right"><Skeleton className="ml-auto h-5 w-14" /></TableCell>
-                      <TableCell className="text-right"><Skeleton className="ml-auto h-5 w-14" /></TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="ml-auto h-4 w-12" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="ml-auto h-5 w-14" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="ml-auto h-5 w-14" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="ml-auto h-5 w-14" />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -256,11 +336,21 @@ const GrowthPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Cohort Date</TableHead>
-                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Size</TableHead>
-                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D1 (%)</TableHead>
-                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D7 (%)</TableHead>
-                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D30 (%)</TableHead>
+                    <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Cohort Date
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Size
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      D1 (%)
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      D7 (%)
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      D30 (%)
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -272,9 +362,16 @@ const GrowthPage = () => {
                       d7: number;
                       d30: number;
                     }) => (
-                      <TableRow key={cohort.cohortDate} className="hover:bg-muted/50 transition-colors">
-                        <TableCell className="font-medium">{cohort.cohortDate}</TableCell>
-                        <TableCell className="text-right">{cohort.cohortSize}</TableCell>
+                      <TableRow
+                        key={cohort.cohortDate}
+                        className="hover:bg-muted/50 transition-colors"
+                      >
+                        <TableCell className="font-medium">
+                          {cohort.cohortDate}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {cohort.cohortSize}
+                        </TableCell>
                         <TableCell className="text-right">
                           <Badge variant={retentionBadgeVariant(cohort.d1)}>
                             <span className={retentionColor(cohort.d1)}>
@@ -297,12 +394,14 @@ const GrowthPage = () => {
                           </Badge>
                         </TableCell>
                       </TableRow>
-                    ),
+                    )
                   )}
                 </TableBody>
               </Table>
             ) : (
-              <p className="py-8 text-center text-muted-foreground">No retention data available</p>
+              <p className="py-8 text-center text-muted-foreground">
+                No retention data available
+              </p>
             )}
           </CardContent>
         </Card>

@@ -1,5 +1,8 @@
-export const mermaidDiagrams: Record<string, { heading: string; content: string }[]> = {
-  'architecture': [
+export const mermaidDiagrams: Record<
+  string,
+  { heading: string; content: string }[]
+> = {
+  architecture: [
     {
       heading: 'Service Topology',
       content: `graph TB

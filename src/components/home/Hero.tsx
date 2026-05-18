@@ -39,14 +39,13 @@ export const Hero = () => {
 
           {/* Headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
-            Your documents,{' '}
-            <span className="gradient-text">simplified</span>
+            Your documents, <span className="gradient-text">simplified</span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Edit, convert, merge, compress — handle any PDF task in seconds.
-            No installs needed. Fast, free, and fully secure.
+            Edit, convert, merge, compress — handle any PDF task in seconds. No
+            installs needed. Fast, free, and fully secure.
           </p>
 
           {/* CTA Buttons */}

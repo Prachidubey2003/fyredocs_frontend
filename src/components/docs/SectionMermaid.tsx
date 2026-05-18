@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState, useId } from 'react';
 import { useTheme } from 'next-themes';
 import { AlertTriangle, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
 interface SectionMermaidProps {
@@ -87,7 +83,7 @@ export const SectionMermaid = ({ content }: SectionMermaidProps) => {
 
         const { svg: renderedSvg } = await mermaid.render(
           `mermaid${uniqueId}`,
-          content.trim(),
+          content.trim()
         );
 
         if (!cancelled) {
@@ -96,7 +92,9 @@ export const SectionMermaid = ({ content }: SectionMermaidProps) => {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to render diagram');
+          setError(
+            err instanceof Error ? err.message : 'Failed to render diagram'
+          );
           setLoading(false);
         }
       }
@@ -154,16 +152,33 @@ export const SectionMermaid = ({ content }: SectionMermaidProps) => {
           {/* Zoom toolbar */}
           <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/50 flex-shrink-0">
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleZoomOut} disabled={zoom <= 0.25}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleZoomOut}
+                disabled={zoom <= 0.25}
+              >
                 <ZoomOut className="w-4 h-4" />
               </Button>
               <span className="text-sm font-medium text-muted-foreground w-14 text-center">
                 {Math.round(zoom * 100)}%
               </span>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleZoomIn} disabled={zoom >= 3}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleZoomIn}
+                disabled={zoom >= 3}
+              >
                 <ZoomIn className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-8 ml-1 text-xs" onClick={handleZoomReset}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 ml-1 text-xs"
+                onClick={handleZoomReset}
+              >
                 <RotateCcw className="w-3.5 h-3.5 mr-1" />
                 Reset
               </Button>

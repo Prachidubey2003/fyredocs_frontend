@@ -7,14 +7,17 @@ export interface UseSearchOptions<T> {
   fields?: (keyof T)[];
 }
 
-export function useSearch<T extends Record<string, unknown>>({ data, fields }: UseSearchOptions<T>) {
+export function useSearch<T extends Record<string, unknown>>({
+  data,
+  fields,
+}: UseSearchOptions<T>) {
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
     if (!search.trim() || !fields?.length) return data;
     const q = search.toLowerCase();
     return data.filter((row) =>
-      fields.some((field) => String(row[field]).toLowerCase().includes(q)),
+      fields.some((field) => String(row[field]).toLowerCase().includes(q))
     );
   }, [data, search, fields]);
 
@@ -28,23 +31,25 @@ export interface UseSortOptions<T> {
   defaultSort?: { key: keyof T; desc: boolean };
 }
 
-export function useSort<T extends Record<string, unknown>>({ data, defaultSort }: UseSortOptions<T>) {
-  const [sortKey, setSortKey] = useState<keyof T | null>(defaultSort?.key ?? null);
+export function useSort<T extends Record<string, unknown>>({
+  data,
+  defaultSort,
+}: UseSortOptions<T>) {
+  const [sortKey, setSortKey] = useState<keyof T | null>(
+    defaultSort?.key ?? null
+  );
   const [sortDesc, setSortDesc] = useState(defaultSort?.desc ?? false);
 
-  const toggleSort = useCallback(
-    (key: keyof T) => {
-      setSortKey((prev) => {
-        if (prev === key) {
-          setSortDesc((d) => !d);
-          return prev;
-        }
-        setSortDesc(false);
-        return key;
-      });
-    },
-    [],
-  );
+  const toggleSort = useCallback((key: keyof T) => {
+    setSortKey((prev) => {
+      if (prev === key) {
+        setSortDesc((d) => !d);
+        return prev;
+      }
+      setSortDesc(false);
+      return key;
+    });
+  }, []);
 
   const sorted = useMemo(() => {
     if (sortKey == null) return data;
@@ -76,7 +81,10 @@ export interface UsePaginationOptions<T> {
   pageSize?: number;
 }
 
-export function usePagination<T>({ data, pageSize = 10 }: UsePaginationOptions<T>) {
+export function usePagination<T>({
+  data,
+  pageSize = 10,
+}: UsePaginationOptions<T>) {
   const [page, setPage] = useState(1);
 
   const totalRows = data.length;
@@ -121,9 +129,19 @@ export function useDataTable<T extends Record<string, unknown>>({
   searchableFields,
   defaultSort,
 }: UseDataTableOptions<T>): UseDataTableReturn<T> {
-  const { filtered, search, setSearch: setSearchRaw } = useSearch({ data, fields: searchableFields });
-  const { sorted, sortKey, sortDesc, toggleSort: toggleSortRaw } = useSort({ data: filtered, defaultSort });
-  const { rows, page, setPage, pageCount, totalRows, resetPage } = usePagination({ data: sorted, pageSize });
+  const {
+    filtered,
+    search,
+    setSearch: setSearchRaw,
+  } = useSearch({ data, fields: searchableFields });
+  const {
+    sorted,
+    sortKey,
+    sortDesc,
+    toggleSort: toggleSortRaw,
+  } = useSort({ data: filtered, defaultSort });
+  const { rows, page, setPage, pageCount, totalRows, resetPage } =
+    usePagination({ data: sorted, pageSize });
 
   // Reset page when search or sort changes
   const prevSearch = useRef(search);
@@ -131,7 +149,11 @@ export function useDataTable<T extends Record<string, unknown>>({
   const prevSortDesc = useRef(sortDesc);
 
   useEffect(() => {
-    if (prevSearch.current !== search || prevSortKey.current !== sortKey || prevSortDesc.current !== sortDesc) {
+    if (
+      prevSearch.current !== search ||
+      prevSortKey.current !== sortKey ||
+      prevSortDesc.current !== sortDesc
+    ) {
       resetPage();
       prevSearch.current = search;
       prevSortKey.current = sortKey;
@@ -139,13 +161,19 @@ export function useDataTable<T extends Record<string, unknown>>({
     }
   }, [search, sortKey, sortDesc, resetPage]);
 
-  const setSearch = useCallback((v: string) => {
-    setSearchRaw(v);
-  }, [setSearchRaw]);
+  const setSearch = useCallback(
+    (v: string) => {
+      setSearchRaw(v);
+    },
+    [setSearchRaw]
+  );
 
-  const toggleSort = useCallback((key: keyof T) => {
-    toggleSortRaw(key);
-  }, [toggleSortRaw]);
+  const toggleSort = useCallback(
+    (key: keyof T) => {
+      toggleSortRaw(key);
+    },
+    [toggleSortRaw]
+  );
 
   return {
     rows,
@@ -182,7 +210,9 @@ export function useServerDataTable<T>({
   defaultSort,
 }: UseServerDataTableOptions<T> = {}): UseServerDataTableReturn<T> {
   const [search, setSearchRaw] = useState('');
-  const [sortKey, setSortKey] = useState<keyof T | null>(defaultSort?.key ?? null);
+  const [sortKey, setSortKey] = useState<keyof T | null>(
+    defaultSort?.key ?? null
+  );
   const [sortDesc, setSortDesc] = useState(defaultSort?.desc ?? false);
   const [page, setPage] = useState(1);
 
@@ -191,20 +221,17 @@ export function useServerDataTable<T>({
     setPage(1);
   }, []);
 
-  const toggleSort = useCallback(
-    (key: keyof T) => {
-      setSortKey((prev) => {
-        if (prev === key) {
-          setSortDesc((d) => !d);
-          return prev;
-        }
-        setSortDesc(false);
-        return key;
-      });
-      setPage(1);
-    },
-    [],
-  );
+  const toggleSort = useCallback((key: keyof T) => {
+    setSortKey((prev) => {
+      if (prev === key) {
+        setSortDesc((d) => !d);
+        return prev;
+      }
+      setSortDesc(false);
+      return key;
+    });
+    setPage(1);
+  }, []);
 
   return { search, setSearch, sortKey, sortDesc, toggleSort, page, setPage };
 }

@@ -1,47 +1,65 @@
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Link } from 'react-router-dom';
-import { Server, Code, Layers, Database, ShieldCheck, GitBranch } from 'lucide-react';
+import {
+  Server,
+  Code,
+  Layers,
+  Database,
+  ShieldCheck,
+  GitBranch,
+} from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 const categories = [
   {
     title: 'Architecture Overview',
-    description: 'System architecture, microservice boundaries, tech stack, and communication patterns.',
+    description:
+      'System architecture, microservice boundaries, tech stack, and communication patterns.',
     icon: Layers,
     href: '/dev-docs/architecture',
     color: 'text-primary',
   },
   {
     title: 'Service Flows',
-    description: 'Visual architecture and sequence diagrams for every service — see how data flows through the system.',
+    description:
+      'Visual architecture and sequence diagrams for every service — see how data flows through the system.',
     icon: GitBranch,
     href: '/dev-docs/flow-overview',
     color: 'text-rose-500',
   },
   {
     title: 'API Reference',
-    description: 'Endpoint specifications for Auth, Upload, Jobs, and all conversion/manipulation APIs.',
+    description:
+      'Endpoint specifications for Auth, Upload, Jobs, and all conversion/manipulation APIs.',
     icon: Code,
     href: '/dev-docs/api-auth',
     color: 'text-blue-500',
   },
   {
     title: 'Services',
-    description: 'Internal architecture, responsibilities, and database schemas for each microservice.',
+    description:
+      'Internal architecture, responsibilities, and database schemas for each microservice.',
     icon: Server,
     href: '/dev-docs/svc-api-gateway',
     color: 'text-orange-500',
   },
   {
     title: 'Architecture Deep-dives',
-    description: 'Redis architecture, Docker base image setup, and database best practices.',
+    description:
+      'Redis architecture, Docker base image setup, and database best practices.',
     icon: Database,
     href: '/dev-docs/arch-redis',
     color: 'text-purple-500',
   },
   {
     title: 'Guides',
-    description: 'Backend hardening, deployment review checklists, and operational guides.',
+    description:
+      'Backend hardening, deployment review checklists, and operational guides.',
     icon: ShieldCheck,
     href: '/dev-docs/guide-hardening',
     color: 'text-green-500',
@@ -53,7 +71,10 @@ const DevDocsIndexPage = () => {
     <>
       <Helmet>
         <title>Developer Documentation - Fyredocs</title>
-        <meta name="description" content="Internal developer documentation for the Fyredocs platform." />
+        <meta
+          name="description"
+          content="Internal developer documentation for the Fyredocs platform."
+        />
       </Helmet>
       <div className="px-8 py-16">
         <div className="max-w-3xl mx-auto text-center mb-16">
@@ -61,7 +82,8 @@ const DevDocsIndexPage = () => {
             <span className="text-gradient-primary">Developer Docs</span>
           </h1>
           <p className="text-xl text-muted-foreground">
-            Internal documentation for the Fyredocs platform architecture, APIs, and services
+            Internal documentation for the Fyredocs platform architecture, APIs,
+            and services
           </p>
         </div>
 

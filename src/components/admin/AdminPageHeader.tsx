@@ -10,7 +10,12 @@ interface AdminPageHeaderProps {
   backTo?: string | null;
 }
 
-export function AdminPageHeader({ title, description, onRefresh, backTo = '/admin/dashboard' }: AdminPageHeaderProps) {
+export function AdminPageHeader({
+  title,
+  description,
+  onRefresh,
+  backTo = '/admin/dashboard',
+}: AdminPageHeaderProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = useCallback(() => {
@@ -34,8 +39,16 @@ export function AdminPageHeader({ title, description, onRefresh, backTo = '/admi
         <p className="text-muted-foreground">{description}</p>
       </div>
       {onRefresh && (
-        <Button variant="outline" size="icon" onClick={handleRefresh} title="Refresh data" className="mt-1 shrink-0">
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleRefresh}
+          title="Refresh data"
+          className="mt-1 shrink-0"
+        >
+          <RefreshCw
+            className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+          />
         </Button>
       )}
     </div>

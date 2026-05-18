@@ -9,14 +9,17 @@ describe('normalizeOptions', () => {
     });
 
     it('returns mode and range when mode is "range"', () => {
-      const result = normalizeOptions('split', { mode: 'range', range: '1-3,5' });
+      const result = normalizeOptions('split', {
+        mode: 'range',
+        range: '1-3,5',
+      });
       expect(result).toEqual({ mode: 'range', range: '1-3,5' });
     });
 
     it('throws when range mode has empty range', () => {
-      expect(() => normalizeOptions('split', { mode: 'range', range: '' })).toThrow(
-        'Page range is required'
-      );
+      expect(() =>
+        normalizeOptions('split', { mode: 'range', range: '' })
+      ).toThrow('Page range is required');
     });
   });
 
@@ -63,7 +66,10 @@ describe('normalizeOptions', () => {
     });
 
     it('returns ocr and language when both provided', () => {
-      const result = normalizeOptions('scan-to-pdf', { ocr: true, language: 'fr' });
+      const result = normalizeOptions('scan-to-pdf', {
+        ocr: true,
+        language: 'fr',
+      });
       expect(result).toEqual({ ocr: true, language: 'fr' });
     });
   });
@@ -107,7 +113,9 @@ describe('normalizeOptions', () => {
 
   describe('password-protect', () => {
     it('returns password', () => {
-      const result = normalizeOptions('password-protect', { password: 'secret123' });
+      const result = normalizeOptions('password-protect', {
+        password: 'secret123',
+      });
       expect(result).toEqual({ password: 'secret123' });
     });
 
@@ -120,7 +128,10 @@ describe('normalizeOptions', () => {
 
   describe('rotate', () => {
     it('returns rotation and applyToPages', () => {
-      const result = normalizeOptions('rotate', { rotation: 90, applyToPages: '1,3' });
+      const result = normalizeOptions('rotate', {
+        rotation: 90,
+        applyToPages: '1,3',
+      });
       expect(result).toEqual({ rotation: 90, applyToPages: '1,3' });
     });
 
@@ -130,7 +141,9 @@ describe('normalizeOptions', () => {
     });
 
     it('throws when rotation is missing', () => {
-      expect(() => normalizeOptions('rotate', {})).toThrow('Rotation angle is required');
+      expect(() => normalizeOptions('rotate', {})).toThrow(
+        'Rotation angle is required'
+      );
     });
   });
 

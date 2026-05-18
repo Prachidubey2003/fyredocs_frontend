@@ -78,7 +78,15 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     description: 'Convert scanned images to PDF with optional OCR',
     category: 'convert',
     icon: 'scan',
-    acceptedFileTypes: ['.jpg', '.jpeg', '.png', '.webp', 'image/jpeg', 'image/png', 'image/webp'],
+    acceptedFileTypes: [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.webp',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+    ],
     maxFiles: 20,
     minFiles: 1,
     maxFileSize: 20 * MB,
@@ -222,7 +230,12 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     description: 'Convert Word documents to PDF format',
     category: 'convert',
     icon: 'file',
-    acceptedFileTypes: ['.doc', '.docx', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    acceptedFileTypes: [
+      '.doc',
+      '.docx',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ],
     maxFiles: 5,
     minFiles: 1,
     maxFileSize: 50 * MB,
@@ -234,7 +247,12 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     description: 'Convert Excel spreadsheets to PDF format',
     category: 'convert',
     icon: 'file-spreadsheet',
-    acceptedFileTypes: ['.xls', '.xlsx', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+    acceptedFileTypes: [
+      '.xls',
+      '.xlsx',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ],
     maxFiles: 5,
     minFiles: 1,
     maxFileSize: 50 * MB,
@@ -246,7 +264,15 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     description: 'Convert images to a PDF document',
     category: 'convert',
     icon: 'file-image',
-    acceptedFileTypes: ['.jpg', '.jpeg', '.png', '.webp', 'image/jpeg', 'image/png', 'image/webp'],
+    acceptedFileTypes: [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.webp',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+    ],
     maxFiles: 20,
     minFiles: 1,
     maxFileSize: 20 * MB,
@@ -258,7 +284,12 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     description: 'Convert PowerPoint presentations to PDF format',
     category: 'convert',
     icon: 'presentation',
-    acceptedFileTypes: ['.ppt', '.pptx', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+    acceptedFileTypes: [
+      '.ppt',
+      '.pptx',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    ],
     maxFiles: 5,
     minFiles: 1,
     maxFileSize: 50 * MB,
@@ -322,7 +353,12 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     description: 'Convert Word documents to LibreOffice Writer format',
     category: 'convert',
     icon: 'file',
-    acceptedFileTypes: ['.doc', '.docx', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    acceptedFileTypes: [
+      '.doc',
+      '.docx',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ],
     maxFiles: 5,
     minFiles: 1,
     maxFileSize: 50 * MB,
@@ -334,7 +370,12 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     description: 'Convert Excel spreadsheets to LibreOffice Calc format',
     category: 'convert',
     icon: 'file-spreadsheet',
-    acceptedFileTypes: ['.xls', '.xlsx', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+    acceptedFileTypes: [
+      '.xls',
+      '.xlsx',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ],
     maxFiles: 5,
     minFiles: 1,
     maxFileSize: 50 * MB,
@@ -343,10 +384,16 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
   'powerpoint-to-odp': {
     id: 'powerpoint-to-odp',
     name: 'PowerPoint to ODP',
-    description: 'Convert PowerPoint presentations to LibreOffice Impress format',
+    description:
+      'Convert PowerPoint presentations to LibreOffice Impress format',
     category: 'convert',
     icon: 'presentation',
-    acceptedFileTypes: ['.ppt', '.pptx', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+    acceptedFileTypes: [
+      '.ppt',
+      '.pptx',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    ],
     maxFiles: 5,
     minFiles: 1,
     maxFileSize: 50 * MB,
@@ -374,7 +421,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     description: 'Convert LibreOffice Calc spreadsheets to PDF format',
     category: 'convert',
     icon: 'file-spreadsheet',
-    acceptedFileTypes: ['.ods', 'application/vnd.oasis.opendocument.spreadsheet'],
+    acceptedFileTypes: [
+      '.ods',
+      'application/vnd.oasis.opendocument.spreadsheet',
+    ],
     maxFiles: 5,
     minFiles: 1,
     maxFileSize: 50 * MB,
@@ -386,7 +436,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     description: 'Convert LibreOffice Impress presentations to PDF format',
     category: 'convert',
     icon: 'presentation',
-    acceptedFileTypes: ['.odp', 'application/vnd.oasis.opendocument.presentation'],
+    acceptedFileTypes: [
+      '.odp',
+      'application/vnd.oasis.opendocument.presentation',
+    ],
     maxFiles: 5,
     minFiles: 1,
     maxFileSize: 50 * MB,
@@ -490,7 +543,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
   },
 };
 
-export const TOOL_CATEGORIES: Record<ToolCategory, { name: string; color: string }> = {
+export const TOOL_CATEGORIES: Record<
+  ToolCategory,
+  { name: string; color: string }
+> = {
   merge: { name: 'Merge & Combine', color: 'tool-merge' },
   split: { name: 'Split & Extract', color: 'tool-split' },
   compress: { name: 'Compress', color: 'tool-compress' },
@@ -502,7 +558,9 @@ export const TOOL_CATEGORIES: Record<ToolCategory, { name: string; color: string
   edit: { name: 'Edit', color: 'tool-edit' },
 };
 
-export const getToolsByCategory = (category: ToolCategory): ToolDefinition[] => {
+export const getToolsByCategory = (
+  category: ToolCategory
+): ToolDefinition[] => {
   return Object.values(TOOLS).filter((tool) => tool.category === category);
 };
 

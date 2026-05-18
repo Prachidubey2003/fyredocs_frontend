@@ -154,7 +154,8 @@ export const CompressTool = () => {
 
   const hasFiles = files.length > 0;
   const isComplete = job?.state === 'completed';
-  const isBatchComplete = totalCount > 0 && completedCount + failedCount === totalCount;
+  const isBatchComplete =
+    totalCount > 0 && completedCount + failedCount === totalCount;
   const showBatchProgress = batchMode && batchJobs.length > 0;
   const viewKey = showBatchProgress ? 'batch' : job ? 'progress' : 'upload';
 
@@ -203,7 +204,8 @@ export const CompressTool = () => {
                     <div className="flex items-center gap-2">
                       <Minimize2 className="w-5 h-5 text-tool-compress" />
                       <span className="font-medium">
-                        {files.length} file{files.length !== 1 ? 's' : ''} to compress
+                        {files.length} file{files.length !== 1 ? 's' : ''} to
+                        compress
                       </span>
                     </div>
                     <Button
@@ -240,7 +242,9 @@ export const CompressTool = () => {
 
                     <RadioGroup
                       value={quality}
-                      onValueChange={(value) => setQuality(value as CompressionLevel)}
+                      onValueChange={(value) =>
+                        setQuality(value as CompressionLevel)
+                      }
                       className="grid grid-cols-2 md:grid-cols-4 gap-3"
                     >
                       {compressionLevels.map((level) => (
@@ -258,7 +262,9 @@ export const CompressTool = () => {
                               'peer-data-[state=checked]:border-tool-compress peer-data-[state=checked]:bg-tool-compress/5'
                             )}
                           >
-                            <span className="font-medium mb-1">{level.label}</span>
+                            <span className="font-medium mb-1">
+                              {level.label}
+                            </span>
                             <span className="text-xs text-muted-foreground text-center">
                               {level.reduction}
                             </span>
@@ -268,7 +274,10 @@ export const CompressTool = () => {
                     </RadioGroup>
 
                     <p className="text-sm text-muted-foreground mt-4 text-center">
-                      {compressionLevels.find((l) => l.value === quality)?.description}
+                      {
+                        compressionLevels.find((l) => l.value === quality)
+                          ?.description
+                      }
                     </p>
                   </div>
 
@@ -278,7 +287,9 @@ export const CompressTool = () => {
                       variant="outline"
                       className="flex-1"
                       onClick={() =>
-                        document.querySelector<HTMLInputElement>('input[type="file"]')?.click()
+                        document
+                          .querySelector<HTMLInputElement>('input[type="file"]')
+                          ?.click()
                       }
                     >
                       <Plus className="w-4 h-4 mr-2" />

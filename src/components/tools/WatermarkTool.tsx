@@ -219,13 +219,24 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
                     Watermark Settings
                   </h3>
 
-                  <Tabs value={watermarkType} onValueChange={(v) => setWatermarkType(v as 'text' | 'image')}>
+                  <Tabs
+                    value={watermarkType}
+                    onValueChange={(v) =>
+                      setWatermarkType(v as 'text' | 'image')
+                    }
+                  >
                     <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="text" className="flex items-center gap-2">
+                      <TabsTrigger
+                        value="text"
+                        className="flex items-center gap-2"
+                      >
                         <Type className="w-4 h-4" />
                         Text Watermark
                       </TabsTrigger>
-                      <TabsTrigger value="image" className="flex items-center gap-2">
+                      <TabsTrigger
+                        value="image"
+                        className="flex items-center gap-2"
+                      >
                         <Image className="w-4 h-4" />
                         Image Watermark
                       </TabsTrigger>
@@ -288,7 +299,9 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
                         <div className="space-y-6">
                           <div className="border-2 border-dashed rounded-lg p-6">
                             <div className="flex items-center justify-between mb-4">
-                              <p className="text-sm font-medium">Watermark Image</p>
+                              <p className="text-sm font-medium">
+                                Watermark Image
+                              </p>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -345,7 +358,11 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
                         htmlFor="center"
                         className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-4 cursor-pointer hover:bg-muted/50 has-[[data-state=checked]]:border-primary"
                       >
-                        <RadioGroupItem value="center" id="center" className="sr-only" />
+                        <RadioGroupItem
+                          value="center"
+                          id="center"
+                          className="sr-only"
+                        />
                         <div className="w-12 h-16 border rounded flex items-center justify-center mb-2">
                           <div className="w-6 h-1 bg-primary rounded" />
                         </div>
@@ -355,7 +372,11 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
                         htmlFor="diagonal"
                         className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-4 cursor-pointer hover:bg-muted/50 has-[[data-state=checked]]:border-primary"
                       >
-                        <RadioGroupItem value="diagonal" id="diagonal" className="sr-only" />
+                        <RadioGroupItem
+                          value="diagonal"
+                          id="diagonal"
+                          className="sr-only"
+                        />
                         <div className="w-12 h-16 border rounded flex items-center justify-center mb-2">
                           <div className="w-10 h-1 bg-primary rounded rotate-[-30deg]" />
                         </div>
@@ -365,7 +386,11 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
                         htmlFor="tiled"
                         className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-4 cursor-pointer hover:bg-muted/50 has-[[data-state=checked]]:border-primary"
                       >
-                        <RadioGroupItem value="tiled" id="tiled" className="sr-only" />
+                        <RadioGroupItem
+                          value="tiled"
+                          id="tiled"
+                          className="sr-only"
+                        />
                         <div className="w-12 h-16 border rounded grid grid-cols-2 gap-1 p-1 mb-2">
                           <div className="w-full h-1 bg-primary rounded rotate-[-30deg]" />
                           <div className="w-full h-1 bg-primary rounded rotate-[-30deg]" />
@@ -390,7 +415,13 @@ export const WatermarkTool = ({ tool }: WatermarkToolProps) => {
 
                   <Button
                     onClick={handleProcess}
-                    disabled={!hasFiles || isProcessing || !canProceed || (watermarkType === 'text' && !text.trim()) || (watermarkType === 'image' && !imageDataUrl)}
+                    disabled={
+                      !hasFiles ||
+                      isProcessing ||
+                      !canProceed ||
+                      (watermarkType === 'text' && !text.trim()) ||
+                      (watermarkType === 'image' && !imageDataUrl)
+                    }
                     className="w-full bg-gradient-primary"
                     size="lg"
                   >

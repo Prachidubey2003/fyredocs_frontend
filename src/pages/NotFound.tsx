@@ -13,7 +13,10 @@ const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.error('404 Error: User attempted to access non-existent route:', location.pathname);
+    console.error(
+      '404 Error: User attempted to access non-existent route:',
+      location.pathname
+    );
   }, [location.pathname]);
 
   return (
@@ -35,7 +38,9 @@ const NotFound = () => {
           </Button>
 
           <div className="border-t pt-8">
-            <p className="text-sm font-medium text-muted-foreground mb-4">Popular tools</p>
+            <p className="text-sm font-medium text-muted-foreground mb-4">
+              Popular tools
+            </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               {popularTools.map((tool) => (
                 <Button key={tool.href} variant="outline" size="sm" asChild>

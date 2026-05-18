@@ -57,7 +57,11 @@ export const CodeBlock = ({ content, language }: CodeBlockProps) => {
           className="ml-auto p-1 rounded hover:bg-docs-panel-muted text-docs-panel-foreground/50 hover:text-docs-panel-foreground transition-colors"
           title="Copy code"
         >
-          {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? (
+            <Check className="w-3.5 h-3.5" />
+          ) : (
+            <Copy className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
 

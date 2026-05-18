@@ -115,7 +115,9 @@ export const FileDropzone = ({
         'dropzone relative cursor-pointer transition-all duration-200',
         isDragActive && !isDragReject && 'dropzone-active',
         isDragReject && 'dropzone-error',
-        !isDragActive && !isDragReject && 'dropzone-idle hover:border-primary/50 hover:bg-muted/50',
+        !isDragActive &&
+          !isDragReject &&
+          'dropzone-idle hover:border-primary/50 hover:bg-muted/50',
         disabled && 'opacity-50 cursor-not-allowed',
         compact ? 'p-6' : 'p-12',
         className
@@ -142,8 +144,8 @@ export const FileDropzone = ({
             isDragReject
               ? 'bg-destructive/10'
               : isDragActive
-              ? 'bg-primary/10 scale-110'
-              : `bg-tool-${tool.category}-light`
+                ? 'bg-primary/10 scale-110'
+                : `bg-tool-${tool.category}-light`
           )}
         >
           {isDragReject ? (
@@ -160,8 +162,8 @@ export const FileDropzone = ({
               {isDragReject
                 ? 'Invalid file type'
                 : isDragActive
-                ? 'Drop files here'
-                : 'Drop files here or click to browse'}
+                  ? 'Drop files here'
+                  : 'Drop files here or click to browse'}
             </h3>
 
             <p className="text-muted-foreground mb-4 max-w-md">

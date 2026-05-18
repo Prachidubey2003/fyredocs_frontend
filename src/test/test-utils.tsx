@@ -18,7 +18,13 @@ const createTestQueryClient = () =>
 const mockAuthValue = {
   isAuthenticated: true,
   isLoading: false,
-  user: { id: 'test-user', email: 'test@test.com', fullName: 'Test User', country: 'US', role: 'user' },
+  user: {
+    id: 'test-user',
+    email: 'test@test.com',
+    fullName: 'Test User',
+    country: 'US',
+    role: 'user',
+  },
   role: 'user',
   plan: 'free',
   login: async () => null,

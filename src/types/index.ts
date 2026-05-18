@@ -55,7 +55,16 @@ export type ToolId =
   | 'watermark'
   | 'password-protect';
 
-export type ToolCategory = 'merge' | 'split' | 'compress' | 'convert' | 'organize' | 'security' | 'ocr' | 'watermark' | 'edit';
+export type ToolCategory =
+  | 'merge'
+  | 'split'
+  | 'compress'
+  | 'convert'
+  | 'organize'
+  | 'security'
+  | 'ocr'
+  | 'watermark'
+  | 'edit';
 
 export interface ToolDefinition {
   id: ToolId;
@@ -80,7 +89,12 @@ export interface ToolDefinition {
  * paused → uploading
  * failed → uploading (retry)
  */
-export type UploadState = 'idle' | 'uploading' | 'paused' | 'completed' | 'failed';
+export type UploadState =
+  | 'idle'
+  | 'uploading'
+  | 'paused'
+  | 'completed'
+  | 'failed';
 
 export interface UploadProgress {
   loaded: number;
@@ -114,14 +128,19 @@ export interface FileUpload {
 /**
  * Job state follows a strict state machine:
  * pending → queued → processing → (completed | failed)
- * 
+ *
  * pending: Job created but not yet submitted
  * queued: Job submitted, waiting in queue
  * processing: Backend is actively processing
  * completed: Job finished successfully
  * failed: Job failed (terminal or retryable)
  */
-export type JobState = 'pending' | 'queued' | 'processing' | 'completed' | 'failed';
+export type JobState =
+  | 'pending'
+  | 'queued'
+  | 'processing'
+  | 'completed'
+  | 'failed';
 
 export interface JobProgress {
   currentStep: string;
@@ -213,7 +232,18 @@ export interface ReorderOptions {
 }
 
 export interface ConvertOptions {
-  format: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf' | 'pptx' | 'html' | 'txt' | 'odt' | 'ods' | 'odp';
+  format:
+    | 'docx'
+    | 'xlsx'
+    | 'png'
+    | 'jpg'
+    | 'pdf'
+    | 'pptx'
+    | 'html'
+    | 'txt'
+    | 'odt'
+    | 'ods'
+    | 'odp';
   quality?: 'low' | 'medium' | 'high';
 }
 
@@ -324,7 +354,10 @@ export interface ValidationError {
  */
 
 export interface UploadService {
-  initializeUpload(file: File, toolId: ToolId): Promise<{ uploadId: string; chunkSize: number }>;
+  initializeUpload(
+    file: File,
+    toolId: ToolId
+  ): Promise<{ uploadId: string; chunkSize: number }>;
   uploadChunk(uploadId: string, chunk: Blob, chunkIndex: number): Promise<void>;
   completeUpload(uploadId: string): Promise<{ fileId: string }>;
   cancelUpload(uploadId: string): Promise<void>;
@@ -332,7 +365,11 @@ export interface UploadService {
 }
 
 export interface JobService {
-  createJob(toolId: ToolId, fileIds: string[], options: ToolOptions): Promise<{ jobId: string }>;
+  createJob(
+    toolId: ToolId,
+    fileIds: string[],
+    options: ToolOptions
+  ): Promise<{ jobId: string }>;
   getJobStatus(jobId: string): Promise<Job>;
   cancelJob(jobId: string): Promise<void>;
   retryJob(jobId: string): Promise<{ jobId: string }>;

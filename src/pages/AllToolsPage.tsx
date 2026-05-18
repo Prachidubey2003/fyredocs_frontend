@@ -7,7 +7,9 @@ const allTools = getAllTools();
 const toolByRoute = new Map(allTools.map((t) => [t.route, t]));
 
 const AllToolsPage = () => {
-  const [activeCategory, setActiveCategory] = useState<string | undefined>(undefined);
+  const [activeCategory, setActiveCategory] = useState<string | undefined>(
+    undefined
+  );
 
   const categoriesToShow = activeCategory
     ? toolCategories.filter((c) => c.title === activeCategory)
@@ -56,7 +58,9 @@ const AllToolsPage = () => {
           if (tools.length === 0) return null;
           return (
             <div key={category.title} className="mb-10">
-              <h2 className="text-xl font-semibold mb-4 text-primary">{category.title}</h2>
+              <h2 className="text-xl font-semibold mb-4 text-primary">
+                {category.title}
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                 {tools.map((tool) => (
                   <ToolCard key={tool!.id} tool={tool!} />

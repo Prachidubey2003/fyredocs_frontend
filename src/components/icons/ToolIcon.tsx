@@ -82,14 +82,19 @@ const categoryColors: Record<ToolCategory, string> = {
   edit: 'text-tool-edit',
 };
 
-export const ToolIcon = ({ icon, category, size = 'md', className }: ToolIconProps) => {
+export const ToolIcon = ({
+  icon,
+  category,
+  size = 'md',
+  className,
+}: ToolIconProps) => {
   const IconComponent = iconMap[icon] || File;
 
   return (
     <IconComponent
       className={cn(
-        sizeClasses[size], 
-        category ? categoryColors[category] : undefined, 
+        sizeClasses[size],
+        category ? categoryColors[category] : undefined,
         className
       )}
     />

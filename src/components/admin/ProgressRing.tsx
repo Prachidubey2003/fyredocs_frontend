@@ -8,13 +8,22 @@ interface ProgressRingProps {
   label?: string;
 }
 
-export function ProgressRing({ value, size = 64, strokeWidth = 6, color = 'hsl(var(--primary))', label }: ProgressRingProps) {
+export function ProgressRing({
+  value,
+  size = 64,
+  strokeWidth = 6,
+  color = 'hsl(var(--primary))',
+  label,
+}: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (Math.min(value, 100) / 100) * circumference;
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+    <div
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
       <svg width={size} height={size} className="-rotate-90">
         <circle
           cx={size / 2}

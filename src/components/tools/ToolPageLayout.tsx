@@ -65,8 +65,12 @@ export const ToolPageLayout = ({
               <ToolIcon icon={tool.icon} category={tool.category} size="xl" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold mb-2">{tool.name}</h1>
-              <p className="text-muted-foreground max-w-xl">{tool.description}</p>
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">
+                {tool.name}
+              </h1>
+              <p className="text-muted-foreground max-w-xl">
+                {tool.description}
+              </p>
             </div>
           </div>
         </div>

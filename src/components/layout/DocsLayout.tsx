@@ -73,14 +73,19 @@ export const DocsLayout = () => {
         <div className="lg:hidden fixed bottom-4 left-4 z-50">
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="rounded-full shadow-lg">
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full shadow-lg"
+              >
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0 bg-muted/50 border-border">
-              <div className="pt-12 px-2">
-                {sidebar}
-              </div>
+            <SheetContent
+              side="left"
+              className="w-72 p-0 bg-muted/50 border-border"
+            >
+              <div className="pt-12 px-2">{sidebar}</div>
             </SheetContent>
           </Sheet>
         </div>

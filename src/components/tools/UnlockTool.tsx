@@ -110,7 +110,9 @@ export const UnlockTool = ({ tool }: UnlockToolProps) => {
                   </h3>
 
                   <div className="space-y-2">
-                    <Label htmlFor="unlock-password">Enter the PDF password</Label>
+                    <Label htmlFor="unlock-password">
+                      Enter the PDF password
+                    </Label>
                     <div className="relative">
                       <Input
                         id="unlock-password"
@@ -125,14 +127,20 @@ export const UnlockTool = ({ tool }: UnlockToolProps) => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </div>
 
                   <Button
                     onClick={handleProcess}
-                    disabled={!hasFiles || isProcessing || !passwordValid || !canProceed}
+                    disabled={
+                      !hasFiles || isProcessing || !passwordValid || !canProceed
+                    }
                     className="w-full bg-gradient-primary"
                     size="lg"
                   >

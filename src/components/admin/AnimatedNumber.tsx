@@ -24,7 +24,10 @@ export function AnimatedNumber({
   className,
 }: AnimatedNumberProps) {
   const spring = useSpring(0, { stiffness: 120, damping: 20, mass: 0.5 });
-  const display = useTransform(spring, (v) => `${prefix}${v.toFixed(decimals)}${suffix}`);
+  const display = useTransform(
+    spring,
+    (v) => `${prefix}${v.toFixed(decimals)}${suffix}`
+  );
   const isFirstRender = useRef(true);
 
   useEffect(() => {

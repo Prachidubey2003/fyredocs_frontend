@@ -1,5 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AuthCredentials,
@@ -23,7 +31,9 @@ type AuthContextValue = {
   logout: () => Promise<void>;
 };
 
-export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+export const AuthContext = createContext<AuthContextValue | undefined>(
+  undefined
+);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -162,7 +172,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [isAuthenticated, syncUser, hydrateAuth, scheduleTokenRefresh]);
 
   const handleLogin = useCallback(
@@ -212,7 +223,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       signup: handleSignup,
       logout: handleLogout,
     }),
-    [handleLogin, handleLogout, handleSignup, isAuthenticated, isLoading, role, user, plan]
+    [
+      handleLogin,
+      handleLogout,
+      handleSignup,
+      isAuthenticated,
+      isLoading,
+      role,
+      user,
+      plan,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

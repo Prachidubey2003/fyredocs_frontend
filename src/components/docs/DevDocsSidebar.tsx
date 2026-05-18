@@ -15,15 +15,20 @@ interface DevDocsSidebarProps {
   filter?: 'api' | 'architecture';
 }
 
-export const DevDocsSidebar = ({ className, onNavigate, filter }: DevDocsSidebarProps) => {
+export const DevDocsSidebar = ({
+  className,
+  onNavigate,
+  filter,
+}: DevDocsSidebarProps) => {
   const { slug } = useParams<{ slug: string }>();
 
   // Filter nav groups based on tab
-  const filteredGroups = filter === 'api'
-    ? devDocNavGroups.filter((g) => g.title === 'API Reference')
-    : filter === 'architecture'
-      ? devDocNavGroups.filter((g) => g.title !== 'API Reference')
-      : devDocNavGroups;
+  const filteredGroups =
+    filter === 'api'
+      ? devDocNavGroups.filter((g) => g.title === 'API Reference')
+      : filter === 'architecture'
+        ? devDocNavGroups.filter((g) => g.title !== 'API Reference')
+        : devDocNavGroups;
 
   const defaultOpen = filteredGroups
     .filter((group) => group.items.some((item) => item.slug === slug))
@@ -34,11 +39,19 @@ export const DevDocsSidebar = ({ className, onNavigate, filter }: DevDocsSidebar
       <nav className="py-4 px-2">
         <Accordion
           type="multiple"
-          defaultValue={defaultOpen.length > 0 ? defaultOpen : [filteredGroups[0]?.title ?? 'Overview']}
+          defaultValue={
+            defaultOpen.length > 0
+              ? defaultOpen
+              : [filteredGroups[0]?.title ?? 'Overview']
+          }
           className="space-y-1"
         >
           {filteredGroups.map((group) => (
-            <AccordionItem key={group.title} value={group.title} className="border-none">
+            <AccordionItem
+              key={group.title}
+              value={group.title}
+              className="border-none"
+            >
               <AccordionTrigger
                 className={cn(
                   'py-2 px-3 text-xs font-bold tracking-wider hover:no-underline rounded-md hover:bg-muted',

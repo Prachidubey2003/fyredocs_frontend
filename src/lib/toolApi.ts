@@ -19,7 +19,10 @@ const TOOL_API_CONFIG: Record<ToolId, ToolApiConfig> = {
   'unlock-pdf': { basePath: '/api/organize-pdf', tool: 'unlock-pdf' },
   'sign-pdf': { basePath: '/api/organize-pdf', tool: 'sign-pdf' },
   'edit-pdf': { basePath: '/api/organize-pdf', tool: 'edit-pdf' },
-  'add-page-numbers': { basePath: '/api/organize-pdf', tool: 'add-page-numbers' },
+  'add-page-numbers': {
+    basePath: '/api/organize-pdf',
+    tool: 'add-page-numbers',
+  },
 
   // Optimize PDF tools (heavy Ghostscript/Tesseract processing)
   compress: { basePath: '/api/optimize-pdf', tool: 'compress-pdf' },
@@ -43,7 +46,10 @@ const TOOL_API_CONFIG: Record<ToolId, ToolApiConfig> = {
   // Convert to LibreOffice tools (Office → ODF)
   'word-to-odt': { basePath: '/api/convert-to-pdf', tool: 'word-to-odt' },
   'excel-to-ods': { basePath: '/api/convert-to-pdf', tool: 'excel-to-ods' },
-  'powerpoint-to-odp': { basePath: '/api/convert-to-pdf', tool: 'powerpoint-to-odp' },
+  'powerpoint-to-odp': {
+    basePath: '/api/convert-to-pdf',
+    tool: 'powerpoint-to-odp',
+  },
 
   // Convert LibreOffice to PDF tools (ODF → PDF)
   'odt-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'odt-to-pdf' },
@@ -54,7 +60,10 @@ const TOOL_API_CONFIG: Record<ToolId, ToolApiConfig> = {
   'word-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'word-to-pdf' },
   'excel-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'excel-to-pdf' },
   'image-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'image-to-pdf' },
-  'powerpoint-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'powerpoint-to-pdf' },
+  'powerpoint-to-pdf': {
+    basePath: '/api/convert-to-pdf',
+    tool: 'powerpoint-to-pdf',
+  },
   'html-to-pdf': { basePath: '/api/convert-to-pdf', tool: 'html-to-pdf' },
 };
 

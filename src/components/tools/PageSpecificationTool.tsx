@@ -158,7 +158,8 @@ export const PageSpecificationTool = ({
                       />
                       <p className="text-xs text-muted-foreground">
                         Enter page numbers and/or ranges separated by commas
-                        {pageCount !== null && ` (your PDF has ${pageCount} pages)`}
+                        {pageCount !== null &&
+                          ` (your PDF has ${pageCount} pages)`}
                       </p>
                     </div>
                   </div>

@@ -1,5 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { FileUpload, UploadState, ChunkInfo, ToolDefinition, ValidationResult } from '@/types';
+import {
+  FileUpload,
+  UploadState,
+  ChunkInfo,
+  ToolDefinition,
+  ValidationResult,
+} from '@/types';
 import { apiJson, buildApiUrl } from '@/lib/apiClient';
 
 /**
@@ -9,7 +15,8 @@ import { apiJson, buildApiUrl } from '@/lib/apiClient';
 
 const CHUNK_SIZE = 1024 * 1024; // 1MB chunks
 
-const generateId = () => `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+const generateId = () =>
+  `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 const createChunks = (file: File): ChunkInfo[] => {
   const chunks: ChunkInfo[] = [];
@@ -66,7 +73,10 @@ interface UseFileUploadReturn {
   canProceed: boolean;
 }
 
-export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions): UseFileUploadReturn => {
+export const useFileUpload = ({
+  tool,
+  onValidationError,
+}: UseFileUploadOptions): UseFileUploadReturn => {
   const [files, setFiles] = useState<FileUpload[]>([]);
   const uploadControllers = useRef<Map<string, AbortController>>(new Map());
   const filesRef = useRef<FileUpload[]>([]);
@@ -83,62 +93,74 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
     };
   }, []);
 
-  const setUploadState = useCallback((fileId: string, state: UploadState, error?: string) => {
-    setFiles((prev) =>
-      prev.map((f) =>
-        f.id === fileId
-          ? {
-              ...f,
-              state,
-              error,
-              uploadedAt: state === 'completed' ? new Date() : f.uploadedAt,
-            }
-          : f
-      )
-    );
-  }, []);
+  const setUploadState = useCallback(
+    (fileId: string, state: UploadState, error?: string) => {
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileId
+            ? {
+                ...f,
+                state,
+                error,
+                uploadedAt: state === 'completed' ? new Date() : f.uploadedAt,
+              }
+            : f
+        )
+      );
+    },
+    []
+  );
 
-  const setServerFileId = useCallback((fileId: string, serverFileId: string) => {
-    setFiles((prev) =>
-      prev.map((f) =>
-        f.id === fileId ? { ...f, serverFileId } : f
-      )
-    );
-  }, []);
+  const setServerFileId = useCallback(
+    (fileId: string, serverFileId: string) => {
+      setFiles((prev) =>
+        prev.map((f) => (f.id === fileId ? { ...f, serverFileId } : f))
+      );
+    },
+    []
+  );
 
-  const syncUploadedChunks = useCallback((fileId: string, uploadedChunks: number[]) => {
-    setFiles((prev) =>
-      prev.map((file) => {
-        if (file.id !== fileId) return file;
-        const chunks = file.chunks.map((chunk) =>
-          uploadedChunks.includes(chunk.index) ? { ...chunk, uploaded: true } : chunk
-        );
-        return {
-          ...file,
-          chunks,
-          progress: calculateProgress(file, chunks),
-          currentChunkIndex: uploadedChunks.length,
-        };
-      })
-    );
-  }, []);
+  const syncUploadedChunks = useCallback(
+    (fileId: string, uploadedChunks: number[]) => {
+      setFiles((prev) =>
+        prev.map((file) => {
+          if (file.id !== fileId) return file;
+          const chunks = file.chunks.map((chunk) =>
+            uploadedChunks.includes(chunk.index)
+              ? { ...chunk, uploaded: true }
+              : chunk
+          );
+          return {
+            ...file,
+            chunks,
+            progress: calculateProgress(file, chunks),
+            currentChunkIndex: uploadedChunks.length,
+          };
+        })
+      );
+    },
+    []
+  );
 
-  const markChunkUploaded = useCallback((fileId: string, chunkIndex: number) => {
-    setFiles((prev) =>
-      prev.map((file) => {
-        if (file.id !== fileId) return file;
-        const chunks = file.chunks.map((chunk) =>
-          chunk.index === chunkIndex ? { ...chunk, uploaded: true } : chunk
-        );
-        return {
-          ...file,
-          chunks,
-          progress: calculateProgress(file, chunks),
-          currentChunkIndex: Math.min(chunkIndex + 1, chunks.length),
-        };
-      })
-    );
-  }, []);
+  const markChunkUploaded = useCallback(
+    (fileId: string, chunkIndex: number) => {
+      setFiles((prev) =>
+        prev.map((file) => {
+          if (file.id !== fileId) return file;
+          const chunks = file.chunks.map((chunk) =>
+            chunk.index === chunkIndex ? { ...chunk, uploaded: true } : chunk
+          );
+          return {
+            ...file,
+            chunks,
+            progress: calculateProgress(file, chunks),
+            currentChunkIndex: Math.min(chunkIndex + 1, chunks.length),
+          };
+        })
+      );
+    },
+    []
+  );
 
   const uploadFile = useCallback(
     async (fileId: string, controller: AbortController) => {
@@ -149,43 +171,51 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
         let uploadId = file.serverFileId;
 
         if (!uploadId) {
-          const initResponse = await apiJson<{ data: { uploadId: string } }>('/api/upload/init', {
-            method: 'POST',
-            body: JSON.stringify({
-              fileName: file.file.name,
-              fileSize: file.file.size,
-              totalChunks: file.chunks.length,
-            }),
-            signal: controller.signal,
-          });
+          const initResponse = await apiJson<{ data: { uploadId: string } }>(
+            '/api/upload/init',
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                fileName: file.file.name,
+                fileSize: file.file.size,
+                totalChunks: file.chunks.length,
+              }),
+              signal: controller.signal,
+            }
+          );
 
           uploadId = initResponse.data?.uploadId ?? '';
           setServerFileId(fileId, uploadId);
         } else {
           const status = await apiJson<{
             data?: { receivedChunks?: number | string };
-          }>(
-            `/api/upload/${uploadId}/status`,
-            { method: 'GET', signal: controller.signal }
-          );
+          }>(`/api/upload/${uploadId}/status`, {
+            method: 'GET',
+            signal: controller.signal,
+          });
           const rawChunks = status.data?.receivedChunks ?? 0;
           const received =
             typeof rawChunks === 'number'
               ? Array.from({ length: rawChunks }, (_, index) => index)
-              : Array.from({ length: Number(rawChunks) || 0 }, (_, index) => index);
+              : Array.from(
+                  { length: Number(rawChunks) || 0 },
+                  (_, index) => index
+                );
           if (received.length > 0) {
             syncUploadedChunks(fileId, received);
           }
         }
 
-        let current = filesRef.current.find((item) => item.id === fileId);
+        const current = filesRef.current.find((item) => item.id === fileId);
         if (!current || !uploadId) return;
 
         const MAX_PARALLEL_CHUNKS = 3;
         const pendingChunks = current.chunks.filter((c) => !c.uploaded);
 
         const uploadSingleChunk = async (chunk: ChunkInfo) => {
-          const latestFile = filesRef.current.find((item) => item.id === fileId);
+          const latestFile = filesRef.current.find(
+            (item) => item.id === fileId
+          );
           if (!latestFile) return;
           const blob = latestFile.file.slice(chunk.start, chunk.end);
           const formData = new FormData();
@@ -202,7 +232,9 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
           );
 
           if (!response.ok) {
-            const message = await response.text().catch(() => response.statusText);
+            const message = await response
+              .text()
+              .catch(() => response.statusText);
             throw new Error(message || 'Chunk upload failed');
           }
 
@@ -234,7 +266,8 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
           setUploadState(fileId, 'paused');
           return;
         }
-        const message = error instanceof Error ? error.message : 'Upload failed';
+        const message =
+          error instanceof Error ? error.message : 'Upload failed';
         setUploadState(fileId, 'failed', message);
       } finally {
         uploadControllers.current.delete(fileId);
@@ -288,7 +321,8 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
 
         // Check for duplicates
         const isDuplicate = files.some(
-          (existing) => existing.file.name === file.name && existing.file.size === file.size
+          (existing) =>
+            existing.file.name === file.name && existing.file.size === file.size
         );
         if (isDuplicate) {
           errors.push({
@@ -358,26 +392,29 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
     });
   }, []);
 
-  const startUpload = useCallback((fileId: string) => {
-    const file = filesRef.current.find((item) => item.id === fileId);
-    if (!file || file.state === 'uploading' || file.state === 'completed') {
-      return;
-    }
-    if (uploadControllers.current.has(fileId)) {
-      return;
-    }
-    const controller = new AbortController();
-    uploadControllers.current.set(fileId, controller);
+  const startUpload = useCallback(
+    (fileId: string) => {
+      const file = filesRef.current.find((item) => item.id === fileId);
+      if (!file || file.state === 'uploading' || file.state === 'completed') {
+        return;
+      }
+      if (uploadControllers.current.has(fileId)) {
+        return;
+      }
+      const controller = new AbortController();
+      uploadControllers.current.set(fileId, controller);
 
-    setFiles((prev) =>
-      prev.map((f) =>
-        f.id === fileId
-          ? { ...f, state: 'uploading' as UploadState, error: undefined }
-          : f
-      )
-    );
-    void uploadFile(fileId, controller);
-  }, [uploadFile]);
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileId
+            ? { ...f, state: 'uploading' as UploadState, error: undefined }
+            : f
+        )
+      );
+      void uploadFile(fileId, controller);
+    },
+    [uploadFile]
+  );
 
   const pauseUpload = useCallback((fileId: string) => {
     const controller = uploadControllers.current.get(fileId);
@@ -393,9 +430,12 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
     );
   }, []);
 
-  const resumeUpload = useCallback((fileId: string) => {
-    startUpload(fileId);
-  }, [startUpload]);
+  const resumeUpload = useCallback(
+    (fileId: string) => {
+      startUpload(fileId);
+    },
+    [startUpload]
+  );
 
   const retryUpload = useCallback((fileId: string) => {
     setFiles((prev) =>
@@ -415,27 +455,33 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
     );
   }, []);
 
-  const cancelUpload = useCallback((fileId: string) => {
-    removeFile(fileId);
-  }, [removeFile]);
+  const cancelUpload = useCallback(
+    (fileId: string) => {
+      removeFile(fileId);
+    },
+    [removeFile]
+  );
 
-  const updateProgress = useCallback((fileId: string, loaded: number, total: number) => {
-    const safeTotal = total > 0 ? total : 1;
-    setFiles((prev) =>
-      prev.map((f) =>
-        f.id === fileId
-          ? {
-              ...f,
-              progress: {
-                loaded,
-                total,
-                percentage: Math.round((loaded / safeTotal) * 100),
-              },
-            }
-          : f
-      )
-    );
-  }, []);
+  const updateProgress = useCallback(
+    (fileId: string, loaded: number, total: number) => {
+      const safeTotal = total > 0 ? total : 1;
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileId
+            ? {
+                ...f,
+                progress: {
+                  loaded,
+                  total,
+                  percentage: Math.round((loaded / safeTotal) * 100),
+                },
+              }
+            : f
+        )
+      );
+    },
+    []
+  );
 
   const isUploading = files.some((f) => f.state === 'uploading');
   const uploadedCount = files.filter((f) => f.state === 'completed').length;

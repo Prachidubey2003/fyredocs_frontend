@@ -3,9 +3,14 @@ import { FileText, Github, Twitter, Mail, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { navCategories, type NavSection } from '@/config/toolCategories';
 
-const findCategory = (title: string) => navCategories.find((c) => c.title === title)!;
+const findCategory = (title: string) =>
+  navCategories.find((c) => c.title === title)!;
 
-const footerCategories: { title: string; color: string; tools: NavSection['tools'] }[] = [
+const footerCategories: {
+  title: string;
+  color: string;
+  tools: NavSection['tools'];
+}[] = [
   {
     title: 'ORGANIZE',
     color: 'text-orange-500',
@@ -84,7 +89,10 @@ export const Footer = () => {
         <div className="mt-12 pt-8 border-t grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="sm:col-span-2">
-            <Link to="/" className="flex items-center gap-2.5 font-bold text-xl mb-4">
+            <Link
+              to="/"
+              className="flex items-center gap-2.5 font-bold text-xl mb-4"
+            >
               <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center">
                 <FileText className="w-5 h-5 text-primary-foreground" />
               </div>

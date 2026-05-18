@@ -80,7 +80,10 @@ const parseFileSize = (value: unknown) => {
   if (typeof value === 'number') return value;
   if (typeof value !== 'string') return 0;
 
-  const match = value.trim().toUpperCase().match(/([\d.]+)\s*(B|KB|MB|GB)/);
+  const match = value
+    .trim()
+    .toUpperCase()
+    .match(/([\d.]+)\s*(B|KB|MB|GB)/);
   if (!match) {
     const parsed = Number(value);
     return Number.isNaN(parsed) ? 0 : parsed;
@@ -136,31 +139,45 @@ const mapApiJob = (
   const id = apiJob.id ?? apiJob.ID ?? `job-${Date.now()}`;
   const status = apiJob.status ?? apiJob.Status ?? 'queued';
   const state = mapStatus(status);
-  const progressValue = parseProgress(apiJob.progress ?? apiJob.Progress, state);
+  const progressValue = parseProgress(
+    apiJob.progress ?? apiJob.Progress,
+    state
+  );
   const totalSteps = 3;
   const completedSteps =
     state === 'completed'
       ? totalSteps
       : state === 'processing'
-      ? Math.max(1, Math.floor((progressValue / 100) * totalSteps))
-      : 0;
+        ? Math.max(1, Math.floor((progressValue / 100) * totalSteps))
+        : 0;
   const currentStep =
     state === 'queued'
       ? 'Queued'
       : state === 'processing'
-      ? 'Processing'
-      : state === 'completed'
-      ? 'Completed'
-      : state === 'failed'
-      ? 'Failed'
-      : 'Pending';
+        ? 'Processing'
+        : state === 'completed'
+          ? 'Completed'
+          : state === 'failed'
+            ? 'Failed'
+            : 'Pending';
 
-  const fileName = apiJob.outputFileName ?? apiJob.OutputFileName ?? apiJob.fileName ?? apiJob.FileName ?? 'output.pdf';
+  const fileName =
+    apiJob.outputFileName ??
+    apiJob.OutputFileName ??
+    apiJob.fileName ??
+    apiJob.FileName ??
+    'output.pdf';
   const fileSize = parseFileSize(apiJob.fileSize ?? apiJob.FileSize);
   const downloadUrl = buildApiUrl(buildDownloadPath(toolId, id));
 
-  const createdAt = parseDate(apiJob.createdAt ?? apiJob.CreatedAt, fallbackTime);
-  const updatedAt = parseDate(apiJob.updatedAt ?? apiJob.UpdatedAt, fallbackTime);
+  const createdAt = parseDate(
+    apiJob.createdAt ?? apiJob.CreatedAt,
+    fallbackTime
+  );
+  const updatedAt = parseDate(
+    apiJob.updatedAt ?? apiJob.UpdatedAt,
+    fallbackTime
+  );
   const completedAt =
     state === 'completed'
       ? parseDate(apiJob.completedAt ?? apiJob.CompletedAt, updatedAt)
@@ -214,7 +231,9 @@ export const useBatchJob = ({
 }: UseBatchJobOptions = {}): UseBatchJobReturn => {
   const [batchJobs, setBatchJobs] = useState<BatchJob[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const pollingTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const pollingTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
+    new Map()
+  );
   const sseConnectionsRef = useRef<Map<string, EventSource>>(new Map());
   const sseTerminalJobsRef = useRef<Set<string>>(new Set());
   const attemptsRef = useRef<Map<string, number>>(new Map());
@@ -260,11 +279,24 @@ export const useBatchJob = ({
   }, [onAllComplete]);
 
   const startPolling = useCallback(
-    (batchId: string, toolId: ToolId, jobId: string, fileId: string, options: ToolOptions) => {
+    (
+      batchId: string,
+      toolId: ToolId,
+      jobId: string,
+      fileId: string,
+      options: ToolOptions
+    ) => {
       const poll = async () => {
         try {
-          const apiResponse = await apiRequest<{ data: ApiJob }>(buildJobPath(toolId, jobId));
-          const mappedJob = mapApiJob(apiResponse.data, toolId, [fileId], options);
+          const apiResponse = await apiRequest<{ data: ApiJob }>(
+            buildJobPath(toolId, jobId)
+          );
+          const mappedJob = mapApiJob(
+            apiResponse.data,
+            toolId,
+            [fileId],
+            options
+          );
 
           setBatchJobs((prev) =>
             prev.map((bj) =>
@@ -276,8 +308,8 @@ export const useBatchJob = ({
                       mappedJob.state === 'completed'
                         ? 'completed'
                         : mappedJob.state === 'failed'
-                        ? 'failed'
-                        : 'processing',
+                          ? 'failed'
+                          : 'processing',
                     error: mappedJob.error?.message,
                   }
                 : bj
@@ -288,7 +320,12 @@ export const useBatchJob = ({
             stopPolling(batchId);
             setBatchJobs((prev) => {
               const updated = prev.find((bj) => bj.id === batchId);
-              if (updated) onJobComplete?.({ ...updated, job: mappedJob, status: 'completed' });
+              if (updated)
+                onJobComplete?.({
+                  ...updated,
+                  job: mappedJob,
+                  status: 'completed',
+                });
               return prev;
             });
             checkAllComplete();
@@ -300,7 +337,11 @@ export const useBatchJob = ({
             const errorMsg = mappedJob.error?.message ?? 'Job failed';
             setBatchJobs((prev) => {
               const updated = prev.find((bj) => bj.id === batchId);
-              if (updated) onJobError?.({ ...updated, job: mappedJob, status: 'failed' }, errorMsg);
+              if (updated)
+                onJobError?.(
+                  { ...updated, job: mappedJob, status: 'failed' },
+                  errorMsg
+                );
               return prev;
             });
             checkAllComplete();
@@ -313,7 +354,8 @@ export const useBatchJob = ({
           attemptsRef.current.set(batchId, currentAttempts);
 
           if (currentAttempts >= maxPollingAttempts) {
-            const message = error instanceof Error ? error.message : 'Polling failed';
+            const message =
+              error instanceof Error ? error.message : 'Polling failed';
             setBatchJobs((prev) =>
               prev.map((bj) =>
                 bj.id === batchId
@@ -327,16 +369,32 @@ export const useBatchJob = ({
           }
         }
 
-        pollingTimersRef.current.set(batchId, setTimeout(poll, pollingInterval));
+        pollingTimersRef.current.set(
+          batchId,
+          setTimeout(poll, pollingInterval)
+        );
       };
 
       void poll();
     },
-    [checkAllComplete, maxPollingAttempts, onJobComplete, onJobError, pollingInterval, stopPolling]
+    [
+      checkAllComplete,
+      maxPollingAttempts,
+      onJobComplete,
+      onJobError,
+      pollingInterval,
+      stopPolling,
+    ]
   );
 
   const startSSEForJob = useCallback(
-    (batchId: string, toolId: ToolId, jobId: string, fileId: string, options: ToolOptions) => {
+    (
+      batchId: string,
+      toolId: ToolId,
+      jobId: string,
+      fileId: string,
+      options: ToolOptions
+    ) => {
       const url = buildApiUrl(`/api/jobs/${jobId}/events`);
       const es = new EventSource(url, { withCredentials: true });
       sseConnectionsRef.current.set(batchId, es);
@@ -380,8 +438,8 @@ export const useBatchJob = ({
                 state === 'completed'
                   ? totalSteps
                   : pct > 0
-                  ? Math.max(1, Math.floor((pct / 100) * totalSteps))
-                  : prevJob.progress.completedSteps;
+                    ? Math.max(1, Math.floor((pct / 100) * totalSteps))
+                    : prevJob.progress.completedSteps;
 
               return {
                 ...bj,
@@ -392,12 +450,23 @@ export const useBatchJob = ({
                     ...prevJob.progress,
                     completedSteps,
                     percentage: pct,
-                    currentStep: state === 'completed' ? 'Completed' : state === 'failed' ? 'Failed' : 'Processing',
+                    currentStep:
+                      state === 'completed'
+                        ? 'Completed'
+                        : state === 'failed'
+                          ? 'Failed'
+                          : 'Processing',
                   },
                   updatedAt: new Date(),
                 },
-                status: state === 'completed' ? 'completed' : state === 'failed' ? 'failed' : 'processing',
-                error: state === 'failed' ? 'The job failed to complete.' : bj.error,
+                status:
+                  state === 'completed'
+                    ? 'completed'
+                    : state === 'failed'
+                      ? 'failed'
+                      : 'processing',
+                error:
+                  state === 'failed' ? 'The job failed to complete.' : bj.error,
               };
             })
           );
@@ -420,7 +489,8 @@ export const useBatchJob = ({
             const errorMsg = 'The job failed to complete.';
             setBatchJobs((prev) => {
               const updated = prev.find((bj) => bj.id === batchId);
-              if (updated) onJobError?.({ ...updated, status: 'failed' }, errorMsg);
+              if (updated)
+                onJobError?.({ ...updated, status: 'failed' }, errorMsg);
               return prev;
             });
             checkAllComplete();
@@ -464,15 +534,18 @@ export const useBatchJob = ({
       options: ToolOptions
     ) => {
       try {
-        const payload: { uploadId: string; options?: Record<string, unknown> } = {
-          uploadId: serverFileId,
-        };
+        const payload: { uploadId: string; options?: Record<string, unknown> } =
+          {
+            uploadId: serverFileId,
+          };
 
         if (options && Object.keys(options).length > 0) {
           payload.options = options as Record<string, unknown>;
         }
 
-        const apiResponse = await apiJson<{ data: ApiJob & { guestToken?: string } }>(buildJobPath(toolId), {
+        const apiResponse = await apiJson<{
+          data: ApiJob & { guestToken?: string };
+        }>(buildJobPath(toolId), {
           method: 'POST',
           body: JSON.stringify(payload),
         });
@@ -481,7 +554,12 @@ export const useBatchJob = ({
           setGuestToken(apiResponse.data.guestToken);
         }
 
-        const mappedJob = mapApiJob(apiResponse.data, toolId, [serverFileId], options);
+        const mappedJob = mapApiJob(
+          apiResponse.data,
+          toolId,
+          [serverFileId],
+          options
+        );
 
         setBatchJobs((prev) =>
           prev.map((bj) =>
@@ -493,12 +571,11 @@ export const useBatchJob = ({
 
         startSSEForJob(batchId, toolId, mappedJob.id, serverFileId, options);
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to create job';
+        const message =
+          error instanceof Error ? error.message : 'Failed to create job';
         setBatchJobs((prev) =>
           prev.map((bj) =>
-            bj.id === batchId
-              ? { ...bj, status: 'failed', error: message }
-              : bj
+            bj.id === batchId ? { ...bj, status: 'failed', error: message } : bj
           )
         );
         checkAllComplete();
@@ -530,7 +607,13 @@ export const useBatchJob = ({
       // Start processing each file
       initialBatchJobs.forEach((batchJob, index) => {
         const file = files[index];
-        void processFile(batchJob.id, toolId, file.id, file.serverFileId, options);
+        void processFile(
+          batchJob.id,
+          toolId,
+          file.id,
+          file.serverFileId,
+          options
+        );
       });
     },
     [processFile, stopPolling]
@@ -592,7 +675,9 @@ export const useBatchJob = ({
     };
   }, [stopPolling]);
 
-  const completedCount = batchJobs.filter((bj) => bj.status === 'completed').length;
+  const completedCount = batchJobs.filter(
+    (bj) => bj.status === 'completed'
+  ).length;
   const failedCount = batchJobs.filter((bj) => bj.status === 'failed').length;
   const totalCount = batchJobs.length;
 

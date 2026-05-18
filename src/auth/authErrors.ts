@@ -16,7 +16,12 @@ export class AuthError extends Error {
   status?: number;
   details?: unknown;
 
-  constructor(code: AuthErrorCode, message: string, status?: number, details?: unknown) {
+  constructor(
+    code: AuthErrorCode,
+    message: string,
+    status?: number,
+    details?: unknown
+  ) {
     super(message);
     this.name = 'AuthError';
     this.code = code;
@@ -28,11 +33,19 @@ export class AuthError extends Error {
 export const isAuthError = (error: unknown): error is AuthError =>
   error instanceof AuthError;
 
-const resolveErrorCode = (status: number, message: string, rawCode?: string | number): AuthErrorCode => {
+const resolveErrorCode = (
+  status: number,
+  message: string,
+  rawCode?: string | number
+): AuthErrorCode => {
   const normalized = message.toLowerCase();
   const numericCode = typeof rawCode === 'string' ? Number(rawCode) : rawCode;
 
-  if (numericCode === 4010 || normalized.includes('credentials') || normalized.includes('secret')) {
+  if (
+    numericCode === 4010 ||
+    normalized.includes('credentials') ||
+    normalized.includes('secret')
+  ) {
     return 'INVALID_CREDENTIALS';
   }
 

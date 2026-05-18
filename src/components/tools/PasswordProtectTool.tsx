@@ -140,11 +140,17 @@ export const PasswordProtectTool = ({ tool }: PasswordProtectToolProps) => {
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                         >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showPassword ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
                         </button>
                       </div>
                       {password && !passwordValid && (
-                        <p className="text-xs text-destructive">Password must be at least 4 characters</p>
+                        <p className="text-xs text-destructive">
+                          Password must be at least 4 characters
+                        </p>
                       )}
                     </div>
 
@@ -158,7 +164,9 @@ export const PasswordProtectTool = ({ tool }: PasswordProtectToolProps) => {
                         placeholder="Confirm password..."
                       />
                       {confirmPassword && !passwordsMatch && (
-                        <p className="text-xs text-destructive">Passwords do not match</p>
+                        <p className="text-xs text-destructive">
+                          Passwords do not match
+                        </p>
                       )}
                     </div>
                   </div>
@@ -169,7 +177,8 @@ export const PasswordProtectTool = ({ tool }: PasswordProtectToolProps) => {
                       Document Permissions
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      Choose what actions are allowed when the PDF is opened with the password.
+                      Choose what actions are allowed when the PDF is opened
+                      with the password.
                     </p>
 
                     <div className="space-y-4">
@@ -219,7 +228,13 @@ export const PasswordProtectTool = ({ tool }: PasswordProtectToolProps) => {
 
                   <Button
                     onClick={handleProcess}
-                    disabled={!hasFiles || isProcessing || !passwordValid || !passwordsMatch || !canProceed}
+                    disabled={
+                      !hasFiles ||
+                      isProcessing ||
+                      !passwordValid ||
+                      !passwordsMatch ||
+                      !canProceed
+                    }
                     className="w-full bg-gradient-primary"
                     size="lg"
                   >

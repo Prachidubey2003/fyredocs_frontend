@@ -5,7 +5,11 @@ export interface ToolItem {
   comingSoon?: boolean;
 }
 
-export const toolCategories: { title: string; color: string; tools: ToolItem[] }[] = [
+export const toolCategories: {
+  title: string;
+  color: string;
+  tools: ToolItem[];
+}[] = [
   {
     title: 'ORGANIZE PDF',
     color: 'text-orange-500',
@@ -33,7 +37,11 @@ export const toolCategories: { title: string; color: string; tools: ToolItem[] }
     tools: [
       { name: 'JPG to PDF', href: '/image-to-pdf', icon: 'file-image' },
       { name: 'WORD to PDF', href: '/word-to-pdf', icon: 'file' },
-      { name: 'POWERPOINT to PDF', href: '/powerpoint-to-pdf', icon: 'presentation' },
+      {
+        name: 'POWERPOINT to PDF',
+        href: '/powerpoint-to-pdf',
+        icon: 'presentation',
+      },
       { name: 'EXCEL to PDF', href: '/excel-to-pdf', icon: 'file-spreadsheet' },
       { name: 'HTML to PDF', href: '/html-to-pdf', icon: 'code' },
       { name: 'ODT to PDF', href: '/odt-to-pdf', icon: 'file' },
@@ -62,7 +70,11 @@ export const toolCategories: { title: string; color: string; tools: ToolItem[] }
       { name: 'PDF to ODP', href: '/pdf-to-odp', icon: 'presentation' },
       { name: 'Word to ODT', href: '/word-to-odt', icon: 'file' },
       { name: 'Excel to ODS', href: '/excel-to-ods', icon: 'file-spreadsheet' },
-      { name: 'PowerPoint to ODP', href: '/powerpoint-to-odp', icon: 'presentation' },
+      {
+        name: 'PowerPoint to ODP',
+        href: '/powerpoint-to-odp',
+        icon: 'presentation',
+      },
     ],
   },
   {
@@ -86,13 +98,13 @@ export const toolCategories: { title: string; color: string; tools: ToolItem[] }
   },
 ];
 
-export const convertToPdf: ToolItem[] = toolCategories
-  .find((c) => c.title === 'CONVERT TO PDF')!
-  .tools;
+export const convertToPdf: ToolItem[] = toolCategories.find(
+  (c) => c.title === 'CONVERT TO PDF'
+)!.tools;
 
-export const convertFromPdf: ToolItem[] = toolCategories
-  .find((c) => c.title === 'CONVERT FROM PDF')!
-  .tools;
+export const convertFromPdf: ToolItem[] = toolCategories.find(
+  (c) => c.title === 'CONVERT FROM PDF'
+)!.tools;
 
 export interface NavSection {
   label?: string;
@@ -111,15 +123,31 @@ export const navCategories: NavCategory[] = [
   {
     title: 'ORGANIZE',
     sections: [
-      { label: 'Organize', color: 'text-orange-500', tools: byTitle('ORGANIZE PDF') },
-      { label: 'Optimize', color: 'text-red-500', tools: byTitle('OPTIMIZE PDF') },
+      {
+        label: 'Organize',
+        color: 'text-orange-500',
+        tools: byTitle('ORGANIZE PDF'),
+      },
+      {
+        label: 'Optimize',
+        color: 'text-red-500',
+        tools: byTitle('OPTIMIZE PDF'),
+      },
     ],
   },
   {
     title: 'CONVERT',
     sections: [
-      { label: 'To PDF', color: 'text-yellow-600', tools: byTitle('CONVERT TO PDF') },
-      { label: 'From PDF', color: 'text-purple-500', tools: byTitle('CONVERT FROM PDF') },
+      {
+        label: 'To PDF',
+        color: 'text-yellow-600',
+        tools: byTitle('CONVERT TO PDF'),
+      },
+      {
+        label: 'From PDF',
+        color: 'text-purple-500',
+        tools: byTitle('CONVERT FROM PDF'),
+      },
     ],
   },
   {
@@ -128,12 +156,16 @@ export const navCategories: NavCategory[] = [
       {
         label: 'From PDF',
         color: 'text-teal-500',
-        tools: byTitle('CONVERT TO LIBREOFFICE').filter((t) => t.name.startsWith('PDF to')),
+        tools: byTitle('CONVERT TO LIBREOFFICE').filter((t) =>
+          t.name.startsWith('PDF to')
+        ),
       },
       {
         label: 'From Office',
         color: 'text-cyan-500',
-        tools: byTitle('CONVERT TO LIBREOFFICE').filter((t) => !t.name.startsWith('PDF to')),
+        tools: byTitle('CONVERT TO LIBREOFFICE').filter(
+          (t) => !t.name.startsWith('PDF to')
+        ),
       },
     ],
   },
@@ -141,7 +173,11 @@ export const navCategories: NavCategory[] = [
     title: 'EDIT & PROTECT',
     sections: [
       { label: 'Edit', color: 'text-blue-500', tools: byTitle('EDIT PDF') },
-      { label: 'Protect', color: 'text-green-500', tools: byTitle('PDF SECURITY') },
+      {
+        label: 'Protect',
+        color: 'text-green-500',
+        tools: byTitle('PDF SECURITY'),
+      },
     ],
   },
 ];

@@ -134,7 +134,8 @@ export const ScanToPdfTool = () => {
                     <div className="flex items-center gap-2">
                       <Scan className="w-5 h-5 text-tool-convert" />
                       <span className="font-medium">
-                        {files.length} image{files.length !== 1 ? 's' : ''} selected
+                        {files.length} image{files.length !== 1 ? 's' : ''}{' '}
+                        selected
                       </span>
                     </div>
                     <Button
@@ -160,7 +161,8 @@ export const ScanToPdfTool = () => {
                   />
 
                   <p className="text-sm text-muted-foreground mb-6 text-center">
-                    Drag images to reorder. Pages will follow this order in the PDF.
+                    Drag images to reorder. Pages will follow this order in the
+                    PDF.
                   </p>
 
                   <div className="p-6 rounded-xl border bg-card mb-6">
@@ -212,7 +214,9 @@ export const ScanToPdfTool = () => {
                       variant="outline"
                       className="flex-1"
                       onClick={() =>
-                        document.querySelector<HTMLInputElement>('input[type="file"]')?.click()
+                        document
+                          .querySelector<HTMLInputElement>('input[type="file"]')
+                          ?.click()
                       }
                     >
                       <Plus className="w-4 h-4 mr-2" />

@@ -5,7 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/auth/useAuth';
 import { isAuthError } from '@/auth/authErrors';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -40,7 +46,9 @@ const SignIn = () => {
     },
   });
 
-  const redirectTo = (location.state as { from?: { pathname?: string } } | undefined)?.from?.pathname ?? '/';
+  const redirectTo =
+    (location.state as { from?: { pathname?: string } } | undefined)?.from
+      ?.pathname ?? '/';
 
   const handleSubmit = async (values: SignInValues) => {
     setFormError(null);
@@ -61,14 +69,18 @@ const SignIn = () => {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Sign in</CardTitle>
-            <CardDescription>Access your account and continue your work.</CardDescription>
+            <CardDescription>
+              Access your account and continue your work.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {redirectTo !== '/' && (
               <Alert className="mb-4">
                 <Info className="h-4 w-4" />
                 <AlertTitle>Sign in required</AlertTitle>
-                <AlertDescription>Sign in to access PDF tools.</AlertDescription>
+                <AlertDescription>
+                  Sign in to access PDF tools.
+                </AlertDescription>
               </Alert>
             )}
 
@@ -79,7 +91,10 @@ const SignIn = () => {
             )}
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="email"
@@ -87,7 +102,12 @@ const SignIn = () => {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input type="email" autoComplete="email" placeholder="you@example.com" {...field} />
+                        <Input
+                          type="email"
+                          autoComplete="email"
+                          placeholder="you@example.com"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -101,14 +121,23 @@ const SignIn = () => {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input type="password" autoComplete="current-password" placeholder="••••••••" {...field} />
+                        <Input
+                          type="password"
+                          autoComplete="current-password"
+                          placeholder="••••••••"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={form.formState.isSubmitting}
+                >
                   {form.formState.isSubmitting ? 'Signing in...' : 'Sign in'}
                 </Button>
               </form>

@@ -13,7 +13,18 @@ import { AnimatedSwitch } from '@/components/ui/animated';
 
 interface ConvertToolProps {
   toolId: ToolId;
-  outputFormat: 'docx' | 'xlsx' | 'png' | 'jpg' | 'pdf' | 'pptx' | 'html' | 'txt' | 'odt' | 'ods' | 'odp';
+  outputFormat:
+    | 'docx'
+    | 'xlsx'
+    | 'png'
+    | 'jpg'
+    | 'pdf'
+    | 'pptx'
+    | 'html'
+    | 'txt'
+    | 'odt'
+    | 'ods'
+    | 'odp';
 }
 
 export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
@@ -65,11 +76,7 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
       quality: 'high',
     };
 
-    createJob(
-      tool.id,
-      uploadIds,
-      options
-    );
+    createJob(tool.id, uploadIds, options);
   };
 
   const handleStartOver = () => {
@@ -112,7 +119,8 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
                     <div className="flex items-center gap-2">
                       <FileText className="w-5 h-5 text-tool-convert" />
                       <span className="font-medium">
-                        {files.length} file{files.length !== 1 ? 's' : ''} to convert
+                        {files.length} file{files.length !== 1 ? 's' : ''} to
+                        convert
                       </span>
                     </div>
                     <Button
@@ -137,7 +145,11 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
 
                   <div className="p-4 rounded-lg bg-tool-convert/5 border border-tool-convert/20 mb-6">
                     <p className="text-sm text-center">
-                      Converting to <strong className="text-tool-convert">.{outputFormat.toUpperCase()}</strong> format
+                      Converting to{' '}
+                      <strong className="text-tool-convert">
+                        .{outputFormat.toUpperCase()}
+                      </strong>{' '}
+                      format
                     </p>
                   </div>
 
@@ -146,7 +158,9 @@ export const ConvertTool = ({ toolId, outputFormat }: ConvertToolProps) => {
                       variant="outline"
                       className="flex-1"
                       onClick={() =>
-                        document.querySelector<HTMLInputElement>('input[type="file"]')?.click()
+                        document
+                          .querySelector<HTMLInputElement>('input[type="file"]')
+                          ?.click()
                       }
                     >
                       <Plus className="w-4 h-4 mr-2" />

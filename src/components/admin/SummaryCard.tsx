@@ -36,14 +36,26 @@ function parseNumericValue(value: string | number): {
   return { num, decimals, prefix, suffix };
 }
 
-export function SummaryCard({ title, icon, to, stats, chart, isLoading }: SummaryCardProps) {
+export function SummaryCard({
+  title,
+  icon,
+  to,
+  stats,
+  chart,
+  isLoading,
+}: SummaryCardProps) {
   return (
     <Card className="flex flex-col">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           {icon}
           {title}
-          <Button variant="outline" size="icon" asChild className="ml-auto h-7 w-7">
+          <Button
+            variant="outline"
+            size="icon"
+            asChild
+            className="ml-auto h-7 w-7"
+          >
             <Link to={to}>
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -55,7 +67,10 @@ export function SummaryCard({ title, icon, to, stats, chart, isLoading }: Summar
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="flex items-baseline justify-between gap-2">
+                <div
+                  key={i}
+                  className="flex items-baseline justify-between gap-2"
+                >
                   <Skeleton className="h-4 w-20" />
                   <Skeleton className="h-5 w-16" />
                 </div>
@@ -71,8 +86,13 @@ export function SummaryCard({ title, icon, to, stats, chart, isLoading }: Summar
               {stats.map((s) => {
                 const parsed = parseNumericValue(s.value);
                 return (
-                  <div key={s.label} className="flex items-baseline justify-between gap-2">
-                    <span className="text-sm text-muted-foreground">{s.label}</span>
+                  <div
+                    key={s.label}
+                    className="flex items-baseline justify-between gap-2"
+                  >
+                    <span className="text-sm text-muted-foreground">
+                      {s.label}
+                    </span>
                     <span className={`text-lg font-semibold ${s.color ?? ''}`}>
                       {parsed ? (
                         <AnimatedNumber
@@ -89,7 +109,11 @@ export function SummaryCard({ title, icon, to, stats, chart, isLoading }: Summar
                 );
               })}
             </div>
-            {chart && <div className="flex h-24 items-center justify-center">{chart}</div>}
+            {chart && (
+              <div className="flex h-24 items-center justify-center">
+                {chart}
+              </div>
+            )}
           </div>
         )}
       </CardContent>

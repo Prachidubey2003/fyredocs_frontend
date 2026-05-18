@@ -6,7 +6,13 @@ import { AnimatedSwitch } from '@/components/ui/animated';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJob } from '@/hooks/useJob';
@@ -52,34 +58,48 @@ export const SignPdfTool = ({ tool }: SignPdfToolProps) => {
     addFiles(selectedFiles);
   };
 
-  const startDraw = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    isDrawingRef.current = true;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.beginPath();
-    const rect = canvas.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    ctx.moveTo(clientX - rect.left, clientY - rect.top);
-  }, []);
+  const startDraw = useCallback(
+    (
+      e:
+        | React.MouseEvent<HTMLCanvasElement>
+        | React.TouchEvent<HTMLCanvasElement>
+    ) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      isDrawingRef.current = true;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.beginPath();
+      const rect = canvas.getBoundingClientRect();
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    },
+    []
+  );
 
-  const draw = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawingRef.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const rect = canvas.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#000';
-    ctx.lineTo(clientX - rect.left, clientY - rect.top);
-    ctx.stroke();
-  }, []);
+  const draw = useCallback(
+    (
+      e:
+        | React.MouseEvent<HTMLCanvasElement>
+        | React.TouchEvent<HTMLCanvasElement>
+    ) => {
+      if (!isDrawingRef.current) return;
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const rect = canvas.getBoundingClientRect();
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#000';
+      ctx.lineTo(clientX - rect.left, clientY - rect.top);
+      ctx.stroke();
+    },
+    []
+  );
 
   const endDraw = useCallback(() => {
     isDrawingRef.current = false;
@@ -207,7 +227,10 @@ export const SignPdfTool = ({ tool }: SignPdfToolProps) => {
 
                     <TabsContent value="upload" className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <Label htmlFor="signature-upload" className="cursor-pointer">
+                        <Label
+                          htmlFor="signature-upload"
+                          className="cursor-pointer"
+                        >
                           <div className="flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-muted transition-colors">
                             <Upload className="w-4 h-4" />
                             Choose image
@@ -221,12 +244,18 @@ export const SignPdfTool = ({ tool }: SignPdfToolProps) => {
                           className="hidden"
                         />
                         {signatureFile && (
-                          <span className="text-sm text-muted-foreground">{signatureFile.name}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {signatureFile.name}
+                          </span>
                         )}
                       </div>
                       {signatureDataUrl && (
                         <div className="border rounded-lg p-4 bg-white">
-                          <img src={signatureDataUrl} alt="Signature" className="max-h-32 mx-auto" />
+                          <img
+                            src={signatureDataUrl}
+                            alt="Signature"
+                            className="max-h-32 mx-auto"
+                          />
                         </div>
                       )}
                     </TabsContent>
@@ -260,14 +289,17 @@ export const SignPdfTool = ({ tool }: SignPdfToolProps) => {
                         placeholder="Page number or 'last'"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Enter a page number or &quot;last&quot; for the last page
+                        Enter a page number or &quot;last&quot; for the last
+                        page
                       </p>
                     </div>
                   </div>
 
                   <Button
                     onClick={handleProcess}
-                    disabled={!hasFiles || isProcessing || !hasSignature || !canProceed}
+                    disabled={
+                      !hasFiles || isProcessing || !hasSignature || !canProceed
+                    }
                     className="w-full bg-gradient-primary"
                     size="lg"
                   >

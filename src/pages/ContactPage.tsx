@@ -3,7 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Mail, MessageSquare, MapPin, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,15 +20,15 @@ const ContactPage = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate form submission
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    
+
     toast({
       title: 'Message sent!',
       description: "We'll get back to you as soon as possible.",
     });
-    
+
     setIsSubmitting(false);
     (e.target as HTMLFormElement).reset();
   };
@@ -57,12 +63,21 @@ const ContactPage = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="you@example.com" required />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        required
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" placeholder="How can we help?" required />
+                    <Input
+                      id="subject"
+                      placeholder="How can we help?"
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="message">Message</Label>
@@ -73,7 +88,11 @@ const ContactPage = () => {
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-gradient-primary" disabled={isSubmitting}>
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-primary"
+                    disabled={isSubmitting}
+                  >
                     <Send className="w-4 h-4 mr-2" />
                     {isSubmitting ? 'Sending...' : 'Send Message'}
                   </Button>
@@ -91,7 +110,9 @@ const ContactPage = () => {
                   </div>
                   <div>
                     <h3 className="font-medium mb-1">Email</h3>
-                    <p className="text-sm text-muted-foreground">support@fileblossom.com</p>
+                    <p className="text-sm text-muted-foreground">
+                      support@fileblossom.com
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -105,7 +126,9 @@ const ContactPage = () => {
                   </div>
                   <div>
                     <h3 className="font-medium mb-1">Live Chat</h3>
-                    <p className="text-sm text-muted-foreground">Available Mon-Fri, 9am-6pm EST</p>
+                    <p className="text-sm text-muted-foreground">
+                      Available Mon-Fri, 9am-6pm EST
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -120,7 +143,8 @@ const ContactPage = () => {
                   <div>
                     <h3 className="font-medium mb-1">Office</h3>
                     <p className="text-sm text-muted-foreground">
-                      123 Tech Street<br />
+                      123 Tech Street
+                      <br />
                       San Francisco, CA 94105
                     </p>
                   </div>

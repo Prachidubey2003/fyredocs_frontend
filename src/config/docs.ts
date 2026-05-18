@@ -9,7 +9,16 @@ export type DocCategory = 'getting-started' | 'tool-guide' | 'concept' | 'faq';
 export interface DocSection {
   heading?: string;
   content: string;
-  type: 'paragraph' | 'steps' | 'table' | 'tip' | 'formats' | 'code' | 'warning' | 'list' | 'mermaid';
+  type:
+    | 'paragraph'
+    | 'steps'
+    | 'table'
+    | 'tip'
+    | 'formats'
+    | 'code'
+    | 'warning'
+    | 'list'
+    | 'mermaid';
   items?: string[];
   tableData?: { headers: string[]; rows: string[][] };
   language?: string;
@@ -39,9 +48,7 @@ export const docNavGroups: DocNavGroup[] = [
   {
     title: 'Getting Started',
     color: 'text-primary',
-    items: [
-      { slug: 'getting-started', title: 'Introduction' },
-    ],
+    items: [{ slug: 'getting-started', title: 'Introduction' }],
   },
   {
     title: 'Organize PDF',
@@ -119,9 +126,7 @@ export const docNavGroups: DocNavGroup[] = [
   {
     title: 'FAQ',
     color: 'text-muted-foreground',
-    items: [
-      { slug: 'faq', title: 'FAQ' },
-    ],
+    items: [{ slug: 'faq', title: 'FAQ' }],
   },
 ];
 
@@ -136,12 +141,14 @@ export const docs: DocEntry[] = [
   {
     slug: 'getting-started',
     title: 'Getting Started with Fyredocs',
-    description: 'Learn how to use Fyredocs to work with your PDF files quickly and easily.',
+    description:
+      'Learn how to use Fyredocs to work with your PDF files quickly and easily.',
     category: 'getting-started',
     sections: [
       {
         heading: 'What is Fyredocs?',
-        content: 'Fyredocs is a free online platform that lets you work with PDF files right in your browser. You can merge, split, compress, convert, and edit PDFs without installing any software. Every tool runs on the server, so your computer\'s speed and operating system do not matter.',
+        content:
+          "Fyredocs is a free online platform that lets you work with PDF files right in your browser. You can merge, split, compress, convert, and edit PDFs without installing any software. Every tool runs on the server, so your computer's speed and operating system do not matter.",
         type: 'paragraph',
       },
       {
@@ -158,12 +165,14 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'No account required',
-        content: 'You can use every tool on Fyredocs as a guest without signing up. Guest files are automatically deleted after 2 hours. Create a free account if you want longer file retention and access to your job history across sessions.',
+        content:
+          'You can use every tool on Fyredocs as a guest without signing up. Guest files are automatically deleted after 2 hours. Create a free account if you want longer file retention and access to your job history across sessions.',
         type: 'tip',
       },
       {
         heading: 'Your files are safe',
-        content: 'All uploads travel over HTTPS. Files are processed on isolated server instances and automatically deleted — after 2 hours for guests, or according to plan retention for registered users. Fyredocs never reads, indexes, or shares your document content. See the Security & Privacy page for the full details.',
+        content:
+          'All uploads travel over HTTPS. Files are processed on isolated server instances and automatically deleted — after 2 hours for guests, or according to plan retention for registered users. Fyredocs never reads, indexes, or shares your document content. See the Security & Privacy page for the full details.',
         type: 'paragraph',
       },
     ],
@@ -182,7 +191,8 @@ export const docs: DocEntry[] = [
     sections: [
       {
         heading: 'What it does',
-        content: 'Merge PDF combines two or more PDF files into a single document by appending them sequentially — all pages from file 1 come first, then all pages from file 2, and so on. The output is one continuous PDF. Note that bookmarks and internal cross-document links may not be preserved across the merged files, because each source file has its own internal reference structure.',
+        content:
+          'Merge PDF combines two or more PDF files into a single document by appending them sequentially — all pages from file 1 come first, then all pages from file 2, and so on. The output is one continuous PDF. Note that bookmarks and internal cross-document links may not be preserved across the merged files, because each source file has its own internal reference structure.',
         type: 'paragraph',
       },
       {
@@ -223,12 +233,14 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Large merged files',
-        content: 'Merged PDFs with 500 or more pages may be slow to open in some PDF viewers, especially on mobile devices or in browser-based readers. Consider splitting very large outputs into logical sections if you plan to distribute them.',
+        content:
+          'Merged PDFs with 500 or more pages may be slow to open in some PDF viewers, especially on mobile devices or in browser-based readers. Consider splitting very large outputs into logical sections if you plan to distribute them.',
         type: 'warning',
       },
       {
         heading: 'Reorder before merging',
-        content: 'Use drag and drop to rearrange files before clicking Merge. The final document follows exactly the order you see on screen, so take a moment to confirm the sequence is correct.',
+        content:
+          'Use drag and drop to rearrange files before clicking Merge. The final document follows exactly the order you see on screen, so take a moment to confirm the sequence is correct.',
         type: 'tip',
       },
     ],
@@ -236,33 +248,53 @@ export const docs: DocEntry[] = [
   {
     slug: 'split-pdf',
     title: 'Split PDF',
-    description: 'Separate a PDF into multiple smaller documents using four different split modes.',
+    description:
+      'Separate a PDF into multiple smaller documents using four different split modes.',
     category: 'tool-guide',
     toolCategory: 'ORGANIZE PDF',
     toolId: 'split',
     sections: [
       {
         heading: 'What it does',
-        content: 'Split PDF breaks a single PDF file into multiple smaller documents. There are four distinct split modes, each suited to a different use case. Understanding which mode to pick will save you time.',
+        content:
+          'Split PDF breaks a single PDF file into multiple smaller documents. There are four distinct split modes, each suited to a different use case. Understanding which mode to pick will save you time.',
         type: 'paragraph',
       },
       {
         heading: 'Split modes explained',
-        content: 'Each mode produces different output. Here is what happens with a 10-page PDF as an example:',
+        content:
+          'Each mode produces different output. Here is what happens with a 10-page PDF as an example:',
         type: 'table',
         tableData: {
           headers: ['Mode', 'What it does', 'Example (10-page PDF)'],
           rows: [
-            ['All pages', 'Creates a separate single-page PDF for every page in the document', '10 separate PDFs: page-1.pdf, page-2.pdf, ... page-10.pdf'],
-            ['Range', 'Extracts the specified pages into ONE new PDF', 'Entering "1-3,5,7-9" produces one PDF containing pages 1, 2, 3, 5, 7, 8, 9'],
-            ['Extract (span)', 'Divides the document into chunks of N pages each', 'With span=3: four files — pages 1-3, pages 4-6, pages 7-9, page 10'],
-            ['Equal', 'Splits the document into exactly N equal parts', 'With N=2: two files — pages 1-5 and pages 6-10'],
+            [
+              'All pages',
+              'Creates a separate single-page PDF for every page in the document',
+              '10 separate PDFs: page-1.pdf, page-2.pdf, ... page-10.pdf',
+            ],
+            [
+              'Range',
+              'Extracts the specified pages into ONE new PDF',
+              'Entering "1-3,5,7-9" produces one PDF containing pages 1, 2, 3, 5, 7, 8, 9',
+            ],
+            [
+              'Extract (span)',
+              'Divides the document into chunks of N pages each',
+              'With span=3: four files — pages 1-3, pages 4-6, pages 7-9, page 10',
+            ],
+            [
+              'Equal',
+              'Splits the document into exactly N equal parts',
+              'With N=2: two files — pages 1-5 and pages 6-10',
+            ],
           ],
         },
       },
       {
         heading: 'Page range syntax',
-        content: 'When using Range mode, you specify pages with a comma-separated list. You can mix individual pages and ranges:',
+        content:
+          'When using Range mode, you specify pages with a comma-separated list. You can mix individual pages and ranges:',
         type: 'list',
         items: [
           'Individual pages: 1,3,5 — extracts only those three pages',
@@ -272,7 +304,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Page numbers are 1-based',
-        content: 'Page numbering starts at 1, not 0. The first page of your document is page 1. Entering 0 will produce an error.',
+        content:
+          'Page numbering starts at 1, not 0. The first page of your document is page 1. Entering 0 will produce an error.',
         type: 'warning',
       },
       {
@@ -294,19 +327,22 @@ export const docs: DocEntry[] = [
   {
     slug: 'reorder-pages',
     title: 'Reorder Pages',
-    description: 'Rearrange the pages within a PDF document by specifying their new order.',
+    description:
+      'Rearrange the pages within a PDF document by specifying their new order.',
     category: 'tool-guide',
     toolCategory: 'ORGANIZE PDF',
     toolId: 'reorder',
     sections: [
       {
         heading: 'What it does',
-        content: 'Reorder Pages lets you rearrange the pages inside a PDF document. You provide a comma-separated list of page numbers in the new order you want, and the tool produces a PDF with pages in that exact sequence.',
+        content:
+          'Reorder Pages lets you rearrange the pages inside a PDF document. You provide a comma-separated list of page numbers in the new order you want, and the tool produces a PDF with pages in that exact sequence.',
         type: 'paragraph',
       },
       {
         heading: 'How the page list works',
-        content: 'Enter every page number exactly once, in the order you want them to appear. For example, if your PDF has 5 pages and you enter "3,1,2,5,4", the output PDF will have: page 3 first, then page 1, then page 2, then page 5, then page 4.',
+        content:
+          'Enter every page number exactly once, in the order you want them to appear. For example, if your PDF has 5 pages and you enter "3,1,2,5,4", the output PDF will have: page 3 first, then page 1, then page 2, then page 5, then page 4.',
         type: 'paragraph',
       },
       {
@@ -333,7 +369,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Example',
-        content: '"3,1,2,5,4" on a 5-page PDF puts page 3 first, then page 1, page 2, page 5, page 4.',
+        content:
+          '"3,1,2,5,4" on a 5-page PDF puts page 3 first, then page 1, page 2, page 5, page 4.',
         type: 'tip',
       },
     ],
@@ -348,12 +385,14 @@ export const docs: DocEntry[] = [
     sections: [
       {
         heading: 'What it does',
-        content: 'Remove Pages deletes the specified pages from your PDF and produces a new file without them. The original uploaded file is not modified — you download a new copy with the pages removed.',
+        content:
+          'Remove Pages deletes the specified pages from your PDF and produces a new file without them. The original uploaded file is not modified — you download a new copy with the pages removed.',
         type: 'paragraph',
       },
       {
         heading: 'Page syntax',
-        content: 'Specify the pages to remove using the same syntax as other page-based tools:',
+        content:
+          'Specify the pages to remove using the same syntax as other page-based tools:',
         type: 'list',
         items: [
           'Individual pages: 2,4,6 — removes only those three pages',
@@ -374,7 +413,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'This is permanent',
-        content: 'The output file will not contain the removed pages. There is no undo. Make sure you have a backup of the original file if you might need those pages later.',
+        content:
+          'The output file will not contain the removed pages. There is no undo. Make sure you have a backup of the original file if you might need those pages later.',
         type: 'warning',
       },
     ],
@@ -389,12 +429,14 @@ export const docs: DocEntry[] = [
     sections: [
       {
         heading: 'What it does',
-        content: 'Extract Pages creates a new PDF containing only the pages you specify. The original file is not modified. This is the inverse of Remove Pages — instead of deleting pages, you pick which ones to keep.',
+        content:
+          'Extract Pages creates a new PDF containing only the pages you specify. The original file is not modified. This is the inverse of Remove Pages — instead of deleting pages, you pick which ones to keep.',
         type: 'paragraph',
       },
       {
         heading: 'Extract vs. Split',
-        content: 'Extract Pages always produces a single PDF with your selected pages. Split PDF (in Range mode) can do the same thing, but Split also offers modes that divide the document into multiple files. If you just want one PDF with specific pages, Extract Pages is the simpler choice.',
+        content:
+          'Extract Pages always produces a single PDF with your selected pages. Split PDF (in Range mode) can do the same thing, but Split also offers modes that divide the document into multiple files. If you just want one PDF with specific pages, Extract Pages is the simpler choice.',
         type: 'paragraph',
       },
       {
@@ -423,14 +465,16 @@ export const docs: DocEntry[] = [
   {
     slug: 'scan-to-pdf',
     title: 'Scan to PDF',
-    description: 'Convert scanned images into a multi-page PDF with optional OCR.',
+    description:
+      'Convert scanned images into a multi-page PDF with optional OCR.',
     category: 'tool-guide',
     toolCategory: 'ORGANIZE PDF',
     toolId: 'scan-to-pdf',
     sections: [
       {
         heading: 'What it does',
-        content: 'Scan to PDF converts images (JPG, PNG, WebP) into a multi-page PDF document where each image becomes one page. This is ideal for digitizing physical documents that you have photographed or scanned. You can optionally enable OCR to add an invisible searchable text layer on top of the images.',
+        content:
+          'Scan to PDF converts images (JPG, PNG, WebP) into a multi-page PDF document where each image becomes one page. This is ideal for digitizing physical documents that you have photographed or scanned. You can optionally enable OCR to add an invisible searchable text layer on top of the images.',
         type: 'paragraph',
       },
       {
@@ -454,8 +498,14 @@ export const docs: DocEntry[] = [
         tableData: {
           headers: ['Option', 'Description'],
           rows: [
-            ['OCR', 'Enable to add a searchable text layer so you can select and search text in the output PDF'],
-            ['Language', 'Choose the language for OCR text recognition — matching the correct language improves accuracy'],
+            [
+              'OCR',
+              'Enable to add a searchable text layer so you can select and search text in the output PDF',
+            ],
+            [
+              'Language',
+              'Choose the language for OCR text recognition — matching the correct language improves accuracy',
+            ],
           ],
         },
       },
@@ -473,7 +523,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'For best OCR results',
-        content: 'Use high-resolution scans (300 DPI or higher), ensure the text is not skewed or rotated, and pick the correct language. Low-quality photos taken at an angle will produce poor OCR results.',
+        content:
+          'Use high-resolution scans (300 DPI or higher), ensure the text is not skewed or rotated, and pick the correct language. Low-quality photos taken at an angle will produce poor OCR results.',
         type: 'tip',
       },
     ],
@@ -485,33 +536,57 @@ export const docs: DocEntry[] = [
   {
     slug: 'compress-pdf',
     title: 'Compress PDF',
-    description: 'Reduce PDF file size with four compression levels, each with different quality tradeoffs.',
+    description:
+      'Reduce PDF file size with four compression levels, each with different quality tradeoffs.',
     category: 'tool-guide',
     toolCategory: 'OPTIMIZE PDF',
     toolId: 'compress',
     sections: [
       {
         heading: 'What it does',
-        content: 'Compress PDF reduces the file size of your PDF documents by recompressing images, removing unused objects, and optimizing internal structures. You choose from four compression levels, each with a different tradeoff between file size reduction and visual quality.',
+        content:
+          'Compress PDF reduces the file size of your PDF documents by recompressing images, removing unused objects, and optimizing internal structures. You choose from four compression levels, each with a different tradeoff between file size reduction and visual quality.',
         type: 'paragraph',
       },
       {
         heading: 'Compression levels',
-        content: 'The actual reduction depends on the content of your PDF (image-heavy documents compress more than text-only ones), but here are typical ranges:',
+        content:
+          'The actual reduction depends on the content of your PDF (image-heavy documents compress more than text-only ones), but here are typical ranges:',
         type: 'table',
         tableData: {
           headers: ['Level', 'Typical reduction', 'Quality impact', 'Best for'],
           rows: [
-            ['Low', '~10-20%', 'Virtually no visible loss — images stay sharp', 'Archival, print-ready documents, legal filings'],
-            ['Medium', '~30-50%', 'Balanced — slight softening of images at close zoom', 'General use, sharing, uploading to portals'],
-            ['High', '~50-70%', 'Noticeable image quality loss — fine details may blur', 'Email attachments, reducing storage costs'],
-            ['Extreme', '~70-90%', 'Significant quality loss — images will be visibly blurry', 'Minimum viable file size, quick previews'],
+            [
+              'Low',
+              '~10-20%',
+              'Virtually no visible loss — images stay sharp',
+              'Archival, print-ready documents, legal filings',
+            ],
+            [
+              'Medium',
+              '~30-50%',
+              'Balanced — slight softening of images at close zoom',
+              'General use, sharing, uploading to portals',
+            ],
+            [
+              'High',
+              '~50-70%',
+              'Noticeable image quality loss — fine details may blur',
+              'Email attachments, reducing storage costs',
+            ],
+            [
+              'Extreme',
+              '~70-90%',
+              'Significant quality loss — images will be visibly blurry',
+              'Minimum viable file size, quick previews',
+            ],
           ],
         },
       },
       {
         heading: 'Batch processing',
-        content: 'You can upload up to 10 PDF files at once. Each file is compressed separately with individual progress tracking, so you can see which files are done and download them independently.',
+        content:
+          'You can upload up to 10 PDF files at once. Each file is compressed separately with individual progress tracking, so you can see which files are done and download them independently.',
         type: 'paragraph',
       },
       {
@@ -527,7 +602,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Extreme compression degrades images',
-        content: 'At the Extreme level, images will be visibly blurry and fine text rendered as images may become hard to read. This level is only appropriate when file size matters more than visual quality. If your PDF will be printed, use Low or Medium instead.',
+        content:
+          'At the Extreme level, images will be visibly blurry and fine text rendered as images may become hard to read. This level is only appropriate when file size matters more than visual quality. If your PDF will be printed, use Low or Medium instead.',
         type: 'warning',
       },
       {
@@ -546,14 +622,16 @@ export const docs: DocEntry[] = [
   {
     slug: 'repair-pdf',
     title: 'Repair PDF',
-    description: 'Rebuild the internal structure of corrupted PDF files using pdfcpu.',
+    description:
+      'Rebuild the internal structure of corrupted PDF files using pdfcpu.',
     category: 'tool-guide',
     toolCategory: 'OPTIMIZE PDF',
     toolId: 'repair-pdf',
     sections: [
       {
         heading: 'What it does',
-        content: 'Repair PDF uses pdfcpu to rebuild the internal structure of a damaged PDF file. A PDF is essentially a database of objects (pages, fonts, images) linked by cross-reference tables. When those internal references become corrupted — due to incomplete downloads, disk errors, or software bugs — the file may fail to open or render incorrectly. This tool reconstructs those references and attempts to recover readable content.',
+        content:
+          'Repair PDF uses pdfcpu to rebuild the internal structure of a damaged PDF file. A PDF is essentially a database of objects (pages, fonts, images) linked by cross-reference tables. When those internal references become corrupted — due to incomplete downloads, disk errors, or software bugs — the file may fail to open or render incorrectly. This tool reconstructs those references and attempts to recover readable content.',
         type: 'paragraph',
       },
       {
@@ -589,7 +667,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Not all files can be recovered',
-        content: 'If the content bytes themselves are missing or overwritten, repair cannot reconstruct them. Before assuming a file is corrupted, try opening it in a different PDF viewer (Adobe Acrobat, Chrome, Firefox) — some viewers are more tolerant of minor structural issues than others.',
+        content:
+          'If the content bytes themselves are missing or overwritten, repair cannot reconstruct them. Before assuming a file is corrupted, try opening it in a different PDF viewer (Adobe Acrobat, Chrome, Firefox) — some viewers are more tolerant of minor structural issues than others.',
         type: 'warning',
       },
     ],
@@ -597,32 +676,56 @@ export const docs: DocEntry[] = [
   {
     slug: 'ocr-pdf',
     title: 'OCR PDF',
-    description: 'Add a searchable text layer to scanned or image-based PDFs using Tesseract OCR.',
+    description:
+      'Add a searchable text layer to scanned or image-based PDFs using Tesseract OCR.',
     category: 'tool-guide',
     toolCategory: 'OPTIMIZE PDF',
     toolId: 'ocr',
     sections: [
       {
         heading: 'What it does',
-        content: 'OCR (Optical Character Recognition) uses Tesseract OCR to analyze scanned or image-based PDF pages, recognize the text in them, and add an invisible text layer on top of each page. The visual appearance of the PDF does not change — you still see the original scanned image — but you can now select, copy, and search the recognized text. This is essential for making scanned archives searchable or for enabling text extraction from image-based PDFs.',
+        content:
+          'OCR (Optical Character Recognition) uses Tesseract OCR to analyze scanned or image-based PDF pages, recognize the text in them, and add an invisible text layer on top of each page. The visual appearance of the PDF does not change — you still see the original scanned image — but you can now select, copy, and search the recognized text. This is essential for making scanned archives searchable or for enabling text extraction from image-based PDFs.',
         type: 'paragraph',
       },
       {
-        heading: 'When you need OCR (and when you don\'t)',
-        content: 'OCR is only useful for scanned or image-based PDFs where the text is part of an image rather than actual digital text. If you can already select and copy text in your PDF, it is already digital and does not need OCR. Running OCR on an already-digital PDF is unnecessary and will not improve it.',
+        heading: "When you need OCR (and when you don't)",
+        content:
+          'OCR is only useful for scanned or image-based PDFs where the text is part of an image rather than actual digital text. If you can already select and copy text in your PDF, it is already digital and does not need OCR. Running OCR on an already-digital PDF is unnecessary and will not improve it.',
         type: 'paragraph',
       },
       {
         heading: 'DPI settings and tradeoffs',
-        content: 'DPI (dots per inch) controls the resolution at which each page is rendered before Tesseract analyzes it. Higher DPI means more detail for the OCR engine to work with, but also means longer processing time:',
+        content:
+          'DPI (dots per inch) controls the resolution at which each page is rendered before Tesseract analyzes it. Higher DPI means more detail for the OCR engine to work with, but also means longer processing time:',
         type: 'table',
         tableData: {
           headers: ['DPI', 'Speed', 'Accuracy', 'Best for'],
           rows: [
-            ['150', 'Fast', 'Rough — suitable for clean, large-font documents', 'Quick processing of clear, simple scans'],
-            ['300', 'Moderate', 'Standard — good accuracy for most documents', 'General-purpose OCR, office documents'],
-            ['400', 'Slow', 'High — better with small text and detailed pages', 'Dense documents, small font sizes'],
-            ['600', 'Slowest', 'Best — maximum accuracy for difficult sources', 'Archival-quality OCR, faded or low-quality scans'],
+            [
+              '150',
+              'Fast',
+              'Rough — suitable for clean, large-font documents',
+              'Quick processing of clear, simple scans',
+            ],
+            [
+              '300',
+              'Moderate',
+              'Standard — good accuracy for most documents',
+              'General-purpose OCR, office documents',
+            ],
+            [
+              '400',
+              'Slow',
+              'High — better with small text and detailed pages',
+              'Dense documents, small font sizes',
+            ],
+            [
+              '600',
+              'Slowest',
+              'Best — maximum accuracy for difficult sources',
+              'Archival-quality OCR, faded or low-quality scans',
+            ],
           ],
         },
       },
@@ -640,7 +743,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Accuracy depends on input quality',
-        content: 'OCR accuracy is directly tied to the quality of the source scan. Clean, high-resolution scans with standard printed fonts produce excellent results. Faded text, unusual fonts, skewed pages, and low-resolution images degrade accuracy. Handwritten text has particularly low accuracy and may not be recognized at all.',
+        content:
+          'OCR accuracy is directly tied to the quality of the source scan. Clean, high-resolution scans with standard printed fonts produce excellent results. Faded text, unusual fonts, skewed pages, and low-resolution images degrade accuracy. Handwritten text has particularly low accuracy and may not be recognized at all.',
         type: 'warning',
       },
     ],
@@ -652,14 +756,16 @@ export const docs: DocEntry[] = [
   {
     slug: 'image-to-pdf',
     title: 'Image to PDF',
-    description: 'Convert JPG, PNG, or WebP images into a multi-page PDF document.',
+    description:
+      'Convert JPG, PNG, or WebP images into a multi-page PDF document.',
     category: 'tool-guide',
     toolCategory: 'CONVERT TO PDF',
     toolId: 'image-to-pdf',
     sections: [
       {
         heading: 'What it does',
-        content: 'Image to PDF converts your images (JPG, PNG, WebP) into a PDF document. Each image becomes one page. Upload multiple images to create a multi-page PDF, and drag to reorder them before converting.',
+        content:
+          'Image to PDF converts your images (JPG, PNG, WebP) into a PDF document. Each image becomes one page. Upload multiple images to create a multi-page PDF, and drag to reorder them before converting.',
         type: 'paragraph',
       },
       {
@@ -699,7 +805,8 @@ export const docs: DocEntry[] = [
     sections: [
       {
         heading: 'What it does',
-        content: 'Word to PDF converts Microsoft Word documents (.doc, .docx) into PDF format using LibreOffice as the conversion engine. Standard formatting — headings, paragraphs, tables, lists, and embedded images — is preserved. However, complex layouts, custom fonts not available on the server, and VBA macros may not convert perfectly.',
+        content:
+          'Word to PDF converts Microsoft Word documents (.doc, .docx) into PDF format using LibreOffice as the conversion engine. Standard formatting — headings, paragraphs, tables, lists, and embedded images — is preserved. However, complex layouts, custom fonts not available on the server, and VBA macros may not convert perfectly.',
         type: 'paragraph',
       },
       {
@@ -728,7 +835,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Conversion fidelity',
-        content: 'Simple text-heavy documents with standard fonts convert almost perfectly. Documents with complex multi-column layouts, custom fonts, embedded macros, or heavy use of WordArt and SmartArt may look different in the PDF output. If exact fidelity is critical, consider exporting to PDF directly from Microsoft Word.',
+        content:
+          'Simple text-heavy documents with standard fonts convert almost perfectly. Documents with complex multi-column layouts, custom fonts, embedded macros, or heavy use of WordArt and SmartArt may look different in the PDF output. If exact fidelity is critical, consider exporting to PDF directly from Microsoft Word.',
         type: 'warning',
       },
     ],
@@ -743,7 +851,8 @@ export const docs: DocEntry[] = [
     sections: [
       {
         heading: 'What it does',
-        content: 'PowerPoint to PDF converts your presentations (.ppt, .pptx) into PDF format using LibreOffice. Each slide becomes one page in the output PDF. Standard elements like text, shapes, tables, and embedded images are preserved. Animations, transitions, speaker notes, and custom fonts are not included in the PDF output.',
+        content:
+          'PowerPoint to PDF converts your presentations (.ppt, .pptx) into PDF format using LibreOffice. Each slide becomes one page in the output PDF. Standard elements like text, shapes, tables, and embedded images are preserved. Animations, transitions, speaker notes, and custom fonts are not included in the PDF output.',
         type: 'paragraph',
       },
       {
@@ -772,7 +881,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Conversion fidelity',
-        content: 'Slides with complex overlapping elements, custom fonts, or heavy graphics may shift or render differently. For pixel-perfect output, export to PDF directly from PowerPoint.',
+        content:
+          'Slides with complex overlapping elements, custom fonts, or heavy graphics may shift or render differently. For pixel-perfect output, export to PDF directly from PowerPoint.',
         type: 'warning',
       },
     ],
@@ -787,7 +897,8 @@ export const docs: DocEntry[] = [
     sections: [
       {
         heading: 'What it does',
-        content: 'Excel to PDF converts your spreadsheets (.xls, .xlsx) into PDF format using LibreOffice. Tables, cell formatting, borders, and basic formulas (as their computed values) are preserved. Charts and conditional formatting may not render identically to what you see in Excel.',
+        content:
+          'Excel to PDF converts your spreadsheets (.xls, .xlsx) into PDF format using LibreOffice. Tables, cell formatting, borders, and basic formulas (as their computed values) are preserved. Charts and conditional formatting may not render identically to what you see in Excel.',
         type: 'paragraph',
       },
       {
@@ -816,7 +927,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Wide spreadsheets',
-        content: 'Very wide spreadsheets may be split across multiple PDF pages or scaled down to fit. If your spreadsheet has many columns, consider setting a print area in Excel before uploading for a cleaner result.',
+        content:
+          'Very wide spreadsheets may be split across multiple PDF pages or scaled down to fit. If your spreadsheet has many columns, consider setting a print area in Excel before uploading for a cleaner result.',
         type: 'tip',
       },
     ],
@@ -831,7 +943,8 @@ export const docs: DocEntry[] = [
     sections: [
       {
         heading: 'What it does',
-        content: 'HTML to PDF converts HTML files into PDF format. This is useful for saving web pages, HTML reports, or HTML-based documentation as portable, printable PDF files. Inline CSS and embedded images are rendered; external stylesheets and remote resources may not be available during conversion.',
+        content:
+          'HTML to PDF converts HTML files into PDF format. This is useful for saving web pages, HTML reports, or HTML-based documentation as portable, printable PDF files. Inline CSS and embedded images are rendered; external stylesheets and remote resources may not be available during conversion.',
         type: 'paragraph',
       },
       {
@@ -860,7 +973,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Rendering limitations',
-        content: 'The converter cannot load external CSS, JavaScript, or images referenced by URL. For best results, use self-contained HTML files with inline styles and base64-encoded images.',
+        content:
+          'The converter cannot load external CSS, JavaScript, or images referenced by URL. For best results, use self-contained HTML files with inline styles and base64-encoded images.',
         type: 'warning',
       },
     ],
@@ -879,7 +993,8 @@ export const docs: DocEntry[] = [
     sections: [
       {
         heading: 'What it does',
-        content: 'PDF to Image renders each page of your PDF as a separate PNG image file. This is useful for embedding individual pages in presentations, sharing on platforms that do not support PDF, or creating image previews of documents.',
+        content:
+          'PDF to Image renders each page of your PDF as a separate PNG image file. This is useful for embedding individual pages in presentations, sharing on platforms that do not support PDF, or creating image previews of documents.',
         type: 'paragraph',
       },
       {
@@ -915,7 +1030,8 @@ export const docs: DocEntry[] = [
     sections: [
       {
         heading: 'What it does',
-        content: 'PDF to Word converts your PDF documents into editable Microsoft Word (.docx) files. The converter attempts to preserve text, formatting, and layout as closely as possible. Tables and simple single-column layouts convert well. Complex multi-column layouts, embedded images, and unusual fonts may shift or change during conversion.',
+        content:
+          'PDF to Word converts your PDF documents into editable Microsoft Word (.docx) files. The converter attempts to preserve text, formatting, and layout as closely as possible. Tables and simple single-column layouts convert well. Complex multi-column layouts, embedded images, and unusual fonts may shift or change during conversion.',
         type: 'paragraph',
       },
       {
@@ -940,7 +1056,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Conversion accuracy',
-        content: 'Simple, text-heavy documents with standard layouts convert best. Complex layouts with overlapping elements, custom fonts, or heavy graphics may not convert perfectly. If the output looks wrong, try simplifying the source PDF or using copy-paste for the sections you need.',
+        content:
+          'Simple, text-heavy documents with standard layouts convert best. Complex layouts with overlapping elements, custom fonts, or heavy graphics may not convert perfectly. If the output looks wrong, try simplifying the source PDF or using copy-paste for the sections you need.',
         type: 'warning',
       },
     ],
@@ -948,14 +1065,16 @@ export const docs: DocEntry[] = [
   {
     slug: 'pdf-to-ppt',
     title: 'PDF to PowerPoint',
-    description: 'Convert PDF files to editable PowerPoint (.pptx) presentations.',
+    description:
+      'Convert PDF files to editable PowerPoint (.pptx) presentations.',
     category: 'tool-guide',
     toolCategory: 'CONVERT FROM PDF',
     toolId: 'pdf-to-ppt',
     sections: [
       {
         heading: 'What it does',
-        content: 'PDF to PowerPoint converts your PDF into an editable PowerPoint (.pptx) presentation. Each PDF page becomes one slide. Text and basic layout elements are converted to editable slide objects where possible. Complex graphics and unusual formatting may be rendered as background images rather than editable elements.',
+        content:
+          'PDF to PowerPoint converts your PDF into an editable PowerPoint (.pptx) presentation. Each PDF page becomes one slide. Text and basic layout elements are converted to editable slide objects where possible. Complex graphics and unusual formatting may be rendered as background images rather than editable elements.',
         type: 'paragraph',
       },
       {
@@ -970,7 +1089,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Conversion accuracy',
-        content: 'PDFs originally created from PowerPoint tend to convert back well. PDFs from other sources (scanned documents, complex design layouts) may produce slides with limited editability. Complex overlapping elements, custom fonts, and heavy graphics may not convert perfectly.',
+        content:
+          'PDFs originally created from PowerPoint tend to convert back well. PDFs from other sources (scanned documents, complex design layouts) may produce slides with limited editability. Complex overlapping elements, custom fonts, and heavy graphics may not convert perfectly.',
         type: 'warning',
       },
     ],
@@ -978,14 +1098,16 @@ export const docs: DocEntry[] = [
   {
     slug: 'pdf-to-excel',
     title: 'PDF to Excel',
-    description: 'Extract tables and data from PDFs into editable Excel (.xlsx) spreadsheets.',
+    description:
+      'Extract tables and data from PDFs into editable Excel (.xlsx) spreadsheets.',
     category: 'tool-guide',
     toolCategory: 'CONVERT FROM PDF',
     toolId: 'pdf-to-excel',
     sections: [
       {
         heading: 'What it does',
-        content: 'PDF to Excel extracts tables and structured data from your PDF documents into editable Excel (.xlsx) spreadsheets. The converter identifies tabular structures in the PDF and maps them to spreadsheet rows and columns. Non-tabular content (paragraphs, images, headers) may not convert meaningfully.',
+        content:
+          'PDF to Excel extracts tables and structured data from your PDF documents into editable Excel (.xlsx) spreadsheets. The converter identifies tabular structures in the PDF and maps them to spreadsheet rows and columns. Non-tabular content (paragraphs, images, headers) may not convert meaningfully.',
         type: 'paragraph',
       },
       {
@@ -1010,7 +1132,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Table detection',
-        content: 'The converter works best on PDFs with clearly defined tables that use visible borders or consistent column alignment. Tables without borders, merged cells, or unusual layouts may not be detected correctly. Always verify the extracted data against the original.',
+        content:
+          'The converter works best on PDFs with clearly defined tables that use visible borders or consistent column alignment. Tables without borders, merged cells, or unusual layouts may not be detected correctly. Always verify the extracted data against the original.',
         type: 'warning',
       },
     ],
@@ -1018,14 +1141,16 @@ export const docs: DocEntry[] = [
   {
     slug: 'pdf-to-text',
     title: 'PDF to Text',
-    description: 'Extract plain text from PDF documents, stripping all formatting.',
+    description:
+      'Extract plain text from PDF documents, stripping all formatting.',
     category: 'tool-guide',
     toolCategory: 'CONVERT FROM PDF',
     toolId: 'pdf-to-text',
     sections: [
       {
         heading: 'What it does',
-        content: 'PDF to Text extracts all text content from your PDF and saves it as a plain text (.txt) file. All formatting, images, colors, and layout information is stripped — you get only the raw text content. Tables lose their visual structure and become sequences of text values.',
+        content:
+          'PDF to Text extracts all text content from your PDF and saves it as a plain text (.txt) file. All formatting, images, colors, and layout information is stripped — you get only the raw text content. Tables lose their visual structure and become sequences of text values.',
         type: 'paragraph',
       },
       {
@@ -1040,12 +1165,14 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Scanned PDFs need OCR first',
-        content: 'If your PDF is scanned (the text is part of an image), this tool will extract little or no text. Use the OCR tool first to add a searchable text layer, then use PDF to Text to extract it.',
+        content:
+          'If your PDF is scanned (the text is part of an image), this tool will extract little or no text. Use the OCR tool first to add a searchable text layer, then use PDF to Text to extract it.',
         type: 'tip',
       },
       {
         heading: 'Tables and layout',
-        content: 'Tables will lose their columnar structure in plain text output. If you need to preserve table structure, use PDF to Excel instead.',
+        content:
+          'Tables will lose their columnar structure in plain text output. If you need to preserve table structure, use PDF to Excel instead.',
         type: 'warning',
       },
     ],
@@ -1053,19 +1180,22 @@ export const docs: DocEntry[] = [
   {
     slug: 'pdf-to-pdfa',
     title: 'PDF to PDF/A',
-    description: 'Convert PDFs to ISO 19005-2 archival format for long-term preservation.',
+    description:
+      'Convert PDFs to ISO 19005-2 archival format for long-term preservation.',
     category: 'tool-guide',
     toolCategory: 'CONVERT FROM PDF',
     toolId: 'pdf-to-pdfa',
     sections: [
       {
         heading: 'What it does',
-        content: 'PDF to PDF/A converts your documents to PDF/A-2b format, which conforms to ISO 19005-2, the international standard for long-term digital document preservation. The conversion embeds all fonts used in the document directly into the file, ensuring it can be rendered faithfully on any system in the future without depending on external font files.',
+        content:
+          'PDF to PDF/A converts your documents to PDF/A-2b format, which conforms to ISO 19005-2, the international standard for long-term digital document preservation. The conversion embeds all fonts used in the document directly into the file, ensuring it can be rendered faithfully on any system in the future without depending on external font files.',
         type: 'paragraph',
       },
       {
         heading: 'What changes during conversion',
-        content: 'PDF/A is a strict subset of PDF. To comply with the standard, certain features are removed or modified:',
+        content:
+          'PDF/A is a strict subset of PDF. To comply with the standard, certain features are removed or modified:',
         type: 'list',
         items: [
           'All fonts are embedded (even if they were not before)',
@@ -1104,14 +1234,16 @@ export const docs: DocEntry[] = [
   {
     slug: 'rotate-pdf',
     title: 'Rotate Pages',
-    description: 'Rotate PDF pages by 90, 180, or 270 degrees with fine-grained page selection.',
+    description:
+      'Rotate PDF pages by 90, 180, or 270 degrees with fine-grained page selection.',
     category: 'tool-guide',
     toolCategory: 'EDIT PDF',
     toolId: 'rotate',
     sections: [
       {
         heading: 'What it does',
-        content: 'Rotate Pages lets you rotate pages in your PDF clockwise by a fixed angle. This is commonly needed when scanned documents come in sideways or upside down, or when landscape pages need to be turned for printing.',
+        content:
+          'Rotate Pages lets you rotate pages in your PDF clockwise by a fixed angle. This is commonly needed when scanned documents come in sideways or upside down, or when landscape pages need to be turned for printing.',
         type: 'paragraph',
       },
       {
@@ -1121,9 +1253,18 @@ export const docs: DocEntry[] = [
         tableData: {
           headers: ['Angle', 'Effect'],
           rows: [
-            ['90°', 'Quarter turn clockwise — landscape becomes portrait (or vice versa)'],
-            ['180°', 'Upside down — corrects pages that were scanned in reverse'],
-            ['270°', 'Quarter turn counter-clockwise — equivalent to 90° in the other direction'],
+            [
+              '90°',
+              'Quarter turn clockwise — landscape becomes portrait (or vice versa)',
+            ],
+            [
+              '180°',
+              'Upside down — corrects pages that were scanned in reverse',
+            ],
+            [
+              '270°',
+              'Quarter turn counter-clockwise — equivalent to 90° in the other direction',
+            ],
           ],
         },
       },
@@ -1155,14 +1296,16 @@ export const docs: DocEntry[] = [
   {
     slug: 'add-page-numbers',
     title: 'Add Page Numbers',
-    description: 'Insert page numbers at configurable positions and formats on every page.',
+    description:
+      'Insert page numbers at configurable positions and formats on every page.',
     category: 'tool-guide',
     toolCategory: 'EDIT PDF',
     toolId: 'add-page-numbers',
     sections: [
       {
         heading: 'What it does',
-        content: 'Add Page Numbers stamps a page number onto each page of your PDF. You control exactly where the number appears, what format it uses, and what number to start from.',
+        content:
+          'Add Page Numbers stamps a page number onto each page of your PDF. You control exactly where the number appears, what format it uses, and what number to start from.',
         type: 'paragraph',
       },
       {
@@ -1190,7 +1333,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Start number',
-        content: 'The starting number does not have to be 1. If this PDF is a section of a larger document (for example, chapter 3 starting on page 47), set the start number to 47 so the page numbers continue from the previous section.',
+        content:
+          'The starting number does not have to be 1. If this PDF is a section of a larger document (for example, chapter 3 starting on page 47), set the start number to 47 so the page numbers continue from the previous section.',
         type: 'tip',
       },
       {
@@ -1212,14 +1356,16 @@ export const docs: DocEntry[] = [
   {
     slug: 'add-watermark',
     title: 'Add Watermark',
-    description: 'Add text or image watermarks with configurable position, opacity, and tiling.',
+    description:
+      'Add text or image watermarks with configurable position, opacity, and tiling.',
     category: 'tool-guide',
     toolCategory: 'EDIT PDF',
     toolId: 'watermark',
     sections: [
       {
         heading: 'What it does',
-        content: 'Add Watermark places a text or image watermark on every page of your PDF. This is commonly used to mark documents as "CONFIDENTIAL", "DRAFT", or to brand them with a logo. You control the watermark type, position, opacity, and size.',
+        content:
+          'Add Watermark places a text or image watermark on every page of your PDF. This is commonly used to mark documents as "CONFIDENTIAL", "DRAFT", or to brand them with a logo. You control the watermark type, position, opacity, and size.',
         type: 'paragraph',
       },
       {
@@ -1229,8 +1375,14 @@ export const docs: DocEntry[] = [
         tableData: {
           headers: ['Type', 'Description'],
           rows: [
-            ['Text watermark', 'Type your own text, choose font size — common for "CONFIDENTIAL", "DRAFT", "SAMPLE"'],
-            ['Image watermark', 'Upload an image file (logo, stamp) to overlay on pages — set scale to control size'],
+            [
+              'Text watermark',
+              'Type your own text, choose font size — common for "CONFIDENTIAL", "DRAFT", "SAMPLE"',
+            ],
+            [
+              'Image watermark',
+              'Upload an image file (logo, stamp) to overlay on pages — set scale to control size',
+            ],
           ],
         },
       },
@@ -1242,14 +1394,21 @@ export const docs: DocEntry[] = [
           headers: ['Position', 'Description'],
           rows: [
             ['Center', 'Single watermark centered on each page'],
-            ['Diagonal', 'Text rotated 45 degrees across the page — the classic "CONFIDENTIAL" style'],
-            ['Tiled', 'Repeats the watermark in a grid pattern across the entire page'],
+            [
+              'Diagonal',
+              'Text rotated 45 degrees across the page — the classic "CONFIDENTIAL" style',
+            ],
+            [
+              'Tiled',
+              'Repeats the watermark in a grid pattern across the entire page',
+            ],
           ],
         },
       },
       {
         heading: 'Opacity',
-        content: 'Opacity ranges from 0% (invisible) to 100% (fully opaque). For watermarks that should be visible but not obscure the underlying content, use 20-40% opacity. This lets the document text show through clearly while the watermark remains readable.',
+        content:
+          'Opacity ranges from 0% (invisible) to 100% (fully opaque). For watermarks that should be visible but not obscure the underlying content, use 20-40% opacity. This lets the document text show through clearly while the watermark remains readable.',
         type: 'tip',
       },
       {
@@ -1272,19 +1431,22 @@ export const docs: DocEntry[] = [
   {
     slug: 'edit-pdf',
     title: 'Edit PDF',
-    description: 'Add text annotations at specific positions on any page of a PDF.',
+    description:
+      'Add text annotations at specific positions on any page of a PDF.',
     category: 'tool-guide',
     toolCategory: 'EDIT PDF',
     toolId: 'edit-pdf',
     sections: [
       {
         heading: 'What it does',
-        content: 'Edit PDF lets you add new text annotations at specific positions on any page of your PDF. You specify the text content, the page number, the X/Y coordinates, and the font size. The text is placed on top of the existing page content.',
+        content:
+          'Edit PDF lets you add new text annotations at specific positions on any page of your PDF. You specify the text content, the page number, the X/Y coordinates, and the font size. The text is placed on top of the existing page content.',
         type: 'paragraph',
       },
       {
         heading: 'Important limitation',
-        content: 'This tool cannot modify or delete existing text in the PDF. It only adds new text on top of what is already there. If you need to change existing text, you will need to use a full PDF editor like Adobe Acrobat.',
+        content:
+          'This tool cannot modify or delete existing text in the PDF. It only adds new text on top of what is already there. If you need to change existing text, you will need to use a full PDF editor like Adobe Acrobat.',
         type: 'warning',
       },
       {
@@ -1307,14 +1469,16 @@ export const docs: DocEntry[] = [
   {
     slug: 'unlock-pdf',
     title: 'Unlock PDF',
-    description: 'Remove password protection from PDFs when you know the current password.',
+    description:
+      'Remove password protection from PDFs when you know the current password.',
     category: 'tool-guide',
     toolCategory: 'PDF SECURITY',
     toolId: 'unlock-pdf',
     sections: [
       {
         heading: 'What it does',
-        content: 'Unlock PDF removes the password requirement from a protected PDF so it can be opened freely without entering a password. You must provide the current password — this tool verifies it, decrypts the file, and produces an unprotected copy.',
+        content:
+          'Unlock PDF removes the password requirement from a protected PDF so it can be opened freely without entering a password. You must provide the current password — this tool verifies it, decrypts the file, and produces an unprotected copy.',
         type: 'paragraph',
       },
       {
@@ -1330,7 +1494,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'This is not a password cracker',
-        content: 'This tool cannot bypass, guess, or brute-force unknown passwords. You must enter the correct password. If you do not know the password, this tool cannot help you — contact the person who created or sent you the protected file.',
+        content:
+          'This tool cannot bypass, guess, or brute-force unknown passwords. You must enter the correct password. If you do not know the password, this tool cannot help you — contact the person who created or sent you the protected file.',
         type: 'warning',
       },
     ],
@@ -1338,14 +1503,16 @@ export const docs: DocEntry[] = [
   {
     slug: 'protect-pdf',
     title: 'Protect PDF',
-    description: 'Add password protection and permission controls to PDF documents.',
+    description:
+      'Add password protection and permission controls to PDF documents.',
     category: 'tool-guide',
     toolCategory: 'PDF SECURITY',
     toolId: 'password-protect',
     sections: [
       {
         heading: 'What it does',
-        content: 'Protect PDF encrypts your document with a password. Anyone who receives the file must enter this password to open it. You can also independently control whether the recipient is allowed to print, copy text from, or edit the document.',
+        content:
+          'Protect PDF encrypts your document with a password. Anyone who receives the file must enter this password to open it. You can also independently control whether the recipient is allowed to print, copy text from, or edit the document.',
         type: 'paragraph',
       },
       {
@@ -1356,9 +1523,18 @@ export const docs: DocEntry[] = [
           headers: ['Option', 'Description'],
           rows: [
             ['Password', 'The password required to open the document'],
-            ['Allow printing', 'If disabled, the document cannot be printed from a PDF viewer'],
-            ['Allow copying', 'If disabled, text selection and copy are blocked in compliant viewers'],
-            ['Allow editing', 'If disabled, form filling and annotation are blocked in compliant viewers'],
+            [
+              'Allow printing',
+              'If disabled, the document cannot be printed from a PDF viewer',
+            ],
+            [
+              'Allow copying',
+              'If disabled, text selection and copy are blocked in compliant viewers',
+            ],
+            [
+              'Allow editing',
+              'If disabled, form filling and annotation are blocked in compliant viewers',
+            ],
           ],
         },
       },
@@ -1376,7 +1552,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Password protection is a deterrent, not absolute security',
-        content: 'PDF password protection can be bypassed by some third-party tools, especially the permission restrictions (print, copy, edit). The open password provides stronger protection, but it is not equivalent to enterprise-grade encryption. For highly sensitive documents, consider additional security measures beyond PDF passwords.',
+        content:
+          'PDF password protection can be bypassed by some third-party tools, especially the permission restrictions (print, copy, edit). The open password provides stronger protection, but it is not equivalent to enterprise-grade encryption. For highly sensitive documents, consider additional security measures beyond PDF passwords.',
         type: 'warning',
       },
     ],
@@ -1384,19 +1561,22 @@ export const docs: DocEntry[] = [
   {
     slug: 'sign-pdf',
     title: 'Sign PDF',
-    description: 'Add a visual signature image to PDF documents by drawing or uploading.',
+    description:
+      'Add a visual signature image to PDF documents by drawing or uploading.',
     category: 'tool-guide',
     toolCategory: 'PDF SECURITY',
     toolId: 'sign-pdf',
     sections: [
       {
         heading: 'What it does',
-        content: 'Sign PDF lets you add a visual signature image to your PDF. You can draw your signature on screen or upload an image of your signature, then position it on any page of the document. The signature is embedded as an image overlay on the PDF page.',
+        content:
+          'Sign PDF lets you add a visual signature image to your PDF. You can draw your signature on screen or upload an image of your signature, then position it on any page of the document. The signature is embedded as an image overlay on the PDF page.',
         type: 'paragraph',
       },
       {
         heading: 'This is NOT a digital signature',
-        content: 'This tool adds a visual image of a signature — the same as printing the document, signing it with a pen, and scanning it back. It does NOT create a cryptographic digital signature. It does not provide legal non-repudiation, certificate-based verification, or tamper detection. For legally binding digital signatures with certificates, use dedicated e-signature software such as DocuSign, Adobe Sign, or similar services.',
+        content:
+          'This tool adds a visual image of a signature — the same as printing the document, signing it with a pen, and scanning it back. It does NOT create a cryptographic digital signature. It does not provide legal non-repudiation, certificate-based verification, or tamper detection. For legally binding digital signatures with certificates, use dedicated e-signature software such as DocuSign, Adobe Sign, or similar services.',
         type: 'warning',
       },
       {
@@ -1420,7 +1600,8 @@ export const docs: DocEntry[] = [
   {
     slug: 'supported-formats',
     title: 'Supported Formats',
-    description: 'Complete reference of file formats, extensions, MIME types, and which tools accept them.',
+    description:
+      'Complete reference of file formats, extensions, MIME types, and which tools accept them.',
     category: 'concept',
     sections: [
       {
@@ -1431,9 +1612,24 @@ export const docs: DocEntry[] = [
           headers: ['Format', 'Extensions', 'MIME type', 'Used in'],
           rows: [
             ['PDF', '.pdf', 'application/pdf', 'All tools'],
-            ['Microsoft Word', '.doc, .docx', 'application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'Word to PDF, PDF to Word'],
-            ['Microsoft Excel', '.xls, .xlsx', 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Excel to PDF, PDF to Excel'],
-            ['Microsoft PowerPoint', '.ppt, .pptx', 'application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation', 'PowerPoint to PDF, PDF to PowerPoint'],
+            [
+              'Microsoft Word',
+              '.doc, .docx',
+              'application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              'Word to PDF, PDF to Word',
+            ],
+            [
+              'Microsoft Excel',
+              '.xls, .xlsx',
+              'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              'Excel to PDF, PDF to Excel',
+            ],
+            [
+              'Microsoft PowerPoint',
+              '.ppt, .pptx',
+              'application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation',
+              'PowerPoint to PDF, PDF to PowerPoint',
+            ],
             ['HTML', '.html, .htm', 'text/html', 'HTML to PDF, PDF to HTML'],
             ['Plain Text', '.txt', 'text/plain', 'PDF to Text'],
           ],
@@ -1446,8 +1642,18 @@ export const docs: DocEntry[] = [
         tableData: {
           headers: ['Format', 'Extensions', 'MIME type', 'Used in'],
           rows: [
-            ['JPEG', '.jpg, .jpeg', 'image/jpeg', 'Image to PDF, Scan to PDF, Watermark (image upload)'],
-            ['PNG', '.png', 'image/png', 'Image to PDF, Scan to PDF, PDF to Image, Watermark (image upload)'],
+            [
+              'JPEG',
+              '.jpg, .jpeg',
+              'image/jpeg',
+              'Image to PDF, Scan to PDF, Watermark (image upload)',
+            ],
+            [
+              'PNG',
+              '.png',
+              'image/png',
+              'Image to PDF, Scan to PDF, PDF to Image, Watermark (image upload)',
+            ],
             ['WebP', '.webp', 'image/webp', 'Image to PDF, Scan to PDF'],
           ],
         },
@@ -1459,7 +1665,12 @@ export const docs: DocEntry[] = [
         tableData: {
           headers: ['Format', 'Standard', 'Description', 'Used in'],
           rows: [
-            ['PDF/A-2b', 'ISO 19005-2', 'Long-term archival format with embedded fonts and metadata', 'PDF to PDF/A'],
+            [
+              'PDF/A-2b',
+              'ISO 19005-2',
+              'Long-term archival format with embedded fonts and metadata',
+              'PDF to PDF/A',
+            ],
           ],
         },
       },
@@ -1477,12 +1688,14 @@ export const docs: DocEntry[] = [
   {
     slug: 'file-limits',
     title: 'File Limits',
-    description: 'Maximum file sizes, file counts, and an explanation of why limits exist.',
+    description:
+      'Maximum file sizes, file counts, and an explanation of why limits exist.',
     category: 'concept',
     sections: [
       {
         heading: 'Limits by tool',
-        content: 'Each tool has specific limits on file size and the number of files you can process at once:',
+        content:
+          'Each tool has specific limits on file size and the number of files you can process at once:',
         type: 'table',
         tableData: {
           headers: ['Tool', 'Max file size', 'Max files'],
@@ -1513,7 +1726,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Why limits exist',
-        content: 'File size and count limits exist to ensure reliable processing for all users:',
+        content:
+          'File size and count limits exist to ensure reliable processing for all users:',
         type: 'list',
         items: [
           'Server memory: each file is loaded into memory during processing. Very large files or too many concurrent files can exhaust available RAM.',
@@ -1523,7 +1737,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'What happens when limits are exceeded',
-        content: 'If you try to upload a file that exceeds the size limit, or more files than the tool allows, the upload is rejected before it starts. You will see an error message indicating which limit was exceeded. The file is not sent to the server — the check happens in your browser.',
+        content:
+          'If you try to upload a file that exceeds the size limit, or more files than the tool allows, the upload is rejected before it starts. You will see an error message indicating which limit was exceeded. The file is not sent to the server — the check happens in your browser.',
         type: 'paragraph',
       },
     ],
@@ -1531,22 +1746,26 @@ export const docs: DocEntry[] = [
   {
     slug: 'security-privacy',
     title: 'Security & Privacy',
-    description: 'How Fyredocs protects your files during upload, processing, and storage.',
+    description:
+      'How Fyredocs protects your files during upload, processing, and storage.',
     category: 'concept',
     sections: [
       {
         heading: 'Encrypted transfers',
-        content: 'All file uploads and downloads travel over HTTPS (TLS 1.2+). Your files are encrypted in transit between your browser and our servers. No file data is ever sent in the clear.',
+        content:
+          'All file uploads and downloads travel over HTTPS (TLS 1.2+). Your files are encrypted in transit between your browser and our servers. No file data is ever sent in the clear.',
         type: 'paragraph',
       },
       {
         heading: 'Isolated processing',
-        content: 'Each file is processed in an isolated server instance. Your files are not accessible to other users or other processing jobs. Once processing completes, the working files are cleaned up.',
+        content:
+          'Each file is processed in an isolated server instance. Your files are not accessible to other users or other processing jobs. Once processing completes, the working files are cleaned up.',
         type: 'paragraph',
       },
       {
         heading: 'Automatic deletion',
-        content: 'Files are automatically deleted on a schedule based on your account type:',
+        content:
+          'Files are automatically deleted on a schedule based on your account type:',
         type: 'list',
         items: [
           'Guest users (no account): files are deleted 2 hours after upload',
@@ -1568,7 +1787,8 @@ export const docs: DocEntry[] = [
       },
       {
         heading: 'Server security',
-        content: 'Our servers are secured with industry-standard practices including firewalls, access controls, and regular security audits. All processing happens in isolated environments with no persistent storage of document content beyond the retention period.',
+        content:
+          'Our servers are secured with industry-standard practices including firewalls, access controls, and regular security audits. All processing happens in isolated environments with no persistent storage of document content beyond the retention period.',
         type: 'paragraph',
       },
     ],
@@ -1576,17 +1796,20 @@ export const docs: DocEntry[] = [
   {
     slug: 'accounts-plans',
     title: 'Accounts & Plans',
-    description: 'Compare guest access and free accounts — features, retention, and limitations.',
+    description:
+      'Compare guest access and free accounts — features, retention, and limitations.',
     category: 'concept',
     sections: [
       {
         heading: 'Guest access',
-        content: 'You can use every tool on Fyredocs without creating an account. Guest sessions are identified by a temporary browser token. You get full access to all tools with the same processing capabilities as registered users. The main limitation is that your files are automatically deleted after 2 hours and you have no job history.',
+        content:
+          'You can use every tool on Fyredocs without creating an account. Guest sessions are identified by a temporary browser token. You get full access to all tools with the same processing capabilities as registered users. The main limitation is that your files are automatically deleted after 2 hours and you have no job history.',
         type: 'paragraph',
       },
       {
         heading: 'Free account',
-        content: 'Create a free account with just an email and password. A free account gives you longer file retention, a persistent job history so you can re-download results, and a consistent experience across devices and sessions. All tools remain free — there are no paywalled features.',
+        content:
+          'Create a free account with just an email and password. A free account gives you longer file retention, a persistent job history so you can re-download results, and a consistent experience across devices and sessions. All tools remain free — there are no paywalled features.',
         type: 'paragraph',
       },
       {
@@ -1599,9 +1822,21 @@ export const docs: DocEntry[] = [
             ['Access to all tools', 'Yes', 'Yes'],
             ['File size limits', 'Same as registered', 'Same as guest'],
             ['File retention', '2 hours', 'Longer (plan-based)'],
-            ['Job history', 'No — lost when session ends', 'Yes — accessible across sessions'],
-            ['Re-download results', 'Only during retention window', 'Yes, from job history'],
-            ['Cross-device access', 'No — tied to browser token', 'Yes — login from any device'],
+            [
+              'Job history',
+              'No — lost when session ends',
+              'Yes — accessible across sessions',
+            ],
+            [
+              'Re-download results',
+              'Only during retention window',
+              'Yes, from job history',
+            ],
+            [
+              'Cross-device access',
+              'No — tied to browser token',
+              'Yes — login from any device',
+            ],
             ['Account required', 'No', 'Yes — email + password signup'],
           ],
         },
@@ -1620,57 +1855,68 @@ export const docs: DocEntry[] = [
     sections: [
       {
         heading: 'Is Fyredocs free?',
-        content: 'Yes. Every tool on Fyredocs is free to use, with no hidden limits or paywalled features. You can process files as a guest without creating an account.',
+        content:
+          'Yes. Every tool on Fyredocs is free to use, with no hidden limits or paywalled features. You can process files as a guest without creating an account.',
         type: 'paragraph',
       },
       {
         heading: 'Are my files safe?',
-        content: 'Yes. All files are uploaded over HTTPS, processed in isolated server instances, and automatically deleted after processing (2 hours for guests, longer for registered users). We never read, share, analyze, or index your document content. See the Security & Privacy page for the full details.',
+        content:
+          'Yes. All files are uploaded over HTTPS, processed in isolated server instances, and automatically deleted after processing (2 hours for guests, longer for registered users). We never read, share, analyze, or index your document content. See the Security & Privacy page for the full details.',
         type: 'paragraph',
       },
       {
         heading: 'Do I need an account?',
-        content: 'No. Guest mode gives you full access to every tool. Creating a free account (email + password) gives you longer file retention and a persistent job history, but it is entirely optional.',
+        content:
+          'No. Guest mode gives you full access to every tool. Creating a free account (email + password) gives you longer file retention and a persistent job history, but it is entirely optional.',
         type: 'paragraph',
       },
       {
         heading: 'What is the maximum file size?',
-        content: 'Most tools accept files up to 50 MB. Image-based tools (Image to PDF, Scan to PDF) accept up to 20 MB per image. See the File Limits page for the complete per-tool breakdown.',
+        content:
+          'Most tools accept files up to 50 MB. Image-based tools (Image to PDF, Scan to PDF) accept up to 20 MB per image. See the File Limits page for the complete per-tool breakdown.',
         type: 'paragraph',
       },
       {
         heading: 'How long are files stored?',
-        content: 'Guest files are automatically deleted 2 hours after upload. Registered users get longer retention based on their plan. No files are stored indefinitely.',
+        content:
+          'Guest files are automatically deleted 2 hours after upload. Registered users get longer retention based on their plan. No files are stored indefinitely.',
         type: 'paragraph',
       },
       {
         heading: 'Can I process multiple files at once?',
-        content: 'Yes. Most tools support batch processing — Merge accepts up to 20 files, Compress up to 10, conversion tools up to 5, and so on. The exact limit varies by tool. Check the tool documentation or the File Limits page for specifics.',
+        content:
+          'Yes. Most tools support batch processing — Merge accepts up to 20 files, Compress up to 10, conversion tools up to 5, and so on. The exact limit varies by tool. Check the tool documentation or the File Limits page for specifics.',
         type: 'paragraph',
       },
       {
         heading: 'What browsers are supported?',
-        content: 'Fyredocs works in all modern browsers: Chrome, Firefox, Safari, and Edge. We recommend using the latest version of your browser for the best experience. Internet Explorer is not supported.',
+        content:
+          'Fyredocs works in all modern browsers: Chrome, Firefox, Safari, and Edge. We recommend using the latest version of your browser for the best experience. Internet Explorer is not supported.',
         type: 'paragraph',
       },
       {
         heading: 'Why does my converted file look different from the original?',
-        content: 'Conversions between formats (especially PDF to Word, PDF to PowerPoint) rely on heuristics to reconstruct editable elements from a fixed-layout format. Complex layouts with overlapping elements, custom fonts not available on the server, or heavy graphics may shift or change. Simple, text-heavy documents with standard layouts convert best. If exact fidelity is critical, try exporting directly from the originating application instead.',
+        content:
+          'Conversions between formats (especially PDF to Word, PDF to PowerPoint) rely on heuristics to reconstruct editable elements from a fixed-layout format. Complex layouts with overlapping elements, custom fonts not available on the server, or heavy graphics may shift or change. Simple, text-heavy documents with standard layouts convert best. If exact fidelity is critical, try exporting directly from the originating application instead.',
         type: 'paragraph',
       },
       {
         heading: 'Why is processing slow?',
-        content: 'Most operations complete in under 30 seconds. However, large files (40+ MB), complex operations like OCR at 600 DPI, or batch jobs with many files take longer. OCR in particular is CPU-intensive because it renders each page as a high-resolution image and then analyzes every character. If speed is a priority, try reducing DPI for OCR or using a lower compression level.',
+        content:
+          'Most operations complete in under 30 seconds. However, large files (40+ MB), complex operations like OCR at 600 DPI, or batch jobs with many files take longer. OCR in particular is CPU-intensive because it renders each page as a high-resolution image and then analyzes every character. If speed is a priority, try reducing DPI for OCR or using a lower compression level.',
         type: 'paragraph',
       },
       {
         heading: 'Can I process password-protected PDFs?',
-        content: 'Only with the Unlock PDF tool, and only if you know the current password. All other tools cannot read encrypted PDF files. Unlock the file first, then use whatever tool you need on the unlocked version.',
+        content:
+          'Only with the Unlock PDF tool, and only if you know the current password. All other tools cannot read encrypted PDF files. Unlock the file first, then use whatever tool you need on the unlocked version.',
         type: 'paragraph',
       },
       {
         heading: 'What happens if I close the browser during processing?',
-        content: 'Processing continues on the server regardless of your browser state. If you have a registered account, you can reopen the site and check your job history to download the result. Guest users without an account will lose access to the result if they close the browser, since the session token is stored in the browser.',
+        content:
+          'Processing continues on the server regardless of your browser state. If you have a registered account, you can reopen the site and check your job history to download the result. Guest users without an account will lose access to the result if they close the browser, since the session token is stored in the browser.',
         type: 'paragraph',
       },
     ],

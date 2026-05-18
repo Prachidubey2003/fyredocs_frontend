@@ -5,7 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/useAuth';
 import { isAuthError } from '@/auth/authErrors';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -110,7 +116,9 @@ const SignUp = () => {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Create account</CardTitle>
-            <CardDescription>Start converting files with a secure account.</CardDescription>
+            <CardDescription>
+              Start converting files with a secure account.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {formError && (
@@ -120,7 +128,10 @@ const SignUp = () => {
             )}
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="fullName"
@@ -130,7 +141,12 @@ const SignUp = () => {
                         Full name <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input type="text" autoComplete="name" placeholder="Your full name" {...field} />
+                        <Input
+                          type="text"
+                          autoComplete="name"
+                          placeholder="Your full name"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -146,7 +162,12 @@ const SignUp = () => {
                         Email <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input type="email" autoComplete="email" placeholder="you@example.com" {...field} />
+                        <Input
+                          type="email"
+                          autoComplete="email"
+                          placeholder="you@example.com"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -160,7 +181,12 @@ const SignUp = () => {
                     <FormItem>
                       <FormLabel>Phone (optional)</FormLabel>
                       <FormControl>
-                        <Input type="tel" autoComplete="tel" placeholder="+1 555 0100" {...field} />
+                        <Input
+                          type="tel"
+                          autoComplete="tel"
+                          placeholder="+1 555 0100"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -176,7 +202,12 @@ const SignUp = () => {
                         Country <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input type="text" autoComplete="country-name" placeholder="United States" {...field} />
+                        <Input
+                          type="text"
+                          autoComplete="country-name"
+                          placeholder="United States"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -190,7 +221,11 @@ const SignUp = () => {
                     <FormItem>
                       <FormLabel>Profile image URL (optional)</FormLabel>
                       <FormControl>
-                        <Input type="url" placeholder="https://example.com/avatar.png" {...field} />
+                        <Input
+                          type="url"
+                          placeholder="https://example.com/avatar.png"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -218,9 +253,15 @@ const SignUp = () => {
                             type="button"
                             onClick={() => setShowPassword((prev) => !prev)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            aria-label={
+                              showPassword ? 'Hide password' : 'Show password'
+                            }
                           >
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
                           </button>
                         </div>
                       </FormControl>
@@ -235,7 +276,8 @@ const SignUp = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Confirm password <span className="text-destructive">*</span>
+                        Confirm password{' '}
+                        <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -248,11 +290,21 @@ const SignUp = () => {
                           />
                           <button
                             type="button"
-                            onClick={() => setShowConfirmPassword((prev) => !prev)}
+                            onClick={() =>
+                              setShowConfirmPassword((prev) => !prev)
+                            }
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                            aria-label={
+                              showConfirmPassword
+                                ? 'Hide password'
+                                : 'Show password'
+                            }
                           >
-                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
                           </button>
                         </div>
                       </FormControl>
@@ -261,8 +313,14 @@ const SignUp = () => {
                   )}
                 />
 
-                <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? 'Creating account...' : 'Create account'}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting
+                    ? 'Creating account...'
+                    : 'Create account'}
                 </Button>
               </form>
             </Form>

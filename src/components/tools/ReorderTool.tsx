@@ -25,13 +25,8 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
   const [draggedPage, setDraggedPage] = useState<number | null>(null);
   const [dragOverPage, setDragOverPage] = useState<number | null>(null);
 
-  const {
-    files,
-    addFiles,
-    clearFiles,
-    isUploading,
-    canProceed,
-  } = useFileUpload({ tool });
+  const { files, addFiles, clearFiles, isUploading, canProceed } =
+    useFileUpload({ tool });
 
   const { job, createJob, cancelJob, retryJob, resetJob } = useJob();
   const { readPageCount, reset: resetPageCount } = usePdfPageCount();
@@ -165,7 +160,8 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
                 </div>
 
                 <p className="text-sm text-muted-foreground">
-                  Drag and drop pages to reorder them. Remove pages you don't want to include.
+                  Drag and drop pages to reorder them. Remove pages you don't
+                  want to include.
                 </p>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -180,7 +176,8 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
                       className={cn(
                         'relative group rounded-lg border-2 bg-muted/30 p-4 cursor-grab active:cursor-grabbing transition-all',
                         draggedPage === page.id && 'opacity-50 scale-95',
-                        dragOverPage === page.id && 'border-primary border-dashed',
+                        dragOverPage === page.id &&
+                          'border-primary border-dashed',
                         'hover:border-primary/50'
                       )}
                     >
@@ -190,7 +187,9 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <GripVertical className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">{page.label}</span>
+                          <span className="text-sm font-medium">
+                            {page.label}
+                          </span>
                         </div>
                         <button
                           onClick={() => handleRemovePage(page.id)}
@@ -209,7 +208,12 @@ export const ReorderTool = ({ tool }: ReorderToolProps) => {
                   </p>
                   <Button
                     onClick={handleProcess}
-                    disabled={!hasFiles || isProcessing || pages.length === 0 || !canProceed}
+                    disabled={
+                      !hasFiles ||
+                      isProcessing ||
+                      pages.length === 0 ||
+                      !canProceed
+                    }
                     className="w-full bg-gradient-primary"
                     size="lg"
                   >

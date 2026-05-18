@@ -49,8 +49,8 @@ export const FeaturesSection = () => {
             Why choose our PDF tools?
           </h2>
           <p className="text-lg text-muted-foreground">
-            Built for speed, security, and simplicity. Everything you need to work
-            with PDFs efficiently.
+            Built for speed, security, and simplicity. Everything you need to
+            work with PDFs efficiently.
           </p>
         </div>
 

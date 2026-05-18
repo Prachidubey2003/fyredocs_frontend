@@ -41,11 +41,7 @@ export const BatchModeToggle = ({
             </p>
           </div>
         </div>
-        <Switch
-          id="batch-mode"
-          checked={enabled}
-          onCheckedChange={onToggle}
-        />
+        <Switch id="batch-mode" checked={enabled} onCheckedChange={onToggle} />
       </div>
     </AnimatedCollapse>
   );

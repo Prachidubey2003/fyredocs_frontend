@@ -1,10 +1,14 @@
 import { Link } from 'react-router-dom';
-import { Menu, User, X, ChevronDown, Shield, LogOut } from 'lucide-react';
+import { Menu, User, X, ChevronDown, Shield, LogOut, CreditCard, Key, Webhook } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/auth/useAuth';
-import { AnimatedDropdown, AnimatePresence, motion } from '@/components/ui/animated';
+import {
+  AnimatedDropdown,
+  AnimatePresence,
+  motion,
+} from '@/components/ui/animated';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,11 +64,13 @@ const ToolLink = ({
       aria-disabled={item.comingSoon}
       tabIndex={item.comingSoon ? -1 : undefined}
     >
-      <div className={cn(
-        'w-6 h-6 rounded-md flex items-center justify-center transition-all duration-150',
-        'bg-muted/50',
-        !item.comingSoon && 'group-hover:bg-primary/10 group-hover:scale-105'
-      )}>
+      <div
+        className={cn(
+          'w-6 h-6 rounded-md flex items-center justify-center transition-all duration-150',
+          'bg-muted/50',
+          !item.comingSoon && 'group-hover:bg-primary/10 group-hover:scale-105'
+        )}
+      >
         <ToolIcon
           icon={item.icon}
           size="sm"
@@ -126,11 +132,15 @@ export const Header = () => {
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-  const formatValue = (value?: string) => (value && value.trim().length > 0 ? value : '-');
+  const formatValue = (value?: string) =>
+    value && value.trim().length > 0 ? value : '-';
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (navMenuRef.current && !navMenuRef.current.contains(event.target as Node)) {
+      if (
+        navMenuRef.current &&
+        !navMenuRef.current.contains(event.target as Node)
+      ) {
         setOpenCategory(null);
       }
     };
@@ -180,11 +190,18 @@ export const Header = () => {
                 <button
                   className={cn(
                     'px-4 py-4 text-sm font-semibold transition-colors flex items-center gap-1',
-                    isOpen ? 'text-primary' : 'text-foreground hover:text-primary'
+                    isOpen
+                      ? 'text-primary'
+                      : 'text-foreground hover:text-primary'
                   )}
                 >
                   {category.title}
-                  <ChevronDown className={cn('w-4 h-4 transition-transform', isOpen && 'rotate-180')} />
+                  <ChevronDown
+                    className={cn(
+                      'w-4 h-4 transition-transform',
+                      isOpen && 'rotate-180'
+                    )}
+                  />
                 </button>
 
                 <AnimatedDropdown show={isOpen}>
@@ -193,16 +210,29 @@ export const Header = () => {
                     onMouseEnter={() => setOpenCategory(category.title)}
                     onMouseLeave={() => setOpenCategory(null)}
                   >
-                    <div className={cn('rounded-xl border bg-background shadow-2xl p-5', panelWidthClass)}>
+                    <div
+                      className={cn(
+                        'rounded-xl border bg-background shadow-2xl p-5',
+                        panelWidthClass
+                      )}
+                    >
                       {category.sections.length === 1 ? (
                         <div>
-                          <h4 className={cn('text-xs font-bold tracking-wider mb-2 pb-1.5 border-b border-border/50', headingColor)}>
+                          <h4
+                            className={cn(
+                              'text-xs font-bold tracking-wider mb-2 pb-1.5 border-b border-border/50',
+                              headingColor
+                            )}
+                          >
                             {category.title}
                           </h4>
                           <ul className="space-y-0.5">
                             {category.sections[0].tools.map((tool) => (
                               <li key={tool.href + tool.name}>
-                                <ToolLink item={tool} onClick={() => setOpenCategory(null)} />
+                                <ToolLink
+                                  item={tool}
+                                  onClick={() => setOpenCategory(null)}
+                                />
                               </li>
                             ))}
                           </ul>
@@ -210,14 +240,25 @@ export const Header = () => {
                       ) : (
                         <div className="flex gap-6">
                           {category.sections.map((section, i) => (
-                            <div key={section.label ?? i} className="min-w-0 flex-1">
-                              <h4 className={cn('text-xs font-bold tracking-wider mb-2 pb-1.5 border-b border-border/50', section.color)}>
+                            <div
+                              key={section.label ?? i}
+                              className="min-w-0 flex-1"
+                            >
+                              <h4
+                                className={cn(
+                                  'text-xs font-bold tracking-wider mb-2 pb-1.5 border-b border-border/50',
+                                  section.color
+                                )}
+                              >
                                 {section.label}
                               </h4>
                               <ul className="space-y-0.5">
                                 {section.tools.map((tool) => (
                                   <li key={tool.href + tool.name}>
-                                    <ToolLink item={tool} onClick={() => setOpenCategory(null)} />
+                                    <ToolLink
+                                      item={tool}
+                                      onClick={() => setOpenCategory(null)}
+                                    />
                                   </li>
                                 ))}
                               </ul>
@@ -267,7 +308,10 @@ export const Header = () => {
                 <Button variant="ghost" className="hidden sm:flex" asChild>
                   <Link to="/signin">Login</Link>
                 </Button>
-                <Button className="hidden sm:flex bg-gradient-primary hover:opacity-90 transition-opacity" asChild>
+                <Button
+                  className="hidden sm:flex bg-gradient-primary hover:opacity-90 transition-opacity"
+                  asChild
+                >
                   <Link to="/signup">Sign up</Link>
                 </Button>
               </motion.div>
@@ -282,64 +326,87 @@ export const Header = () => {
                 transition={{ duration: 0.2 }}
               >
                 <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage
-                        src={user?.image ? user.image : undefined}
-                        alt={user?.fullName ?? user?.email ?? 'Profile'}
-                      />
-                      <AvatarFallback>
-                        <User className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  sideOffset={10}
-                  className="w-72 max-w-[calc(100vw-2rem)] p-1.5"
-                >
-                  <div className="flex items-center gap-3 px-2 py-2.5">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage
-                        src={user?.image ? user.image : undefined}
-                        alt={user?.fullName ?? user?.email ?? 'Profile'}
-                      />
-                      <AvatarFallback>
-                        <User className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold text-foreground">
-                        {user?.fullName ?? 'Signed in'}
-                      </div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {formatValue(user?.email)}
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full"
+                    >
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage
+                          src={user?.image ? user.image : undefined}
+                          alt={user?.fullName ?? user?.email ?? 'Profile'}
+                        />
+                        <AvatarFallback>
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 max-w-[calc(100vw-2rem)] p-1.5"
+                  >
+                    <div className="flex items-center gap-3 px-2 py-2.5">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage
+                          src={user?.image ? user.image : undefined}
+                          alt={user?.fullName ?? user?.email ?? 'Profile'}
+                        />
+                        <AvatarFallback>
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-foreground">
+                          {user?.fullName ?? 'Signed in'}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {formatValue(user?.email)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  {user?.role === 'super-admin' && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin/dashboard">
-                          <Shield className="mr-2 h-4 w-4" />
-                          Admin Dashboard
-                        </Link>
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onSelect={() => void handleLogout()}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/account/billing">
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        Billing &amp; usage
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/account/api-keys">
+                        <Key className="mr-2 h-4 w-4" />
+                        API keys
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/account/webhooks">
+                        <Webhook className="mr-2 h-4 w-4" />
+                        Webhooks
+                      </Link>
+                    </DropdownMenuItem>
+                    {user?.role === 'super-admin' && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin/dashboard">
+                            <Shield className="mr-2 h-4 w-4" />
+                            Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onSelect={() => void handleLogout()}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </motion.div>
             )}
           </AnimatePresence>
@@ -388,22 +455,44 @@ export const Header = () => {
         <nav className="container py-4 flex flex-col gap-1">
           <Accordion type="multiple" className="mt-1">
             {navCategories.map((category) => (
-              <AccordionItem key={category.title} value={category.title} className="border-none">
-                <AccordionTrigger className={cn('px-4 py-2 text-xs font-bold hover:no-underline', category.sections[0].color)}>
+              <AccordionItem
+                key={category.title}
+                value={category.title}
+                className="border-none"
+              >
+                <AccordionTrigger
+                  className={cn(
+                    'px-4 py-2 text-xs font-bold hover:no-underline',
+                    category.sections[0].color
+                  )}
+                >
                   {category.title}
                 </AccordionTrigger>
                 <AccordionContent>
                   {category.sections.length === 1
                     ? category.sections[0].tools.map((tool) => (
-                        <MobileToolLink key={tool.href + tool.name} item={tool} onClick={closeMobileMenu} />
+                        <MobileToolLink
+                          key={tool.href + tool.name}
+                          item={tool}
+                          onClick={closeMobileMenu}
+                        />
                       ))
                     : category.sections.map((section, i) => (
                         <div key={section.label ?? i} className="mb-2">
-                          <div className={cn('px-4 py-1 text-[11px] font-semibold uppercase tracking-wider', section.color)}>
+                          <div
+                            className={cn(
+                              'px-4 py-1 text-[11px] font-semibold uppercase tracking-wider',
+                              section.color
+                            )}
+                          >
                             {section.label}
                           </div>
                           {section.tools.map((tool) => (
-                            <MobileToolLink key={tool.href + tool.name} item={tool} onClick={closeMobileMenu} />
+                            <MobileToolLink
+                              key={tool.href + tool.name}
+                              item={tool}
+                              onClick={closeMobileMenu}
+                            />
                           ))}
                         </div>
                       ))}
