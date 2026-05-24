@@ -72,6 +72,8 @@ const DevDocsPage = lazy(() => import('./pages/docs/DevDocsPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const SignIn = lazy(() => import('./pages/auth/SignIn'));
 const SignUp = lazy(() => import('./pages/auth/SignUp'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const BusinessPage = lazy(() => import('./pages/admin/BusinessPage'));
 const GrowthPage = lazy(() => import('./pages/admin/GrowthPage'));
@@ -223,6 +225,14 @@ const App = () => (
                     <Route element={<PublicOnlyRoute />}>
                       <Route path="/signin" element={<SignIn />} />
                       <Route path="/signup" element={<SignUp />} />
+                      <Route
+                        path="/forgot-password"
+                        element={<ForgotPassword />}
+                      />
+                      <Route
+                        path="/reset-password"
+                        element={<ResetPassword />}
+                      />
                     </Route>
                     <Route element={<DocsLayout />}>
                       <Route path="/docs" element={<DocsIndexPage />} />
