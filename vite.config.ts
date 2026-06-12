@@ -20,6 +20,11 @@ export default defineConfig({
         target: "http://localhost:8080",
         changeOrigin: true,
       },
+      // Presigned multipart upload PUTs (gateway proxies these to MinIO).
+      "/fyredocs-uploads": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
     },
   },
   plugins: [react()],

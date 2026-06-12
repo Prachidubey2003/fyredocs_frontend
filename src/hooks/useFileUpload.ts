@@ -1,39 +1,81 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { FileUpload, UploadState, ChunkInfo, ToolDefinition, ValidationResult } from '@/types';
-import { apiJson, buildApiUrl } from '@/lib/apiClient';
+import { FileUpload, UploadState, PartInfo, ToolDefinition, ValidationResult } from '@/types';
+import { ApiHttpError } from '@/lib/apiClient';
+import {
+  initUpload,
+  refreshPartUrls,
+  completeUpload,
+  abortUpload,
+  putPart,
+  PutPartError,
+} from '@/lib/uploadClient';
 
 /**
- * Custom hook for managing file uploads with chunked upload support.
- * Uploads are streamed to the gateway API and update UI state in real time.
+ * Custom hook for managing file uploads via S3-presigned multipart uploads.
+ * Parts are PUT directly to presigned storage URLs in parallel; the backend
+ * only sees init/refresh/complete JSON calls.
  */
 
-const CHUNK_SIZE = 1024 * 1024; // 1MB chunks
+/** Provisional client-side part size — re-sliced with the server's partSize after init. */
+const PROVISIONAL_PART_SIZE = 8 * 1024 * 1024; // 8 MiB
+
+/** Number of parts uploaded in parallel per file. */
+const PART_CONCURRENCY = 4;
+
+/** Max attempts per part (excluding URL-expiry refreshes). */
+const MAX_PART_ATTEMPTS = 3;
+
+/** Cap on consecutive 403 → refresh cycles per part (guards against loops). */
+const MAX_EXPIRED_REFRESHES = 3;
+
+/** Presigned URLs older than this are refreshed before reuse (server expiry ~30min). */
+const URL_MAX_AGE_MS = 25 * 60 * 1000;
+
+/** Progress state flushes are throttled to roughly this interval. */
+const PROGRESS_FLUSH_MS = 150;
 
 const generateId = () => `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-const createChunks = (file: File): ChunkInfo[] => {
-  const chunks: ChunkInfo[] = [];
-  const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+const createParts = (fileSize: number, partSize: number): PartInfo[] => {
+  const size = partSize > 0 ? partSize : PROVISIONAL_PART_SIZE;
+  const totalParts = Math.max(1, Math.ceil(fileSize / size));
+  const parts: PartInfo[] = [];
 
-  for (let i = 0; i < totalChunks; i++) {
-    chunks.push({
-      index: i,
-      start: i * CHUNK_SIZE,
-      end: Math.min((i + 1) * CHUNK_SIZE, file.size),
-      uploaded: false,
+  for (let i = 0; i < totalParts; i++) {
+    parts.push({
+      partNumber: i + 1,
+      start: i * size,
+      end: Math.min((i + 1) * size, fileSize),
     });
   }
 
-  return chunks;
+  return parts;
 };
 
-const calculateProgress = (file: FileUpload, chunks: ChunkInfo[]) => {
-  const loaded = chunks.reduce(
-    (total, chunk) => total + (chunk.uploaded ? chunk.end - chunk.start : 0),
+const abortError = () => new DOMException('The upload was aborted.', 'AbortError');
+
+const isAbortError = (error: unknown): boolean =>
+  error instanceof DOMException
+    ? error.name === 'AbortError'
+    : error instanceof Error && error.name === 'AbortError';
+
+const calculateProgress = (
+  file: FileUpload,
+  parts: PartInfo[],
+  inFlightBytes?: Map<number, number>
+) => {
+  let loaded = parts.reduce(
+    (total, part) => total + (part.etag ? part.end - part.start : 0),
     0
   );
+  if (inFlightBytes) {
+    inFlightBytes.forEach((bytes) => {
+      loaded += bytes;
+    });
+  }
 
   const total = file.file.size;
+  loaded = Math.min(loaded, total);
   return {
     loaded,
     total,
@@ -70,16 +112,32 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
   const [files, setFiles] = useState<FileUpload[]>([]);
   const uploadControllers = useRef<Map<string, AbortController>>(new Map());
   const filesRef = useRef<FileUpload[]>([]);
+  /** In-flight (not yet ETag'd) bytes per file → per part. */
+  const inFlightBytes = useRef<Map<string, Map<number, number>>>(new Map());
+  /** Pending throttled progress flush timers per file. */
+  const progressTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   useEffect(() => {
     filesRef.current = files;
   }, [files]);
 
+  const clearProgressTracking = useCallback((fileId: string) => {
+    inFlightBytes.current.delete(fileId);
+    const timer = progressTimers.current.get(fileId);
+    if (timer) {
+      clearTimeout(timer);
+      progressTimers.current.delete(fileId);
+    }
+  }, []);
+
   useEffect(() => {
     const controllers = uploadControllers.current;
+    const timers = progressTimers.current;
     return () => {
       controllers.forEach((controller) => controller.abort());
       controllers.clear();
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
     };
   }, []);
 
@@ -106,38 +164,61 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
     );
   }, []);
 
-  const syncUploadedChunks = useCallback((fileId: string, uploadedChunks: number[]) => {
+  /** Sync a working parts snapshot (and recomputed progress) into state. */
+  const commitParts = useCallback((fileId: string, parts: PartInfo[]) => {
+    const snapshot = parts.map((part) => ({ ...part }));
     setFiles((prev) =>
-      prev.map((file) => {
-        if (file.id !== fileId) return file;
-        const chunks = file.chunks.map((chunk) =>
-          uploadedChunks.includes(chunk.index) ? { ...chunk, uploaded: true } : chunk
-        );
-        return {
-          ...file,
-          chunks,
-          progress: calculateProgress(file, chunks),
-          currentChunkIndex: uploadedChunks.length,
-        };
-      })
+      prev.map((file) =>
+        file.id === fileId
+          ? {
+              ...file,
+              parts: snapshot,
+              progress: calculateProgress(file, snapshot, inFlightBytes.current.get(fileId)),
+            }
+          : file
+      )
     );
   }, []);
 
-  const markChunkUploaded = useCallback((fileId: string, chunkIndex: number) => {
+  /** Flush etag'd + in-flight bytes into the file's progress state. */
+  const flushProgress = useCallback((fileId: string) => {
     setFiles((prev) =>
-      prev.map((file) => {
-        if (file.id !== fileId) return file;
-        const chunks = file.chunks.map((chunk) =>
-          chunk.index === chunkIndex ? { ...chunk, uploaded: true } : chunk
-        );
-        return {
-          ...file,
-          chunks,
-          progress: calculateProgress(file, chunks),
-          currentChunkIndex: Math.min(chunkIndex + 1, chunks.length),
-        };
-      })
+      prev.map((file) =>
+        file.id === fileId
+          ? {
+              ...file,
+              progress: calculateProgress(file, file.parts, inFlightBytes.current.get(fileId)),
+            }
+          : file
+      )
     );
+  }, []);
+
+  /** Record in-flight bytes for a part; flushes to state throttled (~150ms). */
+  const reportPartProgress = useCallback(
+    (fileId: string, partNumber: number, loaded: number) => {
+      let fileMap = inFlightBytes.current.get(fileId);
+      if (!fileMap) {
+        fileMap = new Map();
+        inFlightBytes.current.set(fileId, fileMap);
+      }
+      fileMap.set(partNumber, loaded);
+
+      if (!progressTimers.current.has(fileId)) {
+        progressTimers.current.set(
+          fileId,
+          setTimeout(() => {
+            progressTimers.current.delete(fileId);
+            flushProgress(fileId);
+          }, PROGRESS_FLUSH_MS)
+        );
+      }
+    },
+    [flushProgress]
+  );
+
+  const clearPartProgress = useCallback((fileId: string, partNumber: number) => {
+    inFlightBytes.current.get(fileId)?.delete(partNumber);
   }, []);
 
   const uploadFile = useCallback(
@@ -145,102 +226,193 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
       const file = filesRef.current.find((item) => item.id === fileId);
       if (!file) return;
 
-      try {
-        let uploadId = file.serverFileId;
+      const fileBlob = file.file;
+      // Authoritative working copy — state updates are for UI only.
+      let workingParts: PartInfo[] = file.parts.map((part) => ({ ...part }));
+      let uploadId = file.serverFileId;
 
+      const commit = () => commitParts(fileId, workingParts);
+
+      const refreshSinglePartUrl = async (part: PartInfo) => {
+        const refreshed = await refreshPartUrls(uploadId!, [part.partNumber], controller.signal);
+        const fresh = refreshed.parts.find((p) => p.partNumber === part.partNumber);
+        if (!fresh) {
+          throw new Error(`No refreshed URL returned for part ${part.partNumber}.`);
+        }
+        part.url = fresh.url;
+        part.urlIssuedAt = Date.now();
+        commit();
+      };
+
+      const uploadPartWithRetry = async (part: PartInfo) => {
+        let attempt = 0;
+        let expiredRefreshes = 0;
+
+        for (;;) {
+          if (controller.signal.aborted) throw abortError();
+
+          try {
+            if (!part.url) {
+              await refreshSinglePartUrl(part);
+            }
+            const blob = fileBlob.slice(part.start, part.end);
+            const partBytes = part.end - part.start;
+            const etag = await putPart(part.url!, blob, {
+              signal: controller.signal,
+              onProgress: (loaded) =>
+                reportPartProgress(fileId, part.partNumber, Math.min(loaded, partBytes)),
+            });
+
+            part.etag = etag;
+            clearPartProgress(fileId, part.partNumber);
+            commit();
+            return;
+          } catch (error) {
+            clearPartProgress(fileId, part.partNumber);
+            if (isAbortError(error)) throw error;
+
+            if (error instanceof PutPartError) {
+              // Expired presigned URL → refresh without consuming an attempt.
+              if (error.kind === 'expired' && expiredRefreshes < MAX_EXPIRED_REFRESHES) {
+                expiredRefreshes += 1;
+                await refreshSinglePartUrl(part);
+                continue;
+              }
+              // Missing ETag is a configuration problem — retrying won't help.
+              if (error.kind === 'no-etag') throw error;
+            }
+
+            attempt += 1;
+            if (attempt >= MAX_PART_ATTEMPTS) throw error;
+
+            const backoff = 500 * 2 ** (attempt - 1) + Math.random() * 250;
+            await new Promise<void>((resolve, reject) => {
+              const timer = setTimeout(() => {
+                controller.signal.removeEventListener('abort', onAbort);
+                resolve();
+              }, backoff);
+              const onAbort = () => {
+                clearTimeout(timer);
+                reject(abortError());
+              };
+              controller.signal.addEventListener('abort', onAbort);
+            });
+          }
+        }
+      };
+
+      try {
         if (!uploadId) {
-          const initResponse = await apiJson<{ data: { uploadId: string } }>('/api/upload/init', {
-            method: 'POST',
-            body: JSON.stringify({
-              fileName: file.file.name,
-              fileSize: file.file.size,
-              totalChunks: file.chunks.length,
-            }),
-            signal: controller.signal,
+          const init = await initUpload(fileBlob, controller.signal);
+          uploadId = init.uploadId;
+
+          // Re-slice with the server's authoritative part size (no bytes sent yet).
+          const issuedAt = Date.now();
+          const urlByPart = new Map(
+            (init.parts ?? []).map((p) => [p.partNumber, p.url])
+          );
+          workingParts = createParts(fileBlob.size, init.partSize).map((part) => {
+            const url = urlByPart.get(part.partNumber);
+            return url ? { ...part, url, urlIssuedAt: issuedAt } : part;
           });
 
-          uploadId = initResponse.data?.uploadId ?? '';
           setServerFileId(fileId, uploadId);
+          commit();
         } else {
-          const status = await apiJson<{
-            data?: { receivedChunks?: number | string };
-          }>(
-            `/api/upload/${uploadId}/status`,
-            { method: 'GET', signal: controller.signal }
-          );
-          const rawChunks = status.data?.receivedChunks ?? 0;
-          const received =
-            typeof rawChunks === 'number'
-              ? Array.from({ length: rawChunks }, (_, index) => index)
-              : Array.from({ length: Number(rawChunks) || 0 }, (_, index) => index);
-          if (received.length > 0) {
-            syncUploadedChunks(fileId, received);
+          // Resume: refresh URLs that are missing or stale before re-PUTting.
+          const now = Date.now();
+          const staleNumbers = workingParts
+            .filter(
+              (part) =>
+                !part.etag &&
+                (!part.url || !part.urlIssuedAt || now - part.urlIssuedAt >= URL_MAX_AGE_MS)
+            )
+            .map((part) => part.partNumber);
+
+          if (staleNumbers.length > 0) {
+            const refreshed = await refreshPartUrls(uploadId, staleNumbers, controller.signal);
+            const issuedAt = Date.now();
+            const urlByPart = new Map(refreshed.parts.map((p) => [p.partNumber, p.url]));
+            workingParts = workingParts.map((part) => {
+              const url = urlByPart.get(part.partNumber);
+              return url ? { ...part, url, urlIssuedAt: issuedAt } : part;
+            });
+            commit();
           }
         }
 
-        let current = filesRef.current.find((item) => item.id === fileId);
-        if (!current || !uploadId) return;
-
-        const MAX_PARALLEL_CHUNKS = 3;
-        const pendingChunks = current.chunks.filter((c) => !c.uploaded);
-
-        const uploadSingleChunk = async (chunk: ChunkInfo) => {
-          const latestFile = filesRef.current.find((item) => item.id === fileId);
-          if (!latestFile) return;
-          const blob = latestFile.file.slice(chunk.start, chunk.end);
-          const formData = new FormData();
-          formData.append('chunk', blob, latestFile.file.name);
-
-          const response = await fetch(
-            buildApiUrl(`/api/upload/${uploadId}/chunk?index=${chunk.index}`),
-            {
-              method: 'PUT',
-              body: formData,
-              signal: controller.signal,
-              credentials: 'include',
-            }
-          );
-
-          if (!response.ok) {
-            const message = await response.text().catch(() => response.statusText);
-            throw new Error(message || 'Chunk upload failed');
+        // Worker pool over pending (un-ETag'd) parts.
+        const pendingParts = workingParts.filter((part) => !part.etag);
+        let nextIndex = 0;
+        const worker = async (): Promise<void> => {
+          for (;;) {
+            if (controller.signal.aborted) throw abortError();
+            const index = nextIndex++;
+            if (index >= pendingParts.length) return;
+            await uploadPartWithRetry(pendingParts[index]);
           }
-
-          markChunkUploaded(fileId, chunk.index);
         };
-
-        // Upload chunks with limited concurrency
-        let i = 0;
-        const executeNext = async (): Promise<void> => {
-          if (i >= pendingChunks.length) return;
-          const chunk = pendingChunks[i++];
-          await uploadSingleChunk(chunk);
-          await executeNext();
-        };
-        const workers = Array.from(
-          { length: Math.min(MAX_PARALLEL_CHUNKS, pendingChunks.length) },
-          () => executeNext()
+        await Promise.all(
+          Array.from({ length: Math.min(PART_CONCURRENCY, pendingParts.length) }, () => worker())
         );
-        await Promise.all(workers);
 
-        await apiJson(`/api/upload/${uploadId}/complete`, {
-          method: 'POST',
-          signal: controller.signal,
-        });
+        try {
+          await completeUpload(
+            uploadId,
+            workingParts.map((part) => ({ partNumber: part.partNumber, etag: part.etag! })),
+            controller.signal
+          );
+        } catch (error) {
+          if (
+            error instanceof ApiHttpError &&
+            (error.status === 404 || error.status === 409)
+          ) {
+            // Session expired/conflicted server-side — reset for a clean retry.
+            clearProgressTracking(fileId);
+            setFiles((prev) =>
+              prev.map((f) =>
+                f.id === fileId
+                  ? {
+                      ...f,
+                      state: 'failed' as UploadState,
+                      error: error.message || 'Upload session expired. Retry to upload again.',
+                      serverFileId: undefined,
+                      parts: createParts(f.file.size, PROVISIONAL_PART_SIZE),
+                      progress: { loaded: 0, total: f.file.size, percentage: 0 },
+                    }
+                  : f
+              )
+            );
+            return;
+          }
+          throw error;
+        }
 
         setUploadState(fileId, 'completed');
       } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
+        clearProgressTracking(fileId);
+        if (isAbortError(error)) {
           setUploadState(fileId, 'paused');
           return;
         }
+        // Stop sibling part uploads still in flight for this file.
+        controller.abort();
         const message = error instanceof Error ? error.message : 'Upload failed';
         setUploadState(fileId, 'failed', message);
+        // Keep accumulated ETags in state for a resume-style retry.
+        commit();
       } finally {
         uploadControllers.current.delete(fileId);
       }
     },
-    [markChunkUploaded, setServerFileId, setUploadState, syncUploadedChunks]
+    [
+      clearPartProgress,
+      clearProgressTracking,
+      commitParts,
+      reportPartProgress,
+      setServerFileId,
+      setUploadState,
+    ]
   );
 
   const validateFiles = useCallback(
@@ -317,8 +489,7 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
           file,
           state: 'idle' as UploadState,
           progress: { loaded: 0, total: file.size, percentage: 0 },
-          chunks: createChunks(file),
-          currentChunkIndex: 0,
+          parts: createParts(file.size, PROVISIONAL_PART_SIZE),
         }));
 
         setFiles((prev) => [...prev, ...fileUploads]);
@@ -338,16 +509,30 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
       controller.abort();
       uploadControllers.current.delete(fileId);
     }
+    clearProgressTracking(fileId);
+
+    const file = filesRef.current.find((f) => f.id === fileId);
+    if (file?.serverFileId) {
+      abortUpload(file.serverFileId);
+    }
 
     setFiles((prev) => prev.filter((f) => f.id !== fileId));
-  }, []);
+  }, [clearProgressTracking]);
 
   const clearFiles = useCallback(() => {
     // Cancel all ongoing uploads
     uploadControllers.current.forEach((controller) => controller.abort());
     uploadControllers.current.clear();
+
+    filesRef.current.forEach((file) => {
+      clearProgressTracking(file.id);
+      if (file.serverFileId) {
+        abortUpload(file.serverFileId);
+      }
+    });
+
     setFiles([]);
-  }, []);
+  }, [clearProgressTracking]);
 
   const reorderFiles = useCallback((fromIndex: number, toIndex: number) => {
     setFiles((prev) => {
@@ -385,13 +570,21 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
       controller.abort();
       uploadControllers.current.delete(fileId);
     }
+    clearProgressTracking(fileId);
 
+    // Keep ETag'd parts; recompute progress without in-flight bytes.
     setFiles((prev) =>
       prev.map((f) =>
-        f.id === fileId ? { ...f, state: 'paused' as UploadState } : f
+        f.id === fileId
+          ? {
+              ...f,
+              state: 'paused' as UploadState,
+              progress: calculateProgress(f, f.parts),
+            }
+          : f
       )
     );
-  }, []);
+  }, [clearProgressTracking]);
 
   const resumeUpload = useCallback((fileId: string) => {
     startUpload(fileId);
@@ -399,19 +592,24 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
 
   const retryUpload = useCallback((fileId: string) => {
     setFiles((prev) =>
-      prev.map((f) =>
-        f.id === fileId
-          ? {
-              ...f,
-              state: 'idle' as UploadState,
-              error: undefined,
-              progress: { loaded: 0, total: f.file.size, percentage: 0 },
-              currentChunkIndex: 0,
-              chunks: f.chunks.map((c) => ({ ...c, uploaded: false })),
-              serverFileId: undefined,
-            }
-          : f
-      )
+      prev.map((f) => {
+        if (f.id !== fileId) return f;
+
+        // Init succeeded earlier: keep the session + ETag'd parts and resume.
+        if (f.serverFileId) {
+          return { ...f, state: 'idle' as UploadState, error: undefined };
+        }
+
+        // Init-stage failure: full reset.
+        return {
+          ...f,
+          state: 'idle' as UploadState,
+          error: undefined,
+          progress: { loaded: 0, total: f.file.size, percentage: 0 },
+          parts: createParts(f.file.size, PROVISIONAL_PART_SIZE),
+          serverFileId: undefined,
+        };
+      })
     );
   }, []);
 

@@ -12,8 +12,7 @@ const makeUploadedFile = (name = 'document.pdf', serverFileId = 'srv-1'): FileUp
   file: new File(['%PDF-1.4'], name, { type: 'application/pdf' }),
   state: 'completed',
   progress: { loaded: 8, total: 8, percentage: 100 },
-  chunks: [],
-  currentChunkIndex: 1,
+  parts: [],
   serverFileId,
 });
 

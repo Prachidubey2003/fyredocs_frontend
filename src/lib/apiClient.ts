@@ -2,6 +2,21 @@ type ApiRequestOptions = RequestInit & {
   skipRefresh?: boolean;
 };
 
+/**
+ * Error thrown for non-2xx API responses. Carries the HTTP status so callers
+ * can branch on it (e.g. 404 = upload session expired) while remaining a
+ * plain Error for existing `error.message` consumers.
+ */
+export class ApiHttpError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiHttpError';
+    this.status = status;
+  }
+}
+
 const getBaseUrl = () => {
   const envUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
   return envUrl.trim().length > 0 ? envUrl : '';
@@ -97,17 +112,17 @@ export const apiRequest = async <T>(
       return apiRequest<T>(path, { ...options, skipRefresh: true });
     }
     window.dispatchEvent(new CustomEvent('fyredocs:unauthorized'));
-    throw new Error(await parseErrorMessage(response));
+    throw new ApiHttpError(await parseErrorMessage(response), response.status);
   }
 
   // 403 = forbidden (not an expired token issue)
   if (response.status === 403 && !skipRefresh) {
     window.dispatchEvent(new CustomEvent('fyredocs:unauthorized'));
-    throw new Error(await parseErrorMessage(response));
+    throw new ApiHttpError(await parseErrorMessage(response), response.status);
   }
 
   if (!response.ok) {
-    throw new Error(await parseErrorMessage(response));
+    throw new ApiHttpError(await parseErrorMessage(response), response.status);
   }
 
   if (response.status === 204) {

@@ -135,11 +135,21 @@ export interface UploadProgress {
   percentage: number;
 }
 
-export interface ChunkInfo {
-  index: number;
+/**
+ * A single S3 multipart-upload part. Part numbers are 1-based (S3 convention).
+ * `etag` is set once the part has been PUT to its presigned URL successfully.
+ */
+export interface PartInfo {
+  /** 1-based part number (S3 convention). */
+  partNumber: number;
   start: number;
   end: number;
-  uploaded: boolean;
+  /** ETag returned by storage once this part uploaded successfully. */
+  etag?: string;
+  /** Presigned PUT URL for this part. */
+  url?: string;
+  /** Epoch ms when `url` was issued (used to detect stale URLs). */
+  urlIssuedAt?: number;
 }
 
 export interface FileUpload {
@@ -147,11 +157,10 @@ export interface FileUpload {
   file: File;
   state: UploadState;
   progress: UploadProgress;
-  chunks: ChunkInfo[];
-  currentChunkIndex: number;
+  parts: PartInfo[];
   error?: string;
   uploadedAt?: Date;
-  serverFileId?: string; // Returned by backend after successful upload
+  serverFileId?: string; // Upload session id returned by the backend
 }
 
 // ============================================================================
@@ -371,11 +380,20 @@ export interface ValidationError {
  */
 
 export interface UploadService {
-  initializeUpload(file: File, toolId: ToolId): Promise<{ uploadId: string; chunkSize: number }>;
-  uploadChunk(uploadId: string, chunk: Blob, chunkIndex: number): Promise<void>;
-  completeUpload(uploadId: string): Promise<{ fileId: string }>;
-  cancelUpload(uploadId: string): Promise<void>;
-  getUploadStatus(uploadId: string): Promise<{ uploadedChunks: number[] }>;
+  initUpload(file: File): Promise<{
+    uploadId: string;
+    key: string;
+    partSize: number;
+    totalParts: number;
+    parts: { partNumber: number; url: string }[];
+  }>;
+  refreshPartUrls(
+    uploadId: string,
+    partNumbers: number[]
+  ): Promise<{ parts: { partNumber: number; url: string }[] }>;
+  putPart(url: string, blob: Blob): Promise<string>; // resolves the part ETag
+  completeUpload(uploadId: string, parts: { partNumber: number; etag: string }[]): Promise<void>;
+  abortUpload(uploadId: string): void;
 }
 
 export interface JobService {
