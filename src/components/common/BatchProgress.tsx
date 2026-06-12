@@ -31,7 +31,7 @@ interface BatchProgressProps {
 
 const StatusIcon = ({ status }: { status: BatchJob['status'] }) => {
   const iconMap = {
-    completed: <CheckCircle2 className="w-4 h-4 text-green-500" />,
+    completed: <CheckCircle2 className="w-4 h-4 text-success" />,
     failed: <XCircle className="w-4 h-4 text-destructive" />,
     processing: <Loader2 className="w-4 h-4 text-primary animate-spin" />,
     pending: <Clock className="w-4 h-4 text-muted-foreground" />,
@@ -104,13 +104,13 @@ export const BatchProgress = ({
             <div className="text-2xl font-bold text-muted-foreground">{totalCount}</div>
             <div className="text-xs text-muted-foreground">Total</div>
           </div>
-          <div className="p-3 rounded-lg bg-green-500/10">
-            <div className="text-2xl font-bold text-green-500">{completedCount}</div>
-            <div className="text-xs text-green-600">Completed</div>
+          <div className="p-3 rounded-lg bg-success-subtle">
+            <div className="text-2xl font-bold text-success">{completedCount}</div>
+            <div className="text-xs text-success-subtle-foreground">Completed</div>
           </div>
-          <div className="p-3 rounded-lg bg-destructive/10">
+          <div className="p-3 rounded-lg bg-destructive-subtle">
             <div className="text-2xl font-bold text-destructive">{failedCount}</div>
-            <div className="text-xs text-destructive">Failed</div>
+            <div className="text-xs text-destructive-subtle-foreground">Failed</div>
           </div>
         </div>
       </div>
@@ -124,8 +124,8 @@ export const BatchProgress = ({
               key={batchJob.id}
               className={cn(
                 'flex items-center gap-3 p-3 rounded-lg border transition-colors',
-                batchJob.status === 'completed' && 'bg-green-500/5 border-green-500/20',
-                batchJob.status === 'failed' && 'bg-destructive/5 border-destructive/20',
+                batchJob.status === 'completed' && 'bg-success-subtle/50 border-success/20',
+                batchJob.status === 'failed' && 'bg-destructive-subtle/50 border-destructive/20',
                 batchJob.status === 'processing' && 'bg-primary/5 border-primary/20',
                 batchJob.status === 'pending' && 'bg-muted/30'
               )}

@@ -4,146 +4,280 @@
 
 @layer base {
   :root {
-    /* Core brand colors */
-    --background: 220 20% 97%;
-    --foreground: 222 47% 11%;
+    /* ============================================================
+       Brand ramp — evolved fyredocs magenta (hue 301–306).
+       Saturation reduced from the legacy 95% for a premium read.
+       Static: identical in light and dark mode.
+       ============================================================ */
+    --brand-50: 302 100% 98%;
+    --brand-100: 301 92% 95%;
+    --brand-200: 301 88% 90%;
+    --brand-300: 301 82% 81%;
+    --brand-400: 301 76% 64%;
+    --brand-500: 302 82% 50%;
+    --brand-600: 302 86% 41%;
+    --brand-700: 303 84% 33%;
+    --brand-800: 304 78% 26%;
+    --brand-900: 305 72% 20%;
+    --brand-950: 306 78% 12%;
+
+    /* Neutral ramp — violet-tinted grays */
+    --neutral-50: 255 20% 98%;
+    --neutral-100: 255 16% 96%;
+    --neutral-200: 254 12% 91%;
+    --neutral-300: 253 10% 84%;
+    --neutral-400: 252 8% 62%;
+    --neutral-500: 252 7% 45%;
+    --neutral-600: 253 9% 35%;
+    --neutral-700: 254 11% 25%;
+    --neutral-800: 255 14% 15%;
+    --neutral-900: 256 18% 10%;
+    --neutral-950: 258 22% 6%;
+
+    /* Semantic surfaces — light */
+    --background: 255 20% 98%;
+    --foreground: 256 18% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 256 18% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 256 18% 10%;
 
-    --primary: 300 95% 41%;
+    --primary: var(--brand-600);
     --primary-foreground: 0 0% 100%;
+    --primary-hover: var(--brand-700);
 
-    --secondary: 224 82% 59%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 255 16% 94%;
+    --secondary-foreground: 254 11% 25%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 255 16% 95%;
+    --muted-foreground: 252 7% 44%;
 
-    --accent: 220 14% 96%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 301 92% 96%;
+    --accent-foreground: 303 84% 30%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 300 95% 41%;
+    --border: 254 12% 90%;
+    --input: 254 12% 88%;
+    --ring: var(--brand-600);
 
     --radius: 0.75rem;
 
-    /* Tool-specific colors */
-    --tool-merge: 4 90% 58%;
-    --tool-merge-light: 4 100% 96%;
-    --tool-split: 173 80% 40%;
-    --tool-split-light: 173 80% 96%;
-    --tool-compress: 43 96% 56%;
-    --tool-compress-light: 43 100% 96%;
-    --tool-convert: 262 83% 58%;
-    --tool-convert-light: 262 100% 97%;
-    --tool-organize: 199 89% 48%;
-    --tool-organize-light: 199 100% 96%;
-    --tool-security: 142 76% 36%;
-    --tool-security-light: 142 76% 96%;
-    --tool-ocr: 340 82% 52%;
-    --tool-ocr-light: 340 100% 97%;
-    --tool-watermark: 280 67% 47%;
-    --tool-watermark-light: 280 100% 97%;
-    --tool-edit: 230 82% 58%;
-    --tool-edit-light: 230 100% 97%;
+    /* Status tokens */
+    --success: 152 55% 34%;
+    --success-foreground: 0 0% 100%;
+    --success-subtle: 152 50% 95%;
+    --success-subtle-foreground: 152 60% 24%;
 
-    /* Upload states */
-    --upload-idle: 220 14% 96%;
-    --upload-active: 300 95% 41%;
-    --upload-success: 142 76% 36%;
-    --upload-error: 0 84% 60%;
+    --warning: 36 90% 38%;
+    --warning-foreground: 0 0% 100%;
+    --warning-subtle: 40 95% 94%;
+    --warning-subtle-foreground: 33 85% 28%;
 
-    /* Job states */
-    --job-queued: 43 96% 56%;
-    --job-processing: 300 95% 41%;
-    --job-completed: 142 76% 36%;
-    --job-failed: 0 84% 60%;
+    --destructive: 0 70% 46%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-subtle: 0 85% 96%;
+    --destructive-subtle-foreground: 0 72% 36%;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-tool: 0 4px 20px -4px rgb(0 0 0 / 0.15);
+    --info: 215 80% 44%;
+    --info-foreground: 0 0% 100%;
+    --info-subtle: 213 90% 95%;
+    --info-subtle-foreground: 216 80% 34%;
+
+    /* Tool-category accent tokens (DEFAULTs pass 4.5:1 as text on white) */
+    --cat-organize: 22 80% 42%;
+    --cat-organize-subtle: 24 90% 95%;
+    --cat-optimize: 4 72% 50%;
+    --cat-optimize-subtle: 4 85% 96%;
+    --cat-convert-to: 40 85% 33%;
+    --cat-convert-to-subtle: 43 90% 94%;
+    --cat-convert-from: 262 70% 56%;
+    --cat-convert-from-subtle: 262 85% 96%;
+    --cat-libreoffice: 173 65% 31%;
+    --cat-libreoffice-subtle: 173 70% 94%;
+    --cat-edit: 222 75% 55%;
+    --cat-edit-subtle: 222 90% 96%;
+    --cat-security: 152 55% 34%;
+    --cat-security-subtle: 152 50% 94%;
+
+    /* Chart palette */
+    --chart-1: var(--brand-500);
+    --chart-2: 222 75% 55%;
+    --chart-3: 173 65% 40%;
+    --chart-4: 40 85% 48%;
+    --chart-5: 262 70% 58%;
+    --chart-6: 340 70% 52%;
+    --chart-success: var(--success);
+    --chart-warning: var(--warning);
+    --chart-danger: var(--destructive);
+
+    /* Legacy aliases — keep custom components rendering during migration */
+    --tool-merge: var(--cat-optimize);
+    --tool-merge-light: var(--cat-optimize-subtle);
+    --tool-split: var(--cat-libreoffice);
+    --tool-split-light: var(--cat-libreoffice-subtle);
+    --tool-compress: var(--cat-convert-to);
+    --tool-compress-light: var(--cat-convert-to-subtle);
+    --tool-convert: var(--cat-convert-from);
+    --tool-convert-light: var(--cat-convert-from-subtle);
+    --tool-organize: var(--cat-organize);
+    --tool-organize-light: var(--cat-organize-subtle);
+    --tool-security: var(--cat-security);
+    --tool-security-light: var(--cat-security-subtle);
+    --tool-ocr: 340 70% 52%;
+    --tool-ocr-light: 340 90% 97%;
+    --tool-watermark: var(--cat-convert-from);
+    --tool-watermark-light: var(--cat-convert-from-subtle);
+    --tool-edit: var(--cat-edit);
+    --tool-edit-light: var(--cat-edit-subtle);
+
+    /* Upload states → status aliases */
+    --upload-idle: var(--muted);
+    --upload-active: var(--primary);
+    --upload-success: var(--success);
+    --upload-error: var(--destructive);
+
+    /* Job states → status aliases */
+    --job-queued: var(--warning);
+    --job-processing: var(--primary);
+    --job-completed: var(--success);
+    --job-failed: var(--destructive);
+
+    /* Shadows — tight, premium */
+    --shadow-xs: 0 1px 2px 0 hsl(256 18% 10% / 0.05);
+    --shadow-sm: 0 1px 3px 0 hsl(256 18% 10% / 0.07), 0 1px 2px -1px hsl(256 18% 10% / 0.06);
+    --shadow-md: 0 4px 8px -2px hsl(256 18% 10% / 0.08), 0 2px 4px -2px hsl(256 18% 10% / 0.05);
+    --shadow-lg: 0 12px 24px -6px hsl(256 18% 10% / 0.12), 0 4px 8px -4px hsl(256 18% 10% / 0.06);
+    --shadow-brand: 0 4px 14px -2px hsl(var(--brand-600) / 0.3);
+    --shadow-tool: var(--shadow-md);
+
+    /* Motion */
+    --duration-fast: 120ms;
+    --duration-base: 200ms;
+    --duration-slow: 320ms;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
     /* Sidebar */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 300 95% 41%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 300 95% 41%;
+    --sidebar-background: 255 20% 98%;
+    --sidebar-foreground: 254 11% 25%;
+    --sidebar-primary: var(--brand-600);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 255 16% 94%;
+    --sidebar-accent-foreground: 256 18% 10%;
+    --sidebar-border: 254 12% 90%;
+    --sidebar-ring: var(--brand-600);
 
     /* Docs panels - dark background even in light mode */
-    --docs-panel: 222 47% 11%;
-    --docs-panel-foreground: 210 40% 98%;
-    --docs-panel-muted: 217 33% 17%;
-    --docs-panel-border: 217 33% 20%;
+    --docs-panel: 256 18% 10%;
+    --docs-panel-foreground: 255 20% 96%;
+    --docs-panel-muted: 255 14% 16%;
+    --docs-panel-border: 255 14% 20%;
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    --background: 258 22% 7%;
+    --foreground: 255 20% 96%;
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 257 20% 10%;
+    --card-foreground: 255 20% 96%;
 
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 257 20% 10%;
+    --popover-foreground: 255 20% 96%;
 
-    --primary: 300 95% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 301 76% 64%;
+    --primary-foreground: 306 78% 10%;
+    --primary-hover: 301 82% 72%;
 
-    --secondary: 224 82% 45%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 255 14% 16%;
+    --secondary-foreground: 254 12% 88%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 255 14% 15%;
+    --muted-foreground: 252 9% 64%;
 
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 303 40% 18%;
+    --accent-foreground: 301 82% 85%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --border: 255 14% 17%;
+    --input: 255 14% 19%;
+    --ring: 301 76% 70%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 300 95% 70%;
+    /* Status tokens — dark */
+    --success: 152 50% 52%;
+    --success-foreground: 152 60% 8%;
+    --success-subtle: 152 45% 13%;
+    --success-subtle-foreground: 152 50% 68%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 300 95% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 300 95% 55%;
+    --warning: 40 92% 58%;
+    --warning-foreground: 36 90% 10%;
+    --warning-subtle: 38 70% 13%;
+    --warning-subtle-foreground: 42 90% 70%;
+
+    --destructive: 0 70% 62%;
+    --destructive-foreground: 0 70% 8%;
+    --destructive-subtle: 0 50% 14%;
+    --destructive-subtle-foreground: 0 80% 76%;
+
+    --info: 213 85% 66%;
+    --info-foreground: 215 80% 10%;
+    --info-subtle: 215 60% 14%;
+    --info-subtle-foreground: 212 90% 76%;
+
+    /* Tool-category accents — brighter on dark */
+    --cat-organize: 24 85% 62%;
+    --cat-organize-subtle: 24 60% 15%;
+    --cat-optimize: 4 80% 66%;
+    --cat-optimize-subtle: 4 50% 15%;
+    --cat-convert-to: 42 90% 58%;
+    --cat-convert-to-subtle: 42 60% 14%;
+    --cat-convert-from: 262 80% 70%;
+    --cat-convert-from-subtle: 262 50% 17%;
+    --cat-libreoffice: 173 60% 50%;
+    --cat-libreoffice-subtle: 173 55% 13%;
+    --cat-edit: 222 85% 68%;
+    --cat-edit-subtle: 222 55% 16%;
+    --cat-security: 152 50% 52%;
+    --cat-security-subtle: 152 45% 13%;
+
+    /* Chart palette — dark */
+    --chart-1: 301 76% 64%;
+    --chart-2: 222 85% 67%;
+    --chart-3: 173 60% 52%;
+    --chart-4: 42 90% 60%;
+    --chart-5: 262 80% 70%;
+    --chart-6: 340 80% 64%;
+
+    --tool-ocr: 340 80% 64%;
+    --tool-ocr-light: 340 50% 16%;
+
+    /* Shadows — deeper + hairline inset for definition */
+    --shadow-xs: 0 1px 2px 0 hsl(258 22% 2% / 0.3);
+    --shadow-sm: 0 1px 3px 0 hsl(258 22% 2% / 0.4), 0 1px 2px -1px hsl(258 22% 2% / 0.35);
+    --shadow-md: 0 4px 8px -2px hsl(258 22% 2% / 0.45), 0 2px 4px -2px hsl(258 22% 2% / 0.3), inset 0 0 0 1px hsl(255 14% 22% / 0.6);
+    --shadow-lg: 0 12px 24px -6px hsl(258 22% 2% / 0.6), 0 4px 8px -4px hsl(258 22% 2% / 0.35), inset 0 0 0 1px hsl(255 14% 22% / 0.6);
+    --shadow-brand: 0 4px 14px -2px hsl(var(--brand-500) / 0.35);
+    --shadow-tool: var(--shadow-md);
+
+    --sidebar-background: 257 20% 9%;
+    --sidebar-foreground: 254 12% 88%;
+    --sidebar-primary: 301 76% 64%;
+    --sidebar-primary-foreground: 306 78% 10%;
+    --sidebar-accent: 255 14% 15%;
+    --sidebar-accent-foreground: 254 12% 88%;
+    --sidebar-border: 255 14% 16%;
+    --sidebar-ring: 301 76% 70%;
 
     /* Docs panels - darker in dark mode */
-    --docs-panel: 222 47% 6%;
-    --docs-panel-foreground: 210 40% 98%;
-    --docs-panel-muted: 217 33% 12%;
-    --docs-panel-border: 217 33% 15%;
+    --docs-panel: 258 22% 6%;
+    --docs-panel-foreground: 255 20% 96%;
+    --docs-panel-muted: 255 14% 12%;
+    --docs-panel-border: 255 14% 15%;
   }
 }
 
 @layer base {
-  *,
-  *::before,
-  *::after {
+  * {
     @apply border-border;
-    transition-property: color, background-color, border-color, box-shadow;
-    transition-duration: 150ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   body {
@@ -153,6 +287,27 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
+  }
+
+  ::selection {
+    background-color: hsl(var(--brand-200));
+    color: hsl(var(--brand-950));
+  }
+
+  .dark ::selection {
+    background-color: hsl(var(--brand-800));
+    color: hsl(var(--brand-50));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
@@ -240,7 +395,7 @@
 
   .gradient-text {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(221 83% 65%) 100%);
+    background-image: linear-gradient(135deg, hsl(var(--brand-500)) 0%, hsl(var(--brand-700)) 100%);
   }
 
   .bg-gradient-hero {
@@ -248,6 +403,6 @@
   }
 
   .bg-gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(221 83% 60%) 100%);
+    background: linear-gradient(135deg, hsl(var(--brand-500)) 0%, hsl(var(--brand-700)) 100%);
   }
 }

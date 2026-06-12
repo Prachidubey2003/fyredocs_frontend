@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { AnimatedNumber } from './AnimatedNumber';
+import { MetricsErrorState } from './MetricsErrorState';
 
 interface SummaryCardProps {
   title: string;
@@ -13,6 +14,9 @@ interface SummaryCardProps {
   stats: { label: string; value: string | number; color?: string }[];
   chart?: ReactNode;
   isLoading?: boolean;
+  /** Replaces the card body with a compact retryable error state. */
+  error?: boolean;
+  onRetry?: () => void;
 }
 
 function parseNumericValue(value: string | number): {
@@ -36,7 +40,7 @@ function parseNumericValue(value: string | number): {
   return { num, decimals, prefix, suffix };
 }
 
-export function SummaryCard({ title, icon, to, stats, chart, isLoading }: SummaryCardProps) {
+export function SummaryCard({ title, icon, to, stats, chart, isLoading, error, onRetry }: SummaryCardProps) {
   return (
     <Card className="flex flex-col">
       <CardHeader className="pb-3">
@@ -51,7 +55,14 @@ export function SummaryCard({ title, icon, to, stats, chart, isLoading }: Summar
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col justify-between gap-4">
-        {isLoading ? (
+        {error ? (
+          <MetricsErrorState
+            compact
+            title={`Failed to load ${title.toLowerCase()} metrics`}
+            onRetry={onRetry}
+            className="py-4"
+          />
+        ) : isLoading ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               {[0, 1, 2].map((i) => (

@@ -47,17 +47,17 @@ export const CodeBlock = ({ content, language }: CodeBlockProps) => {
     <div className="rounded-lg overflow-hidden border border-docs-panel-border bg-docs-panel">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-docs-panel-border">
-        {language && (
-          <span className="text-xs font-medium text-docs-panel-foreground/60 uppercase tracking-wider">
-            {language}
-          </span>
-        )}
+        <span className="text-xs font-medium text-docs-panel-foreground/60 uppercase tracking-wider">
+          {language || 'code'}
+        </span>
         <button
+          type="button"
           onClick={handleCopy}
-          className="ml-auto p-1 rounded hover:bg-docs-panel-muted text-docs-panel-foreground/50 hover:text-docs-panel-foreground transition-colors"
+          className="ml-auto p-1 rounded-md hover:bg-docs-panel-muted text-docs-panel-foreground/50 hover:text-docs-panel-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           title="Copy code"
+          aria-label={copied ? 'Copied' : 'Copy code'}
         >
-          {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? <Check className="w-3.5 h-3.5" aria-hidden /> : <Copy className="w-3.5 h-3.5" aria-hidden />}
         </button>
       </div>
 

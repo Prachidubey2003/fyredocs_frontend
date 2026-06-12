@@ -49,7 +49,7 @@ export const devDocNavGroups: DevDocNavGroup[] = [
   },
   {
     title: 'Service Flows',
-    color: 'text-rose-500',
+    color: 'text-category-optimize',
     items: [
       { slug: 'flow-overview', title: 'System Overview' },
       { slug: 'flow-api-gateway', title: 'API Gateway Flow' },
@@ -65,7 +65,7 @@ export const devDocNavGroups: DevDocNavGroup[] = [
   },
   {
     title: 'API Reference',
-    color: 'text-blue-500',
+    color: 'text-info',
     items: [
       { slug: 'api-auth', title: 'Auth API' },
       { slug: 'api-upload', title: 'Upload API' },
@@ -78,7 +78,7 @@ export const devDocNavGroups: DevDocNavGroup[] = [
   },
   {
     title: 'Services',
-    color: 'text-orange-500',
+    color: 'text-category-organize',
     items: [
       { slug: 'svc-api-gateway', title: 'API Gateway' },
       { slug: 'svc-auth', title: 'Auth Service' },
@@ -93,7 +93,7 @@ export const devDocNavGroups: DevDocNavGroup[] = [
   },
   {
     title: 'Architecture',
-    color: 'text-purple-500',
+    color: 'text-category-convert-from',
     items: [
       { slug: 'arch-redis', title: 'Redis Architecture' },
       { slug: 'arch-base-image', title: 'Base Image Setup' },
@@ -102,7 +102,7 @@ export const devDocNavGroups: DevDocNavGroup[] = [
   },
   {
     title: 'Guides',
-    color: 'text-green-500',
+    color: 'text-success',
     items: [
       { slug: 'guide-hardening', title: 'Backend Hardening' },
       { slug: 'guide-deployment', title: 'Deployment Review' },
@@ -110,7 +110,7 @@ export const devDocNavGroups: DevDocNavGroup[] = [
   },
   {
     title: 'Frontend',
-    color: 'text-cyan-500',
+    color: 'text-category-libreoffice',
     items: [
       { slug: 'frontend-overview', title: 'Frontend Overview' },
       { slug: 'frontend-auth', title: 'Authentication Flow' },
@@ -122,7 +122,7 @@ export const devDocNavGroups: DevDocNavGroup[] = [
   },
   {
     title: 'How-To Guides',
-    color: 'text-amber-500',
+    color: 'text-warning',
     items: [
       { slug: 'howto-add-tool', title: 'Adding a New Tool' },
       { slug: 'howto-add-service', title: 'Adding a New Service' },

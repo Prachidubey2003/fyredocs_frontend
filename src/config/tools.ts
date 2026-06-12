@@ -1,9 +1,9 @@
 import { ToolDefinition, ToolId, ToolCategory } from '@/types';
 
 /**
- * Tool configuration registry.
- * Each tool is fully defined here with its constraints and metadata.
- * Adding a new tool requires only adding an entry here and implementing its options component.
+ * Tool configuration registry — the single source of truth for every tool.
+ * Routes, navigation, search, option panels, and API wiring all derive from here.
+ * Adding a new tool requires only adding an entry here and (optionally) one options panel.
  */
 
 const MB = 1024 * 1024;
@@ -23,6 +23,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 2,
     maxFileSize: 50 * MB,
     route: '/merge',
+    navGroup: 'organize',
+    keywords: ['combine', 'join', 'concatenate'],
+    popular: true,
+    actionLabel: (count) => (count > 1 ? `Merge ${count} PDFs` : 'Merge PDFs'),
   },
   split: {
     id: 'split',
@@ -35,6 +39,13 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/split',
+    navGroup: 'organize',
+    keywords: ['separate', 'divide', 'pages'],
+    optionsPanel: 'split',
+    defaultOptions: { mode: 'all' },
+    needsPageCount: true,
+    popular: true,
+    actionLabel: () => 'Split PDF',
   },
   reorder: {
     id: 'reorder',
@@ -47,6 +58,12 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/reorder',
+    navGroup: 'organize',
+    navLabel: 'Organize PDF',
+    keywords: ['organize', 'rearrange', 'sort', 'move pages'],
+    optionsPanel: 'reorder',
+    needsPageCount: true,
+    actionLabel: () => 'Reorder Pages',
   },
   'remove-pages': {
     id: 'remove-pages',
@@ -59,6 +76,11 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/remove-pages',
+    navGroup: 'organize',
+    keywords: ['delete pages', 'cut'],
+    optionsPanel: 'page-selection',
+    needsPageCount: true,
+    actionLabel: () => 'Remove Pages',
   },
   'extract-pages': {
     id: 'extract-pages',
@@ -71,6 +93,11 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/extract-pages',
+    navGroup: 'organize',
+    keywords: ['pull pages', 'select pages'],
+    optionsPanel: 'page-selection',
+    needsPageCount: true,
+    actionLabel: () => 'Extract Pages',
   },
   'scan-to-pdf': {
     id: 'scan-to-pdf',
@@ -83,6 +110,11 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 20 * MB,
     route: '/scan-to-pdf',
+    navGroup: 'organize',
+    keywords: ['scanner', 'photo', 'image', 'ocr'],
+    optionsPanel: 'scan',
+    defaultOptions: { ocr: false, language: 'en' },
+    actionLabel: (count) => (count > 1 ? `Convert ${count} scans` : 'Convert to PDF'),
   },
 
   // ============================================================================
@@ -99,6 +131,13 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/compress',
+    navGroup: 'optimize',
+    keywords: ['reduce', 'shrink', 'optimize', 'smaller'],
+    optionsPanel: 'compress',
+    defaultOptions: { quality: 'medium' },
+    supportsBatch: true,
+    popular: true,
+    actionLabel: (count) => (count > 1 ? `Compress ${count} PDFs` : 'Compress PDF'),
   },
   ocr: {
     id: 'ocr',
@@ -111,6 +150,13 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/ocr',
+    navGroup: 'optimize',
+    keywords: ['text recognition', 'searchable', 'extract text'],
+    optionsPanel: 'ocr',
+    defaultOptions: { language: 'en' },
+    supportsBatch: true,
+    popular: true,
+    actionLabel: (count) => (count > 1 ? `Run OCR on ${count} PDFs` : 'Run OCR'),
   },
   'repair-pdf': {
     id: 'repair-pdf',
@@ -123,6 +169,9 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/repair-pdf',
+    navGroup: 'optimize',
+    keywords: ['fix', 'corrupted', 'damaged', 'recover'],
+    actionLabel: () => 'Repair PDF',
   },
 
   // ============================================================================
@@ -139,6 +188,11 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/pdf-to-word',
+    navGroup: 'convert-from-pdf',
+    keywords: ['docx', 'doc', 'editable'],
+    outputFormat: 'docx',
+    optionsPanel: 'convert-info',
+    popular: true,
   },
   'pdf-to-excel': {
     id: 'pdf-to-excel',
@@ -151,6 +205,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/pdf-to-excel',
+    navGroup: 'convert-from-pdf',
+    keywords: ['xlsx', 'spreadsheet', 'tables'],
+    outputFormat: 'xlsx',
+    optionsPanel: 'convert-info',
   },
   'pdf-to-image': {
     id: 'pdf-to-image',
@@ -163,6 +221,12 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/pdf-to-image',
+    navGroup: 'convert-from-pdf',
+    navLabel: 'PDF to JPG',
+    keywords: ['jpg', 'jpeg', 'png', 'picture'],
+    outputFormat: 'png',
+    optionsPanel: 'convert-info',
+    popular: true,
   },
   'pdf-to-ppt': {
     id: 'pdf-to-ppt',
@@ -175,6 +239,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/pdf-to-ppt',
+    navGroup: 'convert-from-pdf',
+    keywords: ['pptx', 'slides', 'presentation'],
+    outputFormat: 'pptx',
+    optionsPanel: 'convert-info',
   },
   'pdf-to-html': {
     id: 'pdf-to-html',
@@ -187,6 +255,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/pdf-to-html',
+    navGroup: 'convert-from-pdf',
+    keywords: ['web', 'webpage'],
+    outputFormat: 'html',
+    optionsPanel: 'convert-info',
   },
   'pdf-to-text': {
     id: 'pdf-to-text',
@@ -199,6 +271,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/pdf-to-text',
+    navGroup: 'convert-from-pdf',
+    keywords: ['txt', 'plain text', 'extract'],
+    outputFormat: 'txt',
+    optionsPanel: 'convert-info',
   },
   'pdf-to-pdfa': {
     id: 'pdf-to-pdfa',
@@ -211,6 +287,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/pdf-to-pdfa',
+    navGroup: 'convert-from-pdf',
+    keywords: ['archive', 'archival', 'compliance'],
+    outputFormat: 'pdfa',
+    optionsPanel: 'convert-info',
   },
 
   // ============================================================================
@@ -227,6 +307,11 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/word-to-pdf',
+    navGroup: 'convert-to-pdf',
+    keywords: ['docx', 'doc', 'document'],
+    outputFormat: 'pdf',
+    optionsPanel: 'convert-info',
+    popular: true,
   },
   'excel-to-pdf': {
     id: 'excel-to-pdf',
@@ -239,6 +324,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/excel-to-pdf',
+    navGroup: 'convert-to-pdf',
+    keywords: ['xlsx', 'xls', 'spreadsheet'],
+    outputFormat: 'pdf',
+    optionsPanel: 'convert-info',
   },
   'image-to-pdf': {
     id: 'image-to-pdf',
@@ -251,6 +340,12 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 20 * MB,
     route: '/image-to-pdf',
+    navGroup: 'convert-to-pdf',
+    navLabel: 'JPG to PDF',
+    keywords: ['jpg', 'jpeg', 'png', 'picture', 'photo'],
+    outputFormat: 'pdf',
+    optionsPanel: 'convert-info',
+    popular: true,
   },
   'powerpoint-to-pdf': {
     id: 'powerpoint-to-pdf',
@@ -263,6 +358,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/powerpoint-to-pdf',
+    navGroup: 'convert-to-pdf',
+    keywords: ['pptx', 'ppt', 'slides'],
+    outputFormat: 'pdf',
+    optionsPanel: 'convert-info',
   },
   'html-to-pdf': {
     id: 'html-to-pdf',
@@ -275,6 +374,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/html-to-pdf',
+    navGroup: 'convert-to-pdf',
+    keywords: ['web', 'webpage'],
+    outputFormat: 'pdf',
+    optionsPanel: 'convert-info',
   },
 
   // ============================================================================
@@ -291,6 +394,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/pdf-to-odt',
+    navGroup: 'libreoffice',
+    keywords: ['libreoffice', 'writer', 'openoffice'],
+    outputFormat: 'odt',
+    optionsPanel: 'convert-info',
   },
   'pdf-to-ods': {
     id: 'pdf-to-ods',
@@ -303,6 +410,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/pdf-to-ods',
+    navGroup: 'libreoffice',
+    keywords: ['libreoffice', 'calc', 'spreadsheet'],
+    outputFormat: 'ods',
+    optionsPanel: 'convert-info',
   },
   'pdf-to-odp': {
     id: 'pdf-to-odp',
@@ -315,6 +426,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/pdf-to-odp',
+    navGroup: 'libreoffice',
+    keywords: ['libreoffice', 'impress', 'slides'],
+    outputFormat: 'odp',
+    optionsPanel: 'convert-info',
   },
   'word-to-odt': {
     id: 'word-to-odt',
@@ -327,6 +442,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/word-to-odt',
+    navGroup: 'libreoffice',
+    keywords: ['libreoffice', 'writer', 'docx'],
+    outputFormat: 'odt',
+    optionsPanel: 'convert-info',
   },
   'excel-to-ods': {
     id: 'excel-to-ods',
@@ -339,6 +458,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/excel-to-ods',
+    navGroup: 'libreoffice',
+    keywords: ['libreoffice', 'calc', 'xlsx'],
+    outputFormat: 'ods',
+    optionsPanel: 'convert-info',
   },
   'powerpoint-to-odp': {
     id: 'powerpoint-to-odp',
@@ -351,6 +474,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/powerpoint-to-odp',
+    navGroup: 'libreoffice',
+    keywords: ['libreoffice', 'impress', 'pptx'],
+    outputFormat: 'odp',
+    optionsPanel: 'convert-info',
   },
 
   // ============================================================================
@@ -367,6 +494,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/odt-to-pdf',
+    navGroup: 'convert-to-pdf',
+    keywords: ['libreoffice', 'writer'],
+    outputFormat: 'pdf',
+    optionsPanel: 'convert-info',
   },
   'ods-to-pdf': {
     id: 'ods-to-pdf',
@@ -379,6 +510,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/ods-to-pdf',
+    navGroup: 'convert-to-pdf',
+    keywords: ['libreoffice', 'calc'],
+    outputFormat: 'pdf',
+    optionsPanel: 'convert-info',
   },
   'odp-to-pdf': {
     id: 'odp-to-pdf',
@@ -391,6 +526,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/odp-to-pdf',
+    navGroup: 'convert-to-pdf',
+    keywords: ['libreoffice', 'impress'],
+    outputFormat: 'pdf',
+    optionsPanel: 'convert-info',
   },
 
   // ============================================================================
@@ -407,6 +546,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/unlock',
+    navGroup: 'security',
+    keywords: ['decrypt', 'remove password', 'open'],
+    optionsPanel: 'unlock',
+    actionLabel: (count) => (count > 1 ? `Unlock ${count} PDFs` : 'Unlock PDF'),
   },
 
   // ============================================================================
@@ -423,6 +566,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/add-page-numbers',
+    navGroup: 'edit',
+    keywords: ['numbering', 'pagination', 'footer'],
+    optionsPanel: 'page-numbers',
+    actionLabel: () => 'Add Page Numbers',
   },
   'edit-pdf': {
     id: 'edit-pdf',
@@ -435,6 +582,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/edit-pdf',
+    navGroup: 'edit',
+    keywords: ['annotate', 'text', 'modify'],
+    bespoke: 'edit-pdf',
+    actionLabel: () => 'Apply Edits',
   },
   'sign-pdf': {
     id: 'sign-pdf',
@@ -447,6 +598,10 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/sign-pdf',
+    navGroup: 'security',
+    keywords: ['signature', 'esign', 'autograph'],
+    bespoke: 'sign-pdf',
+    actionLabel: () => 'Sign PDF',
   },
 
   // ============================================================================
@@ -463,6 +618,14 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/rotate',
+    navGroup: 'edit',
+    navLabel: 'Rotate PDF',
+    keywords: ['turn', 'orientation', 'landscape', 'portrait'],
+    optionsPanel: 'rotate',
+    defaultOptions: { rotation: 90, applyToPages: 'all' },
+    supportsBatch: true,
+    needsPageCount: true,
+    actionLabel: () => 'Rotate PDF',
   },
   watermark: {
     id: 'watermark',
@@ -475,6 +638,13 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/watermark',
+    navGroup: 'edit',
+    keywords: ['stamp', 'brand', 'overlay'],
+    optionsPanel: 'watermark',
+    defaultOptions: { type: 'text', text: 'CONFIDENTIAL', position: 'diagonal', opacity: 50, fontSize: 48, color: '#6366f1', scale: 30 },
+    supportsBatch: true,
+    popular: true,
+    actionLabel: (count) => (count > 1 ? `Watermark ${count} PDFs` : 'Add Watermark'),
   },
   'password-protect': {
     id: 'password-protect',
@@ -487,6 +657,11 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
     minFiles: 1,
     maxFileSize: 50 * MB,
     route: '/protect',
+    navGroup: 'security',
+    keywords: ['encrypt', 'lock', 'password', 'secure'],
+    optionsPanel: 'password',
+    popular: true,
+    actionLabel: (count) => (count > 1 ? `Protect ${count} PDFs` : 'Protect PDF'),
   },
 };
 
@@ -512,4 +687,8 @@ export const getAllTools = (): ToolDefinition[] => {
 
 export const getToolById = (id: ToolId): ToolDefinition | undefined => {
   return TOOLS[id];
+};
+
+export const getPopularTools = (): ToolDefinition[] => {
+  return Object.values(TOOLS).filter((tool) => tool.popular);
 };

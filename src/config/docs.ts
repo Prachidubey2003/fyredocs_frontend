@@ -45,7 +45,7 @@ export const docNavGroups: DocNavGroup[] = [
   },
   {
     title: 'Organize PDF',
-    color: 'text-orange-500',
+    color: 'text-category-organize',
     items: [
       { slug: 'merge-pdf', title: 'Merge PDF' },
       { slug: 'split-pdf', title: 'Split PDF' },
@@ -57,7 +57,7 @@ export const docNavGroups: DocNavGroup[] = [
   },
   {
     title: 'Optimize PDF',
-    color: 'text-red-500',
+    color: 'text-category-optimize',
     items: [
       { slug: 'compress-pdf', title: 'Compress PDF' },
       { slug: 'repair-pdf', title: 'Repair PDF' },
@@ -66,7 +66,7 @@ export const docNavGroups: DocNavGroup[] = [
   },
   {
     title: 'Convert to PDF',
-    color: 'text-yellow-600',
+    color: 'text-category-convert-to',
     items: [
       { slug: 'image-to-pdf', title: 'Image to PDF' },
       { slug: 'word-to-pdf', title: 'Word to PDF' },
@@ -77,7 +77,7 @@ export const docNavGroups: DocNavGroup[] = [
   },
   {
     title: 'Convert from PDF',
-    color: 'text-purple-500',
+    color: 'text-category-convert-from',
     items: [
       { slug: 'pdf-to-image', title: 'PDF to Image' },
       { slug: 'pdf-to-word', title: 'PDF to Word' },
@@ -89,7 +89,7 @@ export const docNavGroups: DocNavGroup[] = [
   },
   {
     title: 'Edit PDF',
-    color: 'text-blue-500',
+    color: 'text-category-edit',
     items: [
       { slug: 'rotate-pdf', title: 'Rotate Pages' },
       { slug: 'add-page-numbers', title: 'Add Page Numbers' },
@@ -99,7 +99,7 @@ export const docNavGroups: DocNavGroup[] = [
   },
   {
     title: 'PDF Security',
-    color: 'text-green-500',
+    color: 'text-category-security',
     items: [
       { slug: 'unlock-pdf', title: 'Unlock PDF' },
       { slug: 'protect-pdf', title: 'Protect PDF' },

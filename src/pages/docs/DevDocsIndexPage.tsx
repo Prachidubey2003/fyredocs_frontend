@@ -2,6 +2,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { Link } from 'react-router-dom';
 import { Server, Code, Layers, Database, ShieldCheck, GitBranch } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { Heading, Text } from '@/components/ui/typography';
 
 const categories = [
   {
@@ -16,35 +17,35 @@ const categories = [
     description: 'Visual architecture and sequence diagrams for every service — see how data flows through the system.',
     icon: GitBranch,
     href: '/dev-docs/flow-overview',
-    color: 'text-rose-500',
+    color: 'text-category-optimize',
   },
   {
     title: 'API Reference',
     description: 'Endpoint specifications for Auth, Upload, Jobs, and all conversion/manipulation APIs.',
     icon: Code,
     href: '/dev-docs/api-auth',
-    color: 'text-blue-500',
+    color: 'text-info',
   },
   {
     title: 'Services',
     description: 'Internal architecture, responsibilities, and database schemas for each microservice.',
     icon: Server,
     href: '/dev-docs/svc-api-gateway',
-    color: 'text-orange-500',
+    color: 'text-category-organize',
   },
   {
     title: 'Architecture Deep-dives',
     description: 'Redis architecture, Docker base image setup, and database best practices.',
     icon: Database,
     href: '/dev-docs/arch-redis',
-    color: 'text-purple-500',
+    color: 'text-category-convert-from',
   },
   {
     title: 'Guides',
     description: 'Backend hardening, deployment review checklists, and operational guides.',
     icon: ShieldCheck,
     href: '/dev-docs/guide-hardening',
-    color: 'text-green-500',
+    color: 'text-success',
   },
 ];
 
@@ -57,12 +58,12 @@ const DevDocsIndexPage = () => {
       </Helmet>
       <div className="px-8 py-16">
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+          <Heading level="display" responsive className="mb-6">
             <span className="text-gradient-primary">Developer Docs</span>
-          </h1>
-          <p className="text-xl text-muted-foreground">
+          </Heading>
+          <Text variant="body-lg" tone="muted">
             Internal documentation for the Fyredocs platform architecture, APIs, and services
-          </p>
+          </Text>
         </div>
 
         <div className="max-w-4xl mx-auto grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -70,7 +71,7 @@ const DevDocsIndexPage = () => {
             <Link key={cat.title} to={cat.href}>
               <Card className="h-full hover:shadow-lg transition-shadow hover:border-primary/30">
                 <CardHeader>
-                  <cat.icon className={`w-8 h-8 mb-2 ${cat.color}`} />
+                  <cat.icon className={`w-8 h-8 mb-2 ${cat.color}`} aria-hidden />
                   <CardTitle className="text-lg">{cat.title}</CardTitle>
                   <CardDescription>{cat.description}</CardDescription>
                 </CardHeader>

@@ -1,39 +1,41 @@
 import { Link } from 'react-router-dom';
-import { FileText, Github, Twitter, Mail, Shield } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { navCategories, type NavSection } from '@/config/toolCategories';
+import { Github, Twitter, Mail, Shield } from 'lucide-react';
+import { getPopularTools } from '@/config/tools';
+import { getToolsByNavGroup, toolNavName } from '@/config/navigation';
+import type { ToolDefinition } from '@/types';
 
-const findCategory = (title: string) => navCategories.find((c) => c.title === title)!;
+const MAX_TOOLS_PER_COLUMN = 6;
 
-const footerCategories: { title: string; color: string; tools: NavSection['tools'] }[] = [
+/** Alternate convert-to / convert-from tools so the column shows both directions. */
+const interleave = (a: ToolDefinition[], b: ToolDefinition[]): ToolDefinition[] => {
+  const mixed: ToolDefinition[] = [];
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if (a[i]) mixed.push(a[i]);
+    if (b[i]) mixed.push(b[i]);
+  }
+  return mixed;
+};
+
+const toolColumns: { title: string; tools: ToolDefinition[] }[] = [
   {
-    title: 'ORGANIZE',
-    color: 'text-orange-500',
-    tools: findCategory('ORGANIZE').sections.flatMap((s) => s.tools),
+    title: 'Popular tools',
+    tools: getPopularTools().slice(0, MAX_TOOLS_PER_COLUMN),
   },
-  ...findCategory('CONVERT').sections.map((s) => ({
-    title: s.label!.toUpperCase(),
-    color: s.color,
-    tools: s.tools,
-  })),
   {
-    title: 'LIBRE OFFICE',
-    color: 'text-teal-500',
-    tools: findCategory('LIBRE OFFICE').sections.flatMap((s) => s.tools),
-  },
-  {
-    title: 'EDIT & PROTECT',
-    color: 'text-blue-500',
-    tools: findCategory('EDIT & PROTECT').sections.flatMap((s) => s.tools),
+    title: 'Convert',
+    tools: interleave(getToolsByNavGroup('convert-to-pdf'), getToolsByNavGroup('convert-from-pdf')).slice(
+      0,
+      MAX_TOOLS_PER_COLUMN,
+    ),
   },
 ];
 
 const companyLinks = [
   { label: 'About', href: '/about' },
-  { label: 'Documentation', href: '/docs' },
   { label: 'Blog', href: '/blog' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Contact', href: '/contact' },
+  { label: 'Docs', href: '/docs' },
 ];
 
 const legalLinks = [
@@ -45,54 +47,24 @@ const legalLinks = [
 const socialLinks = [
   { icon: Twitter, label: 'Twitter', href: '#' },
   { icon: Github, label: 'GitHub', href: '#' },
-  { icon: Mail, label: 'Email', href: '#' },
+  { icon: Mail, label: 'Email', href: 'mailto:support@fyredocs.com' },
 ];
+
+const footerLinkClass = 'text-sm text-muted-foreground hover:text-foreground transition-colors';
 
 export const Footer = () => {
   return (
     <footer className="border-t bg-muted/30">
       <div className="container py-12 md:py-16">
-        {/* Tier 1: Tool Categories */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-          {footerCategories.map((category) => (
-            <div key={category.title}>
-              <h3
-                className={cn(
-                  'text-[11px] font-bold tracking-wider uppercase mb-3 pb-2 border-b border-border/50',
-                  category.color
-                )}
-              >
-                {category.title}
-              </h3>
-              <ul className="space-y-2">
-                {category.tools.map((tool) => (
-                  <li key={tool.href}>
-                    <Link
-                      to={tool.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {tool.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {/* Tier 2: Brand + Company + Legal */}
-        <div className="mt-12 pt-8 border-t grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-6">
           {/* Brand */}
           <div className="sm:col-span-2">
-            <Link to="/" className="flex items-center gap-2.5 font-bold text-xl mb-4">
-              <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <FileText className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span>Fyredocs</span>
+            <Link to="/" className="mb-4 inline-flex items-center" aria-label="Fyredocs home">
+              <img src="/logo.png" alt="Fyredocs" className="h-12 w-auto" />
             </Link>
-            <p className="text-sm text-muted-foreground mb-5 max-w-sm">
-              Free online PDF tools to merge, split, compress, and convert your
-              documents. Fast, secure, and easy to use.
+            <p className="mb-5 max-w-sm text-sm text-muted-foreground">
+              Free online PDF tools to merge, split, compress, and convert your documents. Fast, secure, and easy to
+              use.
             </p>
             <div className="flex gap-3">
               {socialLinks.map((social) => (
@@ -100,24 +72,37 @@ export const Footer = () => {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
                 >
-                  <social.icon className="w-4 h-4" />
+                  <social.icon className="h-4 w-4" aria-hidden />
                 </a>
               ))}
             </div>
           </div>
 
+          {/* Tool columns (derived from the registry) */}
+          {toolColumns.map((column) => (
+            <div key={column.title}>
+              <h3 className="mb-4 font-semibold">{column.title}</h3>
+              <ul className="space-y-3">
+                {column.tools.map((tool) => (
+                  <li key={tool.id}>
+                    <Link to={tool.route} className={footerLinkClass}>
+                      {toolNavName(tool)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
           {/* Company */}
           <div>
-            <h3 className="font-semibold mb-4">Company</h3>
+            <h3 className="mb-4 font-semibold">Company</h3>
             <ul className="space-y-3">
               {companyLinks.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                  <Link to={link.href} className={footerLinkClass}>
                     {link.label}
                   </Link>
                 </li>
@@ -127,14 +112,11 @@ export const Footer = () => {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
+            <h3 className="mb-4 font-semibold">Legal</h3>
             <ul className="space-y-3">
               {legalLinks.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                  <Link to={link.href} className={footerLinkClass}>
                     {link.label}
                   </Link>
                 </li>
@@ -143,14 +125,14 @@ export const Footer = () => {
           </div>
         </div>
 
-        {/* Tier 3: Bottom Bar */}
-        <div className="mt-8 pt-6 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
+        {/* Bottom bar */}
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-6 sm:flex-row">
           <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} Fyredocs. All rights reserved.
           </p>
-          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5" />
-            Your files are processed securely and deleted after 1 hour.
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Shield className="h-3.5 w-3.5" aria-hidden />
+            Files auto-delete on a plan-based schedule — you stay in control.
           </p>
         </div>
       </div>

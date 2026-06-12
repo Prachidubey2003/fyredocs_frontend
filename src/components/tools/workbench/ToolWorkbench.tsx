@@ -1,0 +1,304 @@
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { useForm, Resolver } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { UploadCloud } from 'lucide-react';
+import { ToolDefinition, ToolOptions } from '@/types';
+import { useFileUpload } from '@/hooks/useFileUpload';
+import { useJob } from '@/hooks/useJob';
+import { useBatchJob } from '@/hooks/useBatchJob';
+import { usePdfPageCount } from '@/hooks/usePdfPageCount';
+import { toast } from '@/lib/toast';
+import { BatchProgress } from '@/components/common/BatchProgress';
+import { FileDropzoneHandle } from '@/components/common/FileDropzone';
+import { PlanLimitReason } from '@/components/common/PlanAwareFileDropzone';
+import { AnimatedSwitch } from '@/components/ui/animated';
+import { PANEL_SCHEMAS, PANEL_DEFAULTS, OptionsFormValues } from '../options';
+import { ToolStepper, WorkbenchStage } from './ToolStepper';
+import { UploadStage } from './UploadStage';
+import { ConfigureStage } from './ConfigureStage';
+import { ProcessingStage } from './ProcessingStage';
+import { ResultStage } from './ResultStage';
+import { StickyActionBar } from './StickyActionBar';
+import { UpgradeDialog } from './UpgradeDialog';
+import { useGlobalDropTarget } from './useGlobalDropTarget';
+import { buildOptions } from './buildOptions';
+
+interface ToolWorkbenchProps {
+  tool: ToolDefinition;
+}
+
+/**
+ * Generic tool workbench: Upload → Configure → Process → Download for every
+ * tool in the registry. Composes the existing upload/job hooks unchanged;
+ * options panels and bespoke bodies plug in via src/config/tools.ts.
+ */
+export const ToolWorkbench = ({ tool }: ToolWorkbenchProps) => {
+  const [batchMode, setBatchMode] = useState(false);
+  const [upgradeDialog, setUpgradeDialog] = useState<{ open: boolean; reason?: PlanLimitReason }>({
+    open: false,
+  });
+  const dropzoneRef = useRef<FileDropzoneHandle>(null);
+
+  const {
+    files,
+    addFiles,
+    removeFile,
+    clearFiles,
+    reorderFiles,
+    isUploading,
+    canProceed,
+    pauseUpload,
+    resumeUpload,
+    retryUpload: retryFileUpload,
+  } = useFileUpload({
+    tool,
+    onValidationError: (errors) => {
+      errors.forEach((error) => toast.error(error));
+    },
+  });
+
+  const { job, createJob, cancelJob, retryJob, resetJob } = useJob({
+    onComplete: () => {
+      toast.success(`${tool.name} completed successfully!`);
+    },
+    onError: (error) => {
+      toast.error(error);
+    },
+  });
+
+  const {
+    batchJobs,
+    startBatch,
+    cancelBatch,
+    retryFailed,
+    resetBatch,
+    isProcessing: isBatchProcessing,
+    completedCount,
+    failedCount,
+    totalCount,
+    overallProgress,
+  } = useBatchJob({
+    onAllComplete: (jobs) => {
+      const successful = jobs.filter((j) => j.status === 'completed').length;
+      const failed = jobs.filter((j) => j.status === 'failed').length;
+      if (failed === 0) {
+        toast.success(`All ${successful} files processed successfully!`);
+      } else {
+        toast.warning(`${successful} files processed, ${failed} failed`);
+      }
+    },
+  });
+
+  const { pageCount, readPageCount, reset: resetPageCount } = usePdfPageCount();
+
+  // Options form — panel schema + registry defaults.
+  const panelId = tool.optionsPanel;
+  const schema = useMemo(() => (panelId ? PANEL_SCHEMAS[panelId] : z.object({})), [panelId]);
+  const defaultValues = useMemo<OptionsFormValues>(
+    () => ({
+      ...(panelId ? PANEL_DEFAULTS[panelId] : {}),
+      ...(tool.defaultOptions ?? {}),
+    }),
+    [panelId, tool.defaultOptions]
+  );
+
+  const form = useForm<OptionsFormValues>({
+    resolver: zodResolver(schema) as Resolver<OptionsFormValues>,
+    defaultValues,
+    mode: 'onChange',
+  });
+
+  // Derived stage — no extra state machine.
+  const showBatch = batchMode && batchJobs.length > 0;
+  const stage: WorkbenchStage = job
+    ? job.state === 'completed'
+      ? 'done'
+      : job.state === 'failed'
+      ? 'error'
+      : 'processing'
+    : showBatch
+    ? 'processing'
+    : files.length === 0
+    ? 'upload'
+    : 'configure';
+
+  const handleFilesSelected = useCallback(
+    (selectedFiles: File[]) => {
+      const result = addFiles(selectedFiles);
+      if (result.isValid && tool.needsPageCount && selectedFiles.length > 0) {
+        void readPageCount(selectedFiles[0]);
+      }
+    },
+    [addFiles, readPageCount, tool.needsPageCount]
+  );
+
+  const handleLimitExceeded = useCallback((reason: PlanLimitReason) => {
+    setUpgradeDialog({ open: true, reason });
+  }, []);
+
+  // Page-level drag-anywhere during upload/configure.
+  const { isDraggingOver } = useGlobalDropTarget(
+    stage === 'upload' || stage === 'configure',
+    handleFilesSelected
+  );
+
+  const collectUploadedFiles = useCallback(() => {
+    const uploaded = files
+      .filter((f) => f.state === 'completed' && f.serverFileId)
+      .map((f) => ({ id: f.id, name: f.file.name, serverFileId: f.serverFileId! }));
+
+    if (files.length === 0) {
+      toast.error('Please add files first');
+      return null;
+    }
+    if (files.length < tool.minFiles) {
+      toast.error(`Please add at least ${tool.minFiles} file${tool.minFiles > 1 ? 's' : ''}`);
+      return null;
+    }
+    if (isUploading || uploaded.length !== files.length) {
+      toast.error('Please wait for all uploads to finish');
+      return null;
+    }
+    return uploaded;
+  }, [files, isUploading, tool.minFiles]);
+
+  /** Generic submit: validate form → guard uploads → build options → createJob/startBatch. */
+  const handleSubmit = useCallback(async () => {
+    if (panelId) {
+      const valid = await form.trigger();
+      if (!valid) return;
+    }
+
+    const uploaded = collectUploadedFiles();
+    if (!uploaded) return;
+
+    const fileIds = uploaded.map((f) => f.serverFileId);
+    const options = buildOptions(tool, form.getValues(), fileIds);
+
+    if (tool.supportsBatch && batchMode && uploaded.length > 1) {
+      startBatch(tool.id, uploaded, options);
+    } else {
+      createJob(tool.id, fileIds, options);
+    }
+  }, [batchMode, collectUploadedFiles, createJob, form, panelId, startBatch, tool]);
+
+  /** Bespoke bodies build their own options and delegate the job creation here. */
+  const handleBespokeSubmit = useCallback(
+    (options: ToolOptions) => {
+      const uploaded = collectUploadedFiles();
+      if (!uploaded) return;
+      createJob(tool.id, uploaded.map((f) => f.serverFileId), options);
+    },
+    [collectUploadedFiles, createJob, tool.id]
+  );
+
+  const handleStartOver = useCallback(() => {
+    resetJob();
+    resetBatch();
+    clearFiles();
+    resetPageCount();
+    setBatchMode(false);
+    form.reset(defaultValues);
+  }, [clearFiles, defaultValues, form, resetBatch, resetJob, resetPageCount]);
+
+  const handleDownloadAll = useCallback(() => {
+    batchJobs
+      .filter((bj) => bj.status === 'completed' && bj.job?.result?.downloadUrl)
+      .forEach((bj) => {
+        window.open(bj.job?.result?.downloadUrl, '_blank');
+      });
+  }, [batchJobs]);
+
+  const actionLabel =
+    tool.actionLabel?.(files.length) ??
+    (files.length > 1 ? `Process ${files.length} files` : `Process file`);
+
+  const hasConfigure = Boolean(tool.optionsPanel || tool.bespoke);
+  const viewKey = showBatch ? 'batch' : job ? 'job' : stage === 'upload' ? 'upload' : 'configure';
+
+  return (
+    <div className="relative">
+      <ToolStepper stage={stage} hasConfigure={hasConfigure} />
+
+      <AnimatedSwitch switchKey={viewKey}>
+        {showBatch ? (
+          <BatchProgress
+            batchJobs={batchJobs}
+            isProcessing={isBatchProcessing}
+            completedCount={completedCount}
+            failedCount={failedCount}
+            totalCount={totalCount}
+            overallProgress={overallProgress}
+            onCancel={cancelBatch}
+            onRetryFailed={retryFailed}
+            onDownloadAll={handleDownloadAll}
+            onReset={handleStartOver}
+          />
+        ) : job ? (
+          stage === 'processing' ? (
+            <ProcessingStage job={job} onCancel={cancelJob} />
+          ) : (
+            <ResultStage tool={tool} job={job} onStartOver={handleStartOver} onRetry={retryJob} />
+          )
+        ) : stage === 'upload' ? (
+          <UploadStage
+            ref={dropzoneRef}
+            tool={tool}
+            onFilesSelected={handleFilesSelected}
+            onLimitExceeded={handleLimitExceeded}
+            disabled={isUploading}
+          />
+        ) : (
+          <div className="space-y-6 pb-24 sm:pb-0">
+            <ConfigureStage
+              tool={tool}
+              files={files}
+              form={form}
+              pageCount={pageCount}
+              dropzoneRef={dropzoneRef}
+              onFilesSelected={handleFilesSelected}
+              onLimitExceeded={handleLimitExceeded}
+              onRemoveFile={removeFile}
+              onRetryFile={retryFileUpload}
+              onPauseFile={pauseUpload}
+              onResumeFile={resumeUpload}
+              onReorderFiles={reorderFiles}
+              onClearFiles={handleStartOver}
+              batchMode={batchMode}
+              onBatchModeChange={setBatchMode}
+              canSubmit={canProceed}
+              onBespokeSubmit={handleBespokeSubmit}
+            />
+
+            {/* Bespoke bodies render their own primary CTA. */}
+            {!tool.bespoke && (
+              <StickyActionBar
+                primaryLabel={actionLabel}
+                onPrimary={() => void handleSubmit()}
+                primaryDisabled={!canProceed}
+                hint={isUploading ? 'Uploading…' : undefined}
+              />
+            )}
+          </div>
+        )}
+      </AnimatedSwitch>
+
+      {/* Drag-anywhere overlay */}
+      {isDraggingOver && (
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-primary bg-card px-12 py-10 shadow-lg">
+            <UploadCloud className="h-10 w-10 text-primary" aria-hidden />
+            <p className="text-h4 font-semibold">Drop files to add</p>
+          </div>
+        </div>
+      )}
+
+      <UpgradeDialog
+        open={upgradeDialog.open}
+        onOpenChange={(open) => setUpgradeDialog((prev) => ({ ...prev, open }))}
+        reason={upgradeDialog.reason}
+      />
+    </div>
+  );
+};

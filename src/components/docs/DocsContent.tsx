@@ -1,6 +1,9 @@
 import { lazy, Suspense } from 'react';
 import type { DocSection } from '@/config/docs';
-import { Lightbulb, AlertTriangle } from 'lucide-react';
+import { Lightbulb, AlertTriangle, Hash } from 'lucide-react';
+import { Heading } from '@/components/ui/typography';
+import { slugifyHeading } from '@/lib/docsNavigation';
+import { toast } from '@/lib/toast';
 import { CodeBlock } from './CodeBlock';
 
 const SectionMermaid = lazy(() =>
@@ -68,27 +71,58 @@ const SectionTable = ({ tableData }: { tableData: { headers: string[]; rows: str
 
 const SectionTip = ({ content }: { content: string }) => (
   <div className="flex gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
-    <Lightbulb className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+    <Lightbulb className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" aria-hidden />
     <p className="text-sm text-foreground leading-relaxed">{content}</p>
   </div>
 );
 
 const SectionWarning = ({ content }: { content: string }) => (
-  <div className="flex gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
-    <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-    <p className="text-sm text-foreground leading-relaxed">{content}</p>
+  <div className="flex gap-3 rounded-lg border border-warning/30 bg-warning-subtle p-4">
+    <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" aria-hidden />
+    <p className="text-sm text-warning-subtle-foreground leading-relaxed">{content}</p>
   </div>
 );
 
+/** Section heading with a stable anchor id and a hover copy-link affordance. */
+const SectionHeading = ({ heading }: { heading: string }) => {
+  const id = slugifyHeading(heading);
+
+  const copyAnchorLink = async () => {
+    const url = `${window.location.origin}${window.location.pathname}#${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Link copied to clipboard');
+    } catch {
+      // Clipboard unavailable (permissions / insecure context) — fail silently.
+    }
+  };
+
+  return (
+    <Heading
+      level="h3"
+      as="h2"
+      id={id}
+      className="group/heading scroll-mt-24 mb-3 flex items-center gap-1.5"
+    >
+      {heading}
+      <button
+        type="button"
+        onClick={copyAnchorLink}
+        aria-label={`Copy link to "${heading}"`}
+        className="opacity-0 group-hover/heading:opacity-100 focus-visible:opacity-100 transition-opacity duration-fast rounded-md p-1 text-muted-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
+        <Hash className="w-4 h-4" aria-hidden />
+      </button>
+    </Heading>
+  );
+};
 
 export const DocsContent = ({ sections }: DocsContentProps) => {
   return (
     <div className="space-y-8">
       {sections.map((section, index) => (
         <div key={index}>
-          {section.heading && (
-            <h2 className="text-lg font-semibold mb-3">{section.heading}</h2>
-          )}
+          {section.heading && <SectionHeading heading={section.heading} />}
           {section.type === 'paragraph' && <SectionParagraph content={section.content} />}
           {section.type === 'steps' && section.items && <SectionSteps items={section.items} />}
           {section.type === 'list' && section.items && <SectionList items={section.items} />}

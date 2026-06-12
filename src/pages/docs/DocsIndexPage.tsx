@@ -2,6 +2,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { Link } from 'react-router-dom';
 import { BookOpen, Wrench, FileText, Shield, HelpCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { Heading, Text } from '@/components/ui/typography';
 
 const categories = [
   {
@@ -16,28 +17,28 @@ const categories = [
     description: 'Detailed guides for every PDF tool — merge, split, compress, convert, and more.',
     icon: Wrench,
     href: '/docs/merge-pdf',
-    color: 'text-orange-500',
+    color: 'text-category-organize',
   },
   {
     title: 'Supported Formats',
     description: 'See all file formats and size limits supported by each tool.',
     icon: FileText,
     href: '/docs/supported-formats',
-    color: 'text-blue-500',
+    color: 'text-info',
   },
   {
     title: 'Security & Privacy',
     description: 'How we keep your files safe, encrypted, and automatically deleted.',
     icon: Shield,
     href: '/docs/security-privacy',
-    color: 'text-green-500',
+    color: 'text-category-security',
   },
   {
     title: 'FAQ',
     description: 'Quick answers to common questions about using Fyredocs.',
     icon: HelpCircle,
     href: '/docs/faq',
-    color: 'text-purple-500',
+    color: 'text-category-convert-from',
   },
 ];
 
@@ -50,12 +51,12 @@ const DocsIndexPage = () => {
       </Helmet>
       <div className="px-8 py-16">
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+          <Heading level="display" responsive className="mb-6">
             <span className="text-gradient-primary">Documentation</span>
-          </h1>
-          <p className="text-xl text-muted-foreground">
+          </Heading>
+          <Text variant="body-lg" tone="muted">
             Everything you need to know about using Fyredocs PDF tools
-          </p>
+          </Text>
         </div>
 
         <div className="max-w-4xl mx-auto grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -63,7 +64,7 @@ const DocsIndexPage = () => {
             <Link key={cat.title} to={cat.href}>
               <Card className="h-full hover:shadow-lg transition-shadow hover:border-primary/30">
                 <CardHeader>
-                  <cat.icon className={`w-8 h-8 mb-2 ${cat.color}`} />
+                  <cat.icon className={`w-8 h-8 mb-2 ${cat.color}`} aria-hidden />
                   <CardTitle className="text-lg">{cat.title}</CardTitle>
                   <CardDescription>{cat.description}</CardDescription>
                 </CardHeader>

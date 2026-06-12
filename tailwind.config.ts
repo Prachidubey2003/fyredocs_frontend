@@ -17,15 +17,41 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
+      fontSize: {
+        display: ["3.5rem", { lineHeight: "1.1", letterSpacing: "-0.025em", fontWeight: "700" }],
+        h1: ["2.25rem", { lineHeight: "1.15", letterSpacing: "-0.02em", fontWeight: "700" }],
+        h2: ["1.75rem", { lineHeight: "1.2", letterSpacing: "-0.015em", fontWeight: "600" }],
+        h3: ["1.375rem", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "600" }],
+        h4: ["1.125rem", { lineHeight: "1.4", fontWeight: "600" }],
+        "body-lg": ["1.125rem", { lineHeight: "1.6" }],
+        body: ["0.9375rem", { lineHeight: "1.6" }],
+        "body-sm": ["0.875rem", { lineHeight: "1.5" }],
+        caption: ["0.75rem", { lineHeight: "1.4" }],
+        overline: ["0.6875rem", { lineHeight: "1.3", letterSpacing: "0.08em", fontWeight: "600" }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        brand: {
+          50: "hsl(var(--brand-50))",
+          100: "hsl(var(--brand-100))",
+          200: "hsl(var(--brand-200))",
+          300: "hsl(var(--brand-300))",
+          400: "hsl(var(--brand-400))",
+          500: "hsl(var(--brand-500))",
+          600: "hsl(var(--brand-600))",
+          700: "hsl(var(--brand-700))",
+          800: "hsl(var(--brand-800))",
+          900: "hsl(var(--brand-900))",
+          950: "hsl(var(--brand-950))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -34,6 +60,26 @@ export default {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+          subtle: "hsl(var(--destructive-subtle))",
+          "subtle-foreground": "hsl(var(--destructive-subtle-foreground))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+          subtle: "hsl(var(--success-subtle))",
+          "subtle-foreground": "hsl(var(--success-subtle-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+          subtle: "hsl(var(--warning-subtle))",
+          "subtle-foreground": "hsl(var(--warning-subtle-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+          subtle: "hsl(var(--info-subtle))",
+          "subtle-foreground": "hsl(var(--info-subtle-foreground))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -50,6 +96,33 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        category: {
+          organize: "hsl(var(--cat-organize))",
+          "organize-subtle": "hsl(var(--cat-organize-subtle))",
+          optimize: "hsl(var(--cat-optimize))",
+          "optimize-subtle": "hsl(var(--cat-optimize-subtle))",
+          "convert-to": "hsl(var(--cat-convert-to))",
+          "convert-to-subtle": "hsl(var(--cat-convert-to-subtle))",
+          "convert-from": "hsl(var(--cat-convert-from))",
+          "convert-from-subtle": "hsl(var(--cat-convert-from-subtle))",
+          libreoffice: "hsl(var(--cat-libreoffice))",
+          "libreoffice-subtle": "hsl(var(--cat-libreoffice-subtle))",
+          edit: "hsl(var(--cat-edit))",
+          "edit-subtle": "hsl(var(--cat-edit-subtle))",
+          security: "hsl(var(--cat-security))",
+          "security-subtle": "hsl(var(--cat-security-subtle))",
+        },
+        chart: {
+          1: "hsl(var(--chart-1))",
+          2: "hsl(var(--chart-2))",
+          3: "hsl(var(--chart-3))",
+          4: "hsl(var(--chart-4))",
+          5: "hsl(var(--chart-5))",
+          6: "hsl(var(--chart-6))",
+          success: "hsl(var(--chart-success))",
+          warning: "hsl(var(--chart-warning))",
+          danger: "hsl(var(--chart-danger))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -68,7 +141,7 @@ export default {
           "panel-muted": "hsl(var(--docs-panel-muted))",
           "panel-border": "hsl(var(--docs-panel-border))",
         },
-        // Tool colors
+        // Legacy tool colors (aliased to category tokens during migration)
         tool: {
           merge: "hsl(var(--tool-merge))",
           "merge-light": "hsl(var(--tool-merge-light))",
@@ -107,9 +180,25 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 4px)",
+        "2xl": "calc(var(--radius) + 8px)",
       },
       boxShadow: {
-        'tool': 'var(--shadow-tool)',
+        xs: "var(--shadow-xs)",
+        sm: "var(--shadow-sm)",
+        md: "var(--shadow-md)",
+        lg: "var(--shadow-lg)",
+        brand: "var(--shadow-brand)",
+        tool: "var(--shadow-tool)",
+      },
+      transitionDuration: {
+        fast: "var(--duration-fast)",
+        base: "var(--duration-base)",
+        slow: "var(--duration-slow)",
+      },
+      transitionTimingFunction: {
+        "out-expo": "var(--ease-out)",
+        "in-out-quart": "var(--ease-in-out)",
       },
       keyframes: {
         "accordion-down": {

@@ -127,9 +127,9 @@ export const SectionMermaid = ({ content }: SectionMermaidProps) => {
 
   if (error) {
     return (
-      <div className="flex gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
-        <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-foreground leading-relaxed">
+      <div className="flex gap-3 rounded-lg border border-warning/30 bg-warning-subtle p-4">
+        <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" aria-hidden />
+        <p className="text-sm text-warning-subtle-foreground leading-relaxed">
           Diagram could not be rendered.
         </p>
       </div>

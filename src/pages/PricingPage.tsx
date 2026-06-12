@@ -1,132 +1,137 @@
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Zap, Building, Infinity as InfinityIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Heading, Text } from '@/components/ui/typography';
 import { cn } from '@/lib/utils';
-
-const plans = [
-  {
-    name: 'Free',
-    description: 'For occasional PDF tasks',
-    price: '$0',
-    period: 'forever',
-    icon: Zap,
-    features: [
-      '5 files per day',
-      'Max 10MB per file',
-      'Basic tools (merge, split)',
-      'Standard processing speed',
-      'Email support',
-    ],
-    cta: 'Get Started',
-    href: '/signup',
-    popular: false,
-  },
-  {
-    name: 'Pro',
-    description: 'For professionals and teams',
-    price: '$12',
-    period: 'per month',
-    icon: Building,
-    features: [
-      'Unlimited files',
-      'Max 100MB per file',
-      'All tools including OCR',
-      'Priority processing',
-      'Batch processing',
-      'Priority email support',
-      'No watermarks',
-    ],
-    cta: 'Start Free Trial',
-    href: '/signup?plan=pro',
-    popular: true,
-  },
-  {
-    name: 'Enterprise',
-    description: 'For organizations at scale',
-    price: 'Custom',
-    period: 'contact us',
-    icon: InfinityIcon,
-    features: [
-      'Everything in Pro',
-      'Unlimited file size',
-      'API access',
-      'Custom integrations',
-      'Dedicated support',
-      'SLA guarantee',
-      'On-premise option',
-    ],
-    cta: 'Contact Sales',
-    href: '/contact',
-    popular: false,
-  },
-];
+import { usePlans } from '@/hooks/usePlans';
+import {
+  PLAN_TIERS,
+  PlanLimits,
+  PlanTierId,
+  RETENTION_SENTENCE,
+  formatFileSize,
+  formatRetention,
+  resolvePlanLimits,
+} from '@/components/pricing/planContent';
+import { PlanComparisonTable } from '@/components/pricing/PlanComparisonTable';
+import { PricingFaq } from '@/components/pricing/PricingFaq';
 
 const PricingPage = () => {
+  const { data: plans } = usePlans();
+
+  const limits = PLAN_TIERS.reduce(
+    (acc, tier) => {
+      acc[tier.id] = resolvePlanLimits(tier, plans);
+      return acc;
+    },
+    {} as Record<PlanTierId, PlanLimits>,
+  );
+
   return (
     <>
       <Helmet>
         <title>Pricing — Fyredocs</title>
-        <meta name="description" content="Simple, transparent pricing for Fyredocs PDF tools. Free plan available. Upgrade anytime." />
+        <meta
+          name="description"
+          content="Simple, transparent pricing for Fyredocs PDF tools. Use tools anonymously for free, or create an account for bigger limits and longer file retention."
+        />
       </Helmet>
-      <div className="container py-16 md:py-24">
-        <div className="max-w-3xl mx-auto text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Simple, Transparent <span className="text-gradient-primary">Pricing</span>
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Choose the plan that fits your needs. Upgrade or downgrade anytime.
-          </p>
+
+      <div className="container py-12 md:py-16">
+        {/* Hero */}
+        <div className="mx-auto mb-12 max-w-3xl text-center md:mb-16">
+          <Heading level="display" responsive>
+            Simple, honest <span className="gradient-text">pricing</span>
+          </Heading>
+          <Text variant="body-lg" tone="muted" className="mt-4">
+            Every tool works without an account. Sign up when you need bigger files, more files
+            per job, or longer retention.
+          </Text>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan) => {
-            const Icon = plan.icon;
+        {/* Tier cards */}
+        <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3 md:gap-8">
+          {PLAN_TIERS.map((tier) => {
+            const tierLimits = limits[tier.id];
             return (
               <Card
-                key={plan.name}
+                key={tier.id}
                 className={cn(
-                  'relative',
-                  plan.popular && 'border-primary shadow-lg scale-105'
+                  'relative flex flex-col rounded-2xl',
+                  tier.highlighted && 'border-primary shadow-brand ring-1 ring-primary',
                 )}
               >
-                {plan.popular && (
+                {tier.highlighted && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-gradient-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">
-                      Most Popular
-                    </span>
+                    <Badge>Most popular</Badge>
                   </div>
                 )}
-                <CardHeader className="text-center pb-2">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
+                <CardHeader>
+                  <CardTitle className="text-h3">{tier.name}</CardTitle>
+                  <CardDescription>{tier.tagline}</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="text-center">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    <span className="text-muted-foreground ml-2">{plan.period}</span>
+                <CardContent className="flex flex-1 flex-col gap-6">
+                  <div>
+                    <span className="text-h1 font-bold text-foreground">{tier.price}</span>
+                    <Text as="span" variant="body-sm" tone="muted" className="ml-2">
+                      {tier.period}
+                    </Text>
                   </div>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
+
+                  {/* Live limits */}
+                  <ul className="space-y-2 rounded-lg bg-muted/50 p-4">
+                    <li className="flex items-center justify-between gap-2">
+                      <Text as="span" variant="body-sm" tone="muted">
+                        Max file size
+                      </Text>
+                      <Text as="span" variant="body-sm" className="font-medium">
+                        {formatFileSize(tierLimits.maxFileSizeMb)}
+                      </Text>
+                    </li>
+                    <li className="flex items-center justify-between gap-2">
+                      <Text as="span" variant="body-sm" tone="muted">
+                        Files per job
+                      </Text>
+                      <Text as="span" variant="body-sm" className="font-medium">
+                        {tierLimits.maxFilesPerJob}
+                      </Text>
+                    </li>
+                    <li className="flex items-center justify-between gap-2">
+                      <Text as="span" variant="body-sm" tone="muted">
+                        File retention
+                      </Text>
+                      <Text as="span" variant="body-sm" className="font-medium">
+                        {formatRetention(tierLimits.retentionDays)}
+                      </Text>
+                    </li>
+                  </ul>
+
+                  <ul className="space-y-2.5">
+                    {tier.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden />
+                        <Text as="span" variant="body-sm">
+                          {feature}
+                        </Text>
                       </li>
                     ))}
                   </ul>
+
                   <Button
-                    className={cn(
-                      'w-full',
-                      plan.popular && 'bg-gradient-primary'
-                    )}
-                    variant={plan.popular ? 'default' : 'outline'}
+                    className="mt-auto w-full"
+                    variant={tier.highlighted ? 'default' : 'outline'}
                     asChild
                   >
-                    <Link to={plan.href}>{plan.cta}</Link>
+                    <Link to={tier.cta.href}>{tier.cta.label}</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -134,11 +139,25 @@ const PricingPage = () => {
           })}
         </div>
 
-        <div className="mt-16 text-center">
-          <p className="text-muted-foreground">
-            All plans include SSL encryption, secure file handling, and automatic file deletion after processing.
-          </p>
-        </div>
+        <Text variant="body-sm" tone="muted" className="mx-auto mt-8 max-w-2xl text-center">
+          {RETENTION_SENTENCE}
+        </Text>
+
+        {/* Comparison table */}
+        <section className="mx-auto mt-16 max-w-5xl">
+          <Heading level="h2" responsive className="mb-6 text-center">
+            Compare plans
+          </Heading>
+          <PlanComparisonTable limits={limits} />
+        </section>
+
+        {/* FAQ */}
+        <section className="mx-auto mt-16 max-w-2xl">
+          <Heading level="h2" responsive className="mb-6 text-center">
+            Frequently asked questions
+          </Heading>
+          <PricingFaq />
+        </section>
       </div>
     </>
   );

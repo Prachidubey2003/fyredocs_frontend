@@ -60,6 +60,14 @@ const TOOL_API_CONFIG: Record<ToolId, ToolApiConfig> = {
 
 export const getToolApiConfig = (toolId: ToolId) => TOOL_API_CONFIG[toolId];
 
+/** Reverse lookup: backend tool name ('merge-pdf') → frontend ToolId ('merge'). */
+const API_NAME_TO_TOOL_ID: Record<string, ToolId> = Object.fromEntries(
+  (Object.entries(TOOL_API_CONFIG) as [ToolId, ToolApiConfig][]).map(([id, cfg]) => [cfg.tool, id]),
+) as Record<string, ToolId>;
+
+export const getToolIdByApiName = (apiTool: string): ToolId | undefined =>
+  API_NAME_TO_TOOL_ID[apiTool];
+
 export const buildJobPath = (toolId: ToolId, jobId?: string) => {
   const { basePath, tool } = getToolApiConfig(toolId);
   return jobId ? `${basePath}/${tool}/${jobId}` : `${basePath}/${tool}`;

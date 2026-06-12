@@ -18,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { AuthLayout } from '@/components/auth/AuthLayout';
 
 const signInSchema = z.object({
   email: z.string().email('Enter a valid email address'),
@@ -56,74 +57,72 @@ const SignIn = () => {
   };
 
   return (
-    <>
-      <div className="flex min-h-[70vh] items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Sign in</CardTitle>
-            <CardDescription>Access your account and continue your work.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {redirectTo !== '/' && (
-              <Alert className="mb-4">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Sign in required</AlertTitle>
-                <AlertDescription>Sign in to access PDF tools.</AlertDescription>
-              </Alert>
-            )}
+    <AuthLayout>
+      <Card>
+        <CardHeader>
+          <CardTitle>Sign in</CardTitle>
+          <CardDescription>Access your account and continue your work.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {redirectTo !== '/' && (
+            <Alert className="mb-4">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Sign in required</AlertTitle>
+              <AlertDescription>Sign in to access PDF tools.</AlertDescription>
+            </Alert>
+          )}
 
-            {formError && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertDescription>{formError}</AlertDescription>
-              </Alert>
-            )}
+          {formError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          )}
 
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" autoComplete="email" placeholder="you@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" autoComplete="email" placeholder="you@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" autoComplete="current-password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" autoComplete="current-password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? 'Signing in...' : 'Sign in'}
-                </Button>
-              </form>
-            </Form>
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Signing in...' : 'Sign in'}
+              </Button>
+            </form>
+          </Form>
 
-            <p className="mt-6 text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{' '}
-              <Link to="/signup" className="text-primary hover:underline">
-                Create one
-              </Link>
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+          <p className="mt-6 text-center text-body-sm text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <Link to="/signup" className="text-primary hover:underline">
+              Create one
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
+    </AuthLayout>
   );
 };
 

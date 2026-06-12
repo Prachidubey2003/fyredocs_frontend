@@ -1,43 +1,23 @@
-import { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Heading, Text } from '@/components/ui/typography';
 
 interface AdminPageHeaderProps {
   title: string;
   description: string;
-  onRefresh?: () => void;
-  backTo?: string | null;
 }
 
-export function AdminPageHeader({ title, description, onRefresh, backTo = '/admin/dashboard' }: AdminPageHeaderProps) {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleRefresh = useCallback(() => {
-    if (!onRefresh) return;
-    setIsRefreshing(true);
-    onRefresh();
-    setTimeout(() => setIsRefreshing(false), 1000);
-  }, [onRefresh]);
-
+/**
+ * Page title for admin pages. Navigation, refresh, and time range live in the
+ * AdminLayout shell, so this is intentionally just title + description.
+ */
+export function AdminPageHeader({ title, description }: AdminPageHeaderProps) {
   return (
-    <div className="flex items-start gap-4">
-      {backTo !== null && (
-        <Button variant="ghost" size="icon" asChild className="mt-1 shrink-0">
-          <Link to={backTo}>
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-        </Button>
-      )}
-      <div className="flex-1">
-        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-        <p className="text-muted-foreground">{description}</p>
-      </div>
-      {onRefresh && (
-        <Button variant="outline" size="icon" onClick={handleRefresh} title="Refresh data" className="mt-1 shrink-0">
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-        </Button>
-      )}
+    <div>
+      <Heading level="h2" as="h1">
+        {title}
+      </Heading>
+      <Text variant="body-sm" tone="muted" className="mt-1">
+        {description}
+      </Text>
     </div>
   );
 }

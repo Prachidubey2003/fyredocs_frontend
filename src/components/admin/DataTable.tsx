@@ -35,6 +35,7 @@ interface ClientSideProps<T> {
   defaultSort?: { key: keyof T; desc: boolean };
   isLoading?: boolean;
   emptyMessage?: string;
+  onRowClick?: (row: T) => void;
 }
 
 // --- Server-side mode props ---
@@ -55,6 +56,7 @@ interface ServerSideProps<T> {
   pageCount: number;
   totalRows: number;
   showSearch?: boolean;
+  onRowClick?: (row: T) => void;
 }
 
 type DataTableProps<T> = ClientSideProps<T> | ServerSideProps<T>;
@@ -111,6 +113,7 @@ function TableRenderer<T extends Record<string, unknown>>({
   isLoading,
   emptyMessage,
   showSearch,
+  onRowClick,
 }: {
   data: T[];
   columns: Column<T>[];
@@ -128,6 +131,7 @@ function TableRenderer<T extends Record<string, unknown>>({
   isLoading?: boolean;
   emptyMessage: string;
   showSearch: boolean;
+  onRowClick?: (row: T) => void;
 }) {
   if (isLoading) {
     return (
@@ -216,7 +220,11 @@ function TableRenderer<T extends Record<string, unknown>>({
               </TableHeader>
               <TableBody>
                 {rows.map((row, i) => (
-                  <TableRow key={i} className="hover:bg-muted/50 transition-colors">
+                  <TableRow
+                    key={i}
+                    className={`hover:bg-muted/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  >
                     {columns.map((col) => {
                       const raw = row[col.key];
                       let content: ReactNode;
@@ -301,6 +309,7 @@ export function DataTable<T extends Record<string, unknown>>(props: DataTablePro
         isLoading={props.isLoading}
         emptyMessage={props.emptyMessage ?? 'No data available'}
         showSearch={props.showSearch ?? true}
+        onRowClick={props.onRowClick}
       />
     );
   }
@@ -316,6 +325,7 @@ function ClientDataTable<T extends Record<string, unknown>>({
   defaultSort,
   isLoading,
   emptyMessage = 'No data available',
+  onRowClick,
 }: ClientSideProps<T>) {
   const { rows, search, setSearch, sortKey, sortDesc, toggleSort, page, setPage, pageCount, totalRows } =
     useDataTable({ data, pageSize, searchableFields, defaultSort });
@@ -338,6 +348,7 @@ function ClientDataTable<T extends Record<string, unknown>>({
       isLoading={isLoading}
       emptyMessage={emptyMessage}
       showSearch={!!searchableFields && searchableFields.length > 0}
+      onRowClick={onRowClick}
     />
   );
 }

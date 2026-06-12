@@ -57,6 +57,31 @@ export type ToolId =
 
 export type ToolCategory = 'merge' | 'split' | 'compress' | 'convert' | 'organize' | 'security' | 'ocr' | 'watermark' | 'edit';
 
+/** Navigation/discovery grouping — the user-facing taxonomy (one group per tool). */
+export type ToolNavGroup =
+  | 'organize'
+  | 'optimize'
+  | 'convert-to-pdf'
+  | 'convert-from-pdf'
+  | 'libreoffice'
+  | 'edit'
+  | 'security';
+
+/** Identifiers for composable option panels rendered inside the tool workbench. */
+export type OptionsPanelId =
+  | 'split'
+  | 'compress'
+  | 'ocr'
+  | 'rotate'
+  | 'watermark'
+  | 'page-selection'
+  | 'reorder'
+  | 'password'
+  | 'unlock'
+  | 'page-numbers'
+  | 'scan'
+  | 'convert-info';
+
 export interface ToolDefinition {
   id: ToolId;
   name: string;
@@ -68,6 +93,28 @@ export interface ToolDefinition {
   minFiles: number;
   maxFileSize: number; // in bytes
   route: string;
+  /** User-facing nav/discovery group. */
+  navGroup: ToolNavGroup;
+  /** Display label in navigation where it differs from `name` (e.g. "JPG to PDF"). */
+  navLabel?: string;
+  /** Search synonyms for the command palette / tool search ("combine", "join"). */
+  keywords?: string[];
+  /** Output format for convert tools ('docx', 'xlsx', 'png', ...). */
+  outputFormat?: string;
+  /** Which composable options panel the workbench renders at the configure stage. */
+  optionsPanel?: OptionsPanelId;
+  /** Initial option values for the workbench form. */
+  defaultOptions?: Record<string, unknown>;
+  /** Tool supports per-file batch jobs (compress, ocr, rotate, watermark). */
+  supportsBatch?: boolean;
+  /** Workbench should load the PDF page count for page-aware options. */
+  needsPageCount?: boolean;
+  /** Tool has a custom configure-stage body instead of a generic options panel. */
+  bespoke?: 'sign-pdf' | 'edit-pdf';
+  /** Label for the primary action button, given the selected file count. */
+  actionLabel?: (count: number) => string;
+  /** Featured on the home page grid. */
+  popular?: boolean;
 }
 
 // ============================================================================

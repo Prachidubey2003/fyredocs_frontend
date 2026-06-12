@@ -1,70 +1,175 @@
-import { useState } from 'react';
-import { ToolCard } from '@/components/home/ToolCard';
-import { toolCategories } from '@/config/toolCategories';
+import { useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useSearchParams } from 'react-router-dom';
+import { Search, SearchX } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Heading, Text } from '@/components/ui/typography';
+import { EmptyState } from '@/components/common/EmptyState';
+import { ToolGrid } from '@/components/home/ToolGrid';
+import { NAV_GROUPS } from '@/config/navigation';
 import { getAllTools } from '@/config/tools';
+import { filterTools } from '@/lib/toolSearch';
+import { ToolNavGroup } from '@/types';
+import { cn } from '@/lib/utils';
 
-const allTools = getAllTools();
-const toolByRoute = new Map(allTools.map((t) => [t.route, t]));
+const isNavGroup = (value: string | null): value is ToolNavGroup =>
+  NAV_GROUPS.some((group) => group.id === value);
 
 const AllToolsPage = () => {
-  const [activeCategory, setActiveCategory] = useState<string | undefined>(undefined);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [query, setQuery] = useState('');
 
-  const categoriesToShow = activeCategory
-    ? toolCategories.filter((c) => c.title === activeCategory)
-    : toolCategories;
+  const categoryParam = searchParams.get('category');
+  const activeCategory: ToolNavGroup | null = isNavGroup(categoryParam) ? categoryParam : null;
+
+  const allTools = useMemo(() => getAllTools(), []);
+
+  const setCategory = (category: ToolNavGroup | null) => {
+    setSearchParams(
+      (params) => {
+        if (category) {
+          params.set('category', category);
+        } else {
+          params.delete('category');
+        }
+        return params;
+      },
+      { replace: true },
+    );
+  };
+
+  const clearFilters = () => {
+    setQuery('');
+    setCategory(null);
+  };
+
+  const scopedTools = activeCategory
+    ? allTools.filter((tool) => tool.navGroup === activeCategory)
+    : allTools;
+
+  const isSearching = query.trim().length > 0;
+  const searchResults = isSearching ? filterTools(query, scopedTools) : scopedTools;
+  const resultCount = searchResults.length;
+
+  const visibleGroups = NAV_GROUPS.filter(
+    (group) => (!activeCategory || group.id === activeCategory),
+  )
+    .map((group) => ({
+      group,
+      tools: scopedTools.filter((tool) => tool.navGroup === group.id),
+    }))
+    .filter(({ tools }) => tools.length > 0);
 
   return (
     <>
+      <Helmet>
+        <title>All PDF Tools — Fyredocs</title>
+        <meta
+          name="description"
+          content="Browse every Fyredocs tool — organize, optimize, convert, edit, and secure PDFs. Free, fast, and no sign-up required."
+        />
+      </Helmet>
+
       <div className="container py-12">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold mb-3">All PDF Tools</h1>
-          <p className="text-muted-foreground text-lg">
+        <div className="mb-8 text-center">
+          <Heading level="display" responsive>
+            All PDF Tools
+          </Heading>
+          <Text variant="body-lg" tone="muted" className="mt-3">
             Everything you need to work with PDFs — free, fast, and secure.
-          </p>
+          </Text>
         </div>
 
-        <div className="flex flex-wrap gap-2 justify-center mb-8">
-          <button
-            onClick={() => setActiveCategory(undefined)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              activeCategory === undefined
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            }`}
-          >
-            All
-          </button>
-          {toolCategories.map((category) => (
-            <button
-              key={category.title}
-              onClick={() => setActiveCategory(category.title)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeCategory === category.title
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              {category.title}
-            </button>
-          ))}
-        </div>
-
-        {categoriesToShow.map((category) => {
-          const tools = category.tools
-            .map((t) => toolByRoute.get(t.href))
-            .filter(Boolean);
-          if (tools.length === 0) return null;
-          return (
-            <div key={category.title} className="mb-10">
-              <h2 className="text-xl font-semibold mb-4 text-primary">{category.title}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                {tools.map((tool) => (
-                  <ToolCard key={tool!.id} tool={tool!} />
-                ))}
-              </div>
+        {/* Sticky toolbar */}
+        <div className="sticky top-16 z-30 -mx-4 mb-8 border-b bg-background/95 px-4 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="mx-auto flex max-w-3xl flex-col gap-3">
+            <div className="relative">
+              <Search
+                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              />
+              <Input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={`Search ${allTools.length} tools…`}
+                className="pl-9"
+                aria-label="Search tools"
+              />
             </div>
-          );
-        })}
+
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCategory(null)}
+                className={cn(
+                  'rounded-full px-4 py-1.5 text-body-sm font-medium transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                  activeCategory === null
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                )}
+              >
+                All
+              </button>
+              {NAV_GROUPS.map((group) => (
+                <button
+                  key={group.id}
+                  type="button"
+                  onClick={() => setCategory(activeCategory === group.id ? null : group.id)}
+                  className={cn(
+                    'rounded-full px-4 py-1.5 text-body-sm font-medium transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                    activeCategory === group.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                  )}
+                >
+                  {group.shortTitle}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Results count */}
+        <Text variant="body-sm" tone="muted" className="mb-6" aria-live="polite">
+          {resultCount} {resultCount === 1 ? 'tool' : 'tools'}
+          {isSearching && ` matching “${query.trim()}”`}
+          {activeCategory && ` in ${NAV_GROUPS.find((g) => g.id === activeCategory)?.title}`}
+        </Text>
+
+        {resultCount === 0 ? (
+          <EmptyState
+            icon={SearchX}
+            title="No tools match your filters"
+            description="Try a different search term or clear the filters to browse everything."
+            action={
+              <Button variant="outline" onClick={clearFilters}>
+                Clear filters
+              </Button>
+            }
+          />
+        ) : isSearching ? (
+          /* Flat ranked list while searching */
+          <ToolGrid tools={searchResults} columns={4} />
+        ) : (
+          /* Grouped by category */
+          <div className="space-y-12">
+            {visibleGroups.map(({ group, tools }) => (
+              <section key={group.id} aria-labelledby={`group-${group.id}`}>
+                <div className="mb-4 flex items-center gap-3">
+                  <Heading level="h3" as="h2" id={`group-${group.id}`} className={group.styles.text}>
+                    {group.title}
+                  </Heading>
+                  <Text as="span" variant="body-sm" tone="subtle">
+                    {tools.length} {tools.length === 1 ? 'tool' : 'tools'}
+                  </Text>
+                </div>
+                <ToolGrid tools={tools} columns={4} />
+              </section>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

@@ -1,6 +1,6 @@
 import { useParams, Navigate } from 'react-router-dom';
-import { DocsContent } from '@/components/docs/DocsContent';
-import { getDevDocBySlug } from '@/config/developerDocs';
+import { DocArticle } from '@/components/docs/DocArticle';
+import { devDocNavGroups, getDevDocBySlug } from '@/config/developerDocs';
 import { Helmet } from 'react-helmet-async';
 
 const DevDocsPage = () => {
@@ -19,14 +19,14 @@ const DevDocsPage = () => {
         <meta name="description" content={doc.description} />
       </Helmet>
 
-      <div className="px-8 py-8 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{doc.title}</h1>
-          <p className="text-lg text-muted-foreground">{doc.description}</p>
-        </div>
-
-        <DocsContent sections={doc.sections} />
-      </div>
+      <DocArticle
+        slug={doc.slug}
+        title={doc.title}
+        description={doc.description}
+        sections={doc.sections}
+        groups={devDocNavGroups}
+        basePath="/dev-docs"
+      />
     </>
   );
 };

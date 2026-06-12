@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { FileUpload } from '@/types';
 import {
   File,
@@ -25,6 +26,10 @@ interface FileItemProps {
   onMoveUp?: () => void;
   onMoveDown?: () => void;
   showReorder?: boolean;
+  /** Slot for a dnd-kit drag handle (rendered before the reorder buttons). */
+  dragHandle?: ReactNode;
+  /** Show a 1-based position badge (e.g. merge order). */
+  showOrdinal?: boolean;
 }
 
 const formatFileSize = (bytes: number): string => {
@@ -39,10 +44,10 @@ const formatFileSize = (bytes: number): string => {
 
 const stateIcons = {
   idle: null,
-  uploading: <Loader2 className="w-4 h-4 animate-spin text-primary" />,
-  paused: <Pause className="w-4 h-4 text-muted-foreground" />,
-  completed: <CheckCircle2 className="w-4 h-4 text-upload-success" />,
-  failed: <AlertCircle className="w-4 h-4 text-upload-error" />,
+  uploading: <Loader2 className="w-4 h-4 animate-spin text-primary" aria-hidden />,
+  paused: <Pause className="w-4 h-4 text-muted-foreground" aria-hidden />,
+  completed: <CheckCircle2 className="w-4 h-4 text-success" aria-hidden />,
+  failed: <AlertCircle className="w-4 h-4 text-destructive" aria-hidden />,
 };
 
 export const FileItem = ({
@@ -55,29 +60,35 @@ export const FileItem = ({
   onMoveUp,
   onMoveDown,
   showReorder = false,
+  dragHandle,
+  showOrdinal = false,
 }: FileItemProps) => {
   const { state, progress, error } = file;
 
   return (
     <div
       className={cn(
-        'group flex items-center gap-3 p-3 rounded-lg border bg-card transition-all',
-        state === 'failed' && 'border-destructive/50 bg-destructive/5',
-        state === 'completed' && 'border-upload-success/30 bg-upload-success/5',
+        'group flex items-center gap-3 p-3 rounded-lg border bg-card transition-colors',
+        state === 'failed' && 'border-destructive/50 bg-destructive-subtle/50',
+        state === 'completed' && 'border-success/30 bg-success-subtle/50',
         state === 'uploading' && 'border-primary/30'
       )}
     >
-      {/* Reorder buttons */}
+      {/* Drag handle (dnd-kit) */}
+      {dragHandle}
+
+      {/* Reorder buttons (keyboard/mouse fallback) */}
       {showReorder && (
-        <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
           <Button
             variant="ghost"
             size="icon"
             className="h-5 w-5"
             onClick={onMoveUp}
             disabled={!onMoveUp}
+            aria-label="Move file up"
           >
-            <ChevronUp className="h-3 w-3" />
+            <ChevronUp className="h-3 w-3" aria-hidden />
           </Button>
           <Button
             variant="ghost"
@@ -85,15 +96,20 @@ export const FileItem = ({
             className="h-5 w-5"
             onClick={onMoveDown}
             disabled={!onMoveDown}
+            aria-label="Move file down"
           >
-            <ChevronDown className="h-3 w-3" />
+            <ChevronDown className="h-3 w-3" aria-hidden />
           </Button>
         </div>
       )}
 
-      {/* File icon */}
+      {/* Ordinal badge / file icon */}
       <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-        <File className="w-5 h-5 text-muted-foreground" />
+        {showOrdinal ? (
+          <span className="text-body-sm font-semibold text-muted-foreground">{index + 1}</span>
+        ) : (
+          <File className="w-5 h-5 text-muted-foreground" aria-hidden />
+        )}
       </div>
 
       {/* File info */}
@@ -112,8 +128,15 @@ export const FileItem = ({
             <>
               <span className="text-xs text-muted-foreground">•</span>
               <span className="text-xs text-primary font-medium">
-                {progress.percentage}%
+                Uploading · {progress.percentage}%
               </span>
+            </>
+          )}
+
+          {state === 'paused' && (
+            <>
+              <span className="text-xs text-muted-foreground">•</span>
+              <span className="text-xs text-muted-foreground font-medium">Paused</span>
             </>
           )}
 
@@ -134,20 +157,20 @@ export const FileItem = ({
       {/* Actions */}
       <div className="flex items-center gap-1">
         {state === 'uploading' && onPause && (
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onPause}>
-            <Pause className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onPause} aria-label="Pause upload">
+            <Pause className="h-4 w-4" aria-hidden />
           </Button>
         )}
 
         {state === 'paused' && onResume && (
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onResume}>
-            <Play className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onResume} aria-label="Resume upload">
+            <Play className="h-4 w-4" aria-hidden />
           </Button>
         )}
 
         {state === 'failed' && onRetry && (
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onRetry}>
-            <RotateCcw className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onRetry} aria-label="Retry upload">
+            <RotateCcw className="h-4 w-4" aria-hidden />
           </Button>
         )}
 
@@ -156,8 +179,9 @@ export const FileItem = ({
           size="icon"
           className="h-8 w-8 text-muted-foreground hover:text-destructive"
           onClick={onRemove}
+          aria-label="Remove file"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" aria-hidden />
         </Button>
       </div>
     </div>

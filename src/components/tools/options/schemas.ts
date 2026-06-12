@@ -1,0 +1,166 @@
+import { z } from 'zod';
+import { OptionsPanelId } from '@/types';
+
+/**
+ * Zod schema + default values per options panel. The workbench builds its
+ * react-hook-form instance from these, then merges `tool.defaultOptions` on top.
+ *
+ * IMPORTANT: the resulting form values must match the shapes expected by
+ * `normalizeOptions()` in src/hooks/useJob.ts — that function is the contract
+ * with the backend and must not change.
+ */
+
+export const PANEL_SCHEMAS: Record<OptionsPanelId, z.ZodTypeAny> = {
+  split: z
+    .object({
+      mode: z.enum(['all', 'range', 'extract', 'equal']),
+      range: z.string().optional(),
+      span: z.coerce.number().optional(),
+    })
+    .superRefine((value, ctx) => {
+      if (value.mode === 'range' && !value.range?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['range'],
+          message: 'Please enter a page range',
+        });
+      }
+      if (value.mode === 'extract' && (!value.span || value.span < 1)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['span'],
+          message: 'Please enter a valid page count per chunk',
+        });
+      }
+      if (value.mode === 'equal' && (!value.span || value.span < 2)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['span'],
+          message: 'Please enter at least 2 parts',
+        });
+      }
+    }),
+
+  compress: z.object({
+    quality: z.enum(['low', 'medium', 'high', 'extreme']),
+  }),
+
+  ocr: z.object({
+    language: z.string().min(1, 'Please select a language'),
+    dpi: z.string().optional(),
+  }),
+
+  rotate: z.object({
+    rotation: z.coerce.number().refine((v) => [90, 180, 270].includes(v), {
+      message: 'Rotation must be 90, 180 or 270 degrees',
+    }),
+    applyToPages: z.enum(['all', 'odd', 'even']),
+  }),
+
+  watermark: z
+    .object({
+      type: z.enum(['text', 'image']),
+      text: z.string().optional(),
+      imageData: z.string().optional(),
+      position: z.enum(['center', 'diagonal', 'tiled']),
+      opacity: z.coerce.number().min(10).max(100),
+      fontSize: z.coerce.number().min(12).max(120).optional(),
+      scale: z.coerce.number().min(10).max(100).optional(),
+      color: z.string().optional(),
+    })
+    .superRefine((value, ctx) => {
+      if (value.type === 'text' && !value.text?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['text'],
+          message: 'Watermark text is required',
+        });
+      }
+      if (value.type === 'image' && !value.imageData) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['imageData'],
+          message: 'Please upload a watermark image',
+        });
+      }
+    }),
+
+  'page-selection': z.object({
+    pages: z.string().trim().min(1, 'Please enter page numbers'),
+  }),
+
+  reorder: z.object({
+    order: z.string().trim().min(1, 'Please enter the new page order'),
+  }),
+
+  password: z
+    .object({
+      password: z.string().min(4, 'Password must be at least 4 characters'),
+      confirmPassword: z.string(),
+    })
+    .superRefine((value, ctx) => {
+      if (value.password !== value.confirmPassword) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['confirmPassword'],
+          message: 'Passwords do not match',
+        });
+      }
+    }),
+
+  unlock: z.object({
+    password: z.string().min(1, 'Please enter the document password'),
+  }),
+
+  'page-numbers': z.object({
+    position: z.string().min(1),
+    startNumber: z.coerce.number().min(1, 'Start number must be at least 1'),
+    fontSize: z.coerce.number().min(8, 'Font size must be 8–48').max(48, 'Font size must be 8–48'),
+    format: z.string().min(1),
+  }),
+
+  scan: z.object({
+    ocr: z.boolean(),
+    language: z.string().min(1),
+  }),
+
+  'convert-info': z.object({}),
+};
+
+export const PANEL_DEFAULTS: Record<OptionsPanelId, Record<string, unknown>> = {
+  split: { mode: 'all', range: '', span: 2 },
+  compress: { quality: 'medium' },
+  ocr: { language: 'en', dpi: '' },
+  rotate: { rotation: 90, applyToPages: 'all' },
+  watermark: {
+    type: 'text',
+    text: 'CONFIDENTIAL',
+    imageData: '',
+    position: 'diagonal',
+    opacity: 50,
+    fontSize: 48,
+    scale: 30,
+    color: '#6366f1',
+  },
+  'page-selection': { pages: '' },
+  reorder: { order: '' },
+  password: { password: '', confirmPassword: '' },
+  unlock: { password: '' },
+  'page-numbers': { position: 'bc', startNumber: 1, fontSize: 12, format: '{n}' },
+  scan: { ocr: false, language: 'en' },
+  'convert-info': {},
+};
+
+/** Shared OCR language list (OcrTool/ScanToPdfTool used the same values). */
+export const OCR_LANGUAGES = [
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'de', label: 'German' },
+  { value: 'it', label: 'Italian' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'ja', label: 'Japanese' },
+  { value: 'ko', label: 'Korean' },
+  { value: 'ar', label: 'Arabic' },
+] as const;
