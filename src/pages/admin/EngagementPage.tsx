@@ -47,6 +47,8 @@ const EngagementPage = () => {
 
   const guestRatio = (d?.guestVsRegistered?.guestRatio ?? 0) * 100;
   const powerUsers = (d?.powerUsers ?? []) as PowerUserRow[];
+  // useToolUsage returns { days, rows } — the tool list is on `.rows`.
+  const toolRows = toolUsage.data?.rows ?? [];
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -92,11 +94,11 @@ const EngagementPage = () => {
               title="Feature adoption"
               description="Completed vs failed jobs by tool"
               isLoading={toolUsage.isLoading}
-              awaitingData={(toolUsage.data?.length ?? 0) === 0}
-              exportData={{ filename: 'feature-adoption', rows: toolUsage.data ?? [] }}
+              awaitingData={toolRows.length === 0}
+              exportData={{ filename: 'feature-adoption', rows: toolRows }}
             >
               <StackedBarChart
-                data={[...(toolUsage.data ?? [])].sort((a, b) => b.count - a.count).slice(0, 10)}
+                data={[...toolRows].sort((a, b) => b.count - a.count).slice(0, 10)}
                 xKey="toolType"
                 layout="horizontal"
                 series={[
