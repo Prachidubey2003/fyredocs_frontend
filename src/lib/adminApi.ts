@@ -1,5 +1,19 @@
 import { apiRequest } from '@/lib/apiClient';
 
+/**
+ * Wraps a fetch for an endpoint that may not be deployed yet. Resolves to null
+ * on any failure so the UI can render an "awaiting data" slot instead of an
+ * error. Use only for the new redesign endpoints, not the established ones.
+ */
+const optional = async <T>(promise: Promise<ApiResponse<T>>): Promise<T | null> => {
+  try {
+    const res = await promise;
+    return res.data;
+  } catch {
+    return null;
+  }
+};
+
 export type OverviewData = {
   date: string;
   signups: number;
@@ -64,7 +78,16 @@ export type BusinessData = {
   planChanges: { date: string; oldPlan: string; newPlan: string; count: number }[];
   conversionRate: { totalChanges: number; freeUpgrades: number; rate: number };
   churn: { inactiveDays: number; churnedUsers: number; previousActiveUsers: number; churnRate: number };
-  revenue: { mrr: number | null; arr: number | null; cac: number | null; ltv: number | null; note: string };
+  revenue: {
+    mrr: number | null;
+    arr: number | null;
+    cac: number | null;
+    ltv: number | null;
+    note: string;
+    /** Set true once revenue is estimated from the plan-price map. */
+    estimated?: boolean;
+    currency?: string;
+  };
 };
 
 export const fetchBusiness = (days = 30) =>
@@ -81,6 +104,10 @@ export type GrowthData = {
   activationRate: { signups: number; activated: number; rate: number };
   retention: { cohortDate: string; cohortSize: number; d1: number; d7: number; d30: number }[];
   funnel: { signedUp: number; createdJob: number; completedJob: number; repeatUser: number };
+  /** DAU/WAU/MAU per day (new backend field). */
+  activeTrend?: { date: string; dau: number; wau: number; mau: number }[];
+  /** Previous-period DAU series for overlay comparison (new backend field). */
+  previousDauTrend?: { date: string; dau: number }[];
 };
 
 export const fetchGrowth = (days = 30) =>
@@ -107,7 +134,15 @@ export type ReliabilityData = {
   processingTime: { avgSeconds: number; p50Seconds: number; p95Seconds: number };
   toolErrors: { toolType: string; completed: number; failed: number }[];
   planLimitHits: { date: string; planName: string; hits: number }[];
+  /** Daily processing-time percentiles, seconds (new backend field). */
+  processingTimeTrend?: { date: string; p50: number; p95: number; p99: number }[];
+  /** Daily failure counts bucketed by root-cause category (new backend field). */
+  failureCategories?: { date: string; category: string; count: number }[];
 };
+
+/** Failure-category buckets returned by the reliability endpoint. */
+export const FAILURE_CATEGORIES = ['timeout', 'validation', 'processing', 'infrastructure', 'other'] as const;
+export type FailureCategory = (typeof FAILURE_CATEGORIES)[number];
 
 export const fetchReliability = (days = 30) =>
   unwrap(apiRequest<ApiResponse<ReliabilityData>>(`/admin/metrics/reliability?days=${days}`));
@@ -144,6 +179,22 @@ export type ServerPerformanceData = {
     memory?: { heapAllocMB: number; heapInuseMB: number; stackInuseMB: number; sysMB: number; numGC?: number; gcPauseTotalMs?: number };
   }>;
   availability: { totalServices: number; healthyServices: number; unhealthyServices: number; uptimePercent: number };
+  /** Flattened, table-friendly per-service rows (new backend field). */
+  servicesList?: ServiceRow[];
+  /** Rolling host resource history (new backend field). */
+  history?: { time: string; cpuPercent: number; memPercent: number; diskPercent: number; networkKBs?: number }[];
+};
+
+export type ServiceRow = {
+  name: string;
+  status: string;
+  uptime: string;
+  goroutines: number;
+  heapAllocMB: number;
+  heapInuseMB: number;
+  sysMB: number;
+  goVersion: string;
+  error?: string;
 };
 
 export const fetchServerPerformance = () =>
@@ -190,3 +241,114 @@ export const fetchApiPerformance = async (params?: EndpointQueryParams): Promise
   const resp = await apiRequest<ApiResponseWithMeta<ApiPerformanceData>>(url);
   return { data: resp.data, meta: resp.meta };
 };
+
+// =====================================================================
+// Redesign endpoints (new). These may not be deployed yet, so their
+// fetchers resolve to null on failure and the UI shows "awaiting data".
+// =====================================================================
+
+// --- Executive Overview (8 KPI cards) ---
+export type KpiKey =
+  | 'totalUsers'
+  | 'activeUsers'
+  | 'revenue'
+  | 'jobsCreated'
+  | 'successRate'
+  | 'apiRequests'
+  | 'apiErrorRate'
+  | 'activeServers';
+
+export type ExecutiveKpi = {
+  current: number | null;
+  previous: number | null;
+  sparkline: { date: string; value: number }[];
+};
+
+export type ExecutiveOverviewData = {
+  period: { from: string; to: string; days: number };
+  totalUsers: ExecutiveKpi;
+  activeUsers: ExecutiveKpi;
+  revenue: ExecutiveKpi & { estimated: boolean; currency: string };
+  jobsCreated: ExecutiveKpi;
+  successRate: ExecutiveKpi;
+  apiRequests: ExecutiveKpi;
+  apiErrorRate: ExecutiveKpi;
+  activeServers: { current: number; total: number; services: { name: string; status: string }[] };
+};
+
+export const fetchExecutiveOverview = (days = 30) =>
+  optional(apiRequest<ApiResponse<ExecutiveOverviewData>>(`/admin/metrics/executive?days=${days}`));
+
+// --- Revenue (estimated) ---
+export type RevenueData = {
+  period: { from: string; to: string; days: number };
+  estimated: boolean;
+  note: string;
+  currency: string;
+  prices: Record<string, number>;
+  mrr: number;
+  arr: number;
+  previousMrr: number;
+  byPlan: { plan: string; users: number; pricePerMonth: number; mrr: number }[];
+  trend: { date: string; mrr: number; byPlan?: Record<string, number> }[];
+  planChanges: { date: string; upgrades: number; downgrades: number }[];
+};
+
+export const fetchRevenue = (days = 30) =>
+  optional(apiRequest<ApiResponse<RevenueData>>(`/admin/metrics/revenue?days=${days}`));
+
+// --- Acquisition channels ---
+export type AcquisitionData = {
+  period: { from: string; to: string; days: number };
+  channels: { channel: string; signups: number; percent: number }[];
+  daily: { date: string; channel: string; signups: number }[];
+  topReferrers?: { referrer: string; signups: number }[];
+  previous?: { channels: { channel: string; signups: number }[] };
+};
+
+export const ACQUISITION_CHANNELS = ['organic', 'referral', 'paid', 'campaign', 'direct', 'unknown'] as const;
+export type AcquisitionChannel = (typeof ACQUISITION_CHANNELS)[number];
+
+export const fetchAcquisition = (days = 30) =>
+  optional(apiRequest<ApiResponse<AcquisitionData>>(`/admin/metrics/acquisition?days=${days}`));
+
+// --- Queue / pipeline status ---
+export type QueueStatusData = {
+  timestamp: string;
+  streams: { name: string; messages: number; bytes: number; consumers: number; oldestMessageAt: string | null; error?: string }[];
+  dispatchConsumers: { name: string; pending: number; ackPending: number; redelivered: number }[];
+  dlq: { messages: number; oldestAgeSeconds: number | null };
+  analyticsLag: {
+    analytics: { pending: number; ackPending: number };
+    jobsEvents: { pending: number; ackPending: number };
+  };
+  depthHistory?: { time: string; consumer: string; pending: number }[];
+  throughput?: { time: string; processed: number; failed: number; queued?: number }[];
+};
+
+export const fetchQueueStatus = () =>
+  optional(apiRequest<ApiResponse<QueueStatusData>>('/admin/metrics/queues'));
+
+// --- API traffic trends (sampled time series) ---
+export type ApiTrendsData = {
+  period: { from: string; to: string; days: number };
+  resolution: 'hour' | 'day';
+  series: {
+    time: string;
+    requests: number;
+    errors: number;
+    errorRate: number;
+    avgMs: number;
+    p50Ms: number;
+    p95Ms: number;
+    p99Ms: number;
+  }[];
+  totals: { requests: number; errors: number; errorRate: number; avgMs: number };
+  previous?: { requests: number; errors: number; errorRate: number; avgMs: number };
+  /** Earliest sample time; UI shows "collecting since" when sparse. */
+  sampledSince: string | null;
+  errorClasses?: { time: string; clientErrors: number; serverErrors: number; timeouts: number }[];
+};
+
+export const fetchApiTrends = (days = 7) =>
+  optional(apiRequest<ApiResponse<ApiTrendsData>>(`/admin/metrics/api-trends?days=${days}`));

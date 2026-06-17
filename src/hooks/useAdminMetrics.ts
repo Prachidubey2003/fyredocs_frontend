@@ -12,6 +12,11 @@ import {
   fetchSystem,
   fetchServerPerformance,
   fetchApiPerformance,
+  fetchExecutiveOverview,
+  fetchRevenue,
+  fetchAcquisition,
+  fetchQueueStatus,
+  fetchApiTrends,
   type EndpointQueryParams,
 } from '@/lib/adminApi';
 
@@ -96,5 +101,42 @@ export const useApiPerformance = (params?: EndpointQueryParams) =>
   useQuery({
     queryKey: ['admin', 'apiPerformance', params],
     queryFn: () => fetchApiPerformance(params),
+    staleTime: 60_000,
+  });
+
+// --- Redesign endpoints (new, 404-tolerant) ---
+
+export const useExecutiveOverview = (days = 30) =>
+  useQuery({
+    queryKey: ['admin', 'executive', days],
+    queryFn: () => fetchExecutiveOverview(days),
+    staleTime: 60_000,
+  });
+
+export const useRevenue = (days = 30) =>
+  useQuery({
+    queryKey: ['admin', 'revenue', days],
+    queryFn: () => fetchRevenue(days),
+    staleTime: 5 * 60_000,
+  });
+
+export const useAcquisition = (days = 30) =>
+  useQuery({
+    queryKey: ['admin', 'acquisition', days],
+    queryFn: () => fetchAcquisition(days),
+    staleTime: 5 * 60_000,
+  });
+
+export const useQueueStatus = () =>
+  useQuery({
+    queryKey: ['admin', 'queues'],
+    queryFn: fetchQueueStatus,
+    refetchInterval: 30_000,
+  });
+
+export const useApiTrends = (days = 7) =>
+  useQuery({
+    queryKey: ['admin', 'apiTrends', days],
+    queryFn: () => fetchApiTrends(days),
     staleTime: 60_000,
   });

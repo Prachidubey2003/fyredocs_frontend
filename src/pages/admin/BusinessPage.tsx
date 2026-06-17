@@ -1,233 +1,148 @@
+import { useMemo } from 'react';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
-import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
+import { ChartCard } from '@/components/admin/ChartCard';
+import { InsightsPanel } from '@/components/admin/InsightsPanel';
 import { MetricsErrorState } from '@/components/admin/MetricsErrorState';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { ProgressRing } from '@/components/admin/ProgressRing';
-import { DollarSign, UserPlus, TrendingDown, Percent, ArrowUpCircle } from 'lucide-react';
-import { useBusiness } from '@/hooks/useAdminMetrics';
+import { Badge } from '@/components/ui/badge';
+import { ComboChart } from '@/components/admin/charts/ComboChart';
+import { DonutChart, type DonutSegment } from '@/components/admin/charts/DonutChart';
+import { FunnelSteps, type FunnelStage } from '@/components/admin/charts/FunnelSteps';
+import { UserPlus, TrendingDown, Percent, DollarSign } from 'lucide-react';
+import { useBusiness, useGrowth, useEngagement, useRevenue } from '@/hooks/useAdminMetrics';
 import { useAdminTimeRange } from '@/hooks/useAdminTimeRange';
-import { AXIS_PROPS, CHART_COLORS, GRID_PROPS, SEMANTIC } from '@/components/admin/chartTheme';
+import {
+  CHART_COLORS,
+  SEMANTIC,
+  formatCurrency,
+  formatNumber,
+} from '@/components/admin/chartTheme';
 import { computeDelta, seriesFrom } from '@/lib/adminTrends';
+import { computeBusinessInsights } from '@/lib/insights';
 
-const signupsChartConfig = {
-  signups: { label: 'Signups', color: SEMANTIC.success },
-} satisfies ChartConfig;
-
-const planChangesChartConfig = {
-  upgrades: { label: 'Upgrades', color: CHART_COLORS[1] },
-  downgrades: { label: 'Downgrades', color: SEMANTIC.danger },
-} satisfies ChartConfig;
+const FREE_PLANS = new Set(['free', 'anonymous', 'guest']);
 
 const BusinessPage = () => {
   const { days } = useAdminTimeRange();
   const { data, isLoading, isError, refetch } = useBusiness(days);
+  const growth = useGrowth(days);
+  const engagement = useEngagement(days);
+  const revenue = useRevenue(days);
   const d = data;
 
   const churnRate = d?.churn?.churnRate ?? 0;
   const conversionRate = d?.conversionRate?.rate ?? 0;
   const signupsTrend = computeDelta(seriesFrom(d?.signups?.daily, (row) => row.signups));
+  const currency = revenue.data?.currency ?? d?.revenue?.currency ?? 'USD';
+  const mrr = revenue.data?.mrr ?? d?.revenue?.mrr ?? null;
+
+  const insights = useMemo(() => computeBusinessInsights(d), [d]);
+
+  // Revenue & growth: merge estimated MRR per day with daily signups.
+  const revenueGrowthData = useMemo(() => {
+    const byDate = new Map<string, { date: string; mrr: number; signups: number }>();
+    for (const r of revenue.data?.trend ?? []) {
+      byDate.set(r.date, { date: r.date, mrr: r.mrr, signups: 0 });
+    }
+    for (const r of d?.signups?.daily ?? []) {
+      const row = byDate.get(r.date) ?? { date: r.date, mrr: 0, signups: 0 };
+      row.signups = r.signups;
+      byDate.set(r.date, row);
+    }
+    return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+  }, [revenue.data, d?.signups]);
+
+  // Plan distribution: latest snapshot per plan.
+  const planSegments: DonutSegment[] = useMemo(() => {
+    const rows = d?.planDistribution ?? [];
+    if (!rows.length) return [];
+    const latestDate = rows.reduce((max, r) => (r.date > max ? r.date : max), rows[0].date);
+    const byPlan = new Map<string, number>();
+    for (const r of rows.filter((r) => r.date === latestDate)) {
+      byPlan.set(r.planName, (byPlan.get(r.planName) ?? 0) + r.users);
+    }
+    return [...byPlan.entries()].map(([name, value]) => ({ name, value }));
+  }, [d?.planDistribution]);
+
+  const payingUsers = planSegments
+    .filter((s) => !FREE_PLANS.has(s.name.toLowerCase()))
+    .reduce((sum, s) => sum + s.value, 0);
+
+  // Conversion funnel: visitors → signups → activated → paying.
+  const funnelStages: FunnelStage[] = useMemo(() => {
+    const gvr = engagement.data?.guestVsRegistered;
+    const visitors = gvr ? gvr.guestEvents + gvr.registeredEvents : 0;
+    const signups = d?.signups?.total ?? 0;
+    const activated = growth.data?.activationRate?.activated ?? 0;
+    return [
+      { label: 'Visitors', value: visitors },
+      { label: 'Signups', value: signups },
+      { label: 'Activated', value: activated },
+      { label: 'Paying', value: payingUsers },
+    ];
+  }, [engagement.data, d?.signups, growth.data, payingUsers]);
+
+  const hasFunnel = funnelStages.some((s) => s.value > 0);
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <AdminPageHeader
-        title="Business Metrics"
-        description="Signups, plan changes, churn, and conversion"
-      />
+      <AdminPageHeader title="Business" description="Revenue, acquisition, and customer mix" />
 
       {isError ? (
         <MetricsErrorState onRetry={() => refetch()} />
       ) : (
         <>
-          {/* Stat Cards */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              label="Total Signups"
-              value={d?.signups?.total}
-              icon={UserPlus}
-              tone="success"
-              color="text-success"
-              isLoading={isLoading}
-              trend={signupsTrend ?? undefined}
-            />
-            <StatCard
-              label="Churn Rate"
-              value={`${(churnRate * 100).toFixed(1)}%`}
-              icon={TrendingDown}
-              tone="destructive"
-              color={churnRate > 0.1 ? 'text-destructive' : 'text-foreground'}
-              isLoading={isLoading}
-            />
-            <StatCard
-              label="Conversion Rate"
-              value={`${(conversionRate * 100).toFixed(1)}%`}
-              icon={Percent}
-              tone="info"
-              isLoading={isLoading}
-            />
-            <StatCard
-              label="Free Upgrades"
-              value={d?.conversionRate?.freeUpgrades}
-              icon={ArrowUpCircle}
-              tone="brand"
-              isLoading={isLoading}
-            />
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+            <StatCard label="Total Signups" value={d?.signups?.total} icon={UserPlus} tone="success" color="text-success" isLoading={isLoading} trend={signupsTrend ?? undefined} />
+            <StatCard label="Revenue (est.)" value={mrr != null ? formatCurrency(mrr, currency) : '—'} icon={DollarSign} tone="brand" subtitle="Estimated MRR" isLoading={isLoading || revenue.isLoading} />
+            <StatCard label="Conversion Rate" value={`${(conversionRate * 100).toFixed(1)}%`} icon={Percent} tone="info" isLoading={isLoading} />
+            <StatCard label="Churn Rate" value={`${(churnRate * 100).toFixed(1)}%`} icon={TrendingDown} tone="destructive" color={churnRate > 0.1 ? 'text-destructive' : 'text-foreground'} isLoading={isLoading} />
           </div>
 
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {/* Signups Over Time */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Signups Over Time</CardTitle>
-                <CardDescription>Daily signups for the last {days} days</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <Skeleton className="h-[300px] w-full" />
-                ) : (
-                  <ChartContainer config={signupsChartConfig} className="h-[300px] w-full">
-                    <AreaChart data={d?.signups?.daily ?? []}>
-                      <CartesianGrid {...GRID_PROPS} vertical={false} />
-                      <XAxis
-                        dataKey="date"
-                        {...AXIS_PROPS}
-                        tickFormatter={(v: string) => v.slice(5)}
-                      />
-                      <YAxis {...AXIS_PROPS} width={40} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Area
-                        type="monotone"
-                        dataKey="signups"
-                        stroke="var(--color-signups)"
-                        fill="var(--color-signups)"
-                        fillOpacity={0.2}
-                        strokeWidth={2}
-                        isAnimationActive
-                        animationDuration={800}
-                        animationEasing="ease-out"
-                      />
-                    </AreaChart>
-                  </ChartContainer>
-                )}
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <ChartCard
+              className="lg:col-span-2"
+              title="Revenue & growth"
+              description="Estimated MRR with daily signups"
+              toolbar={<Badge variant="outline" className="text-[10px]">Estimated</Badge>}
+              isLoading={isLoading || revenue.isLoading}
+              awaitingData={revenueGrowthData.length === 0}
+              exportData={{ filename: 'revenue-growth', rows: revenueGrowthData }}
+            >
+              <ComboChart
+                data={revenueGrowthData}
+                xKey="date"
+                bars={[{ key: 'mrr', label: 'Est. MRR', color: CHART_COLORS[0] }]}
+                lines={[{ key: 'signups', label: 'Signups', color: SEMANTIC.success }]}
+                leftTickFormatter={(v) => formatCurrency(v, currency)}
+                rightTickFormatter={formatNumber}
+                valueFormatter={(v, key) => (key === 'mrr' ? formatCurrency(v, currency) : formatNumber(v))}
+              />
+            </ChartCard>
 
-            {/* Plan Changes */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Plan Changes</CardTitle>
-                <CardDescription>Upgrades and downgrades over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <Skeleton className="h-[300px] w-full" />
-                ) : (
-                  <ChartContainer config={planChangesChartConfig} className="h-[300px] w-full">
-                    <BarChart data={d?.planChanges ?? []}>
-                      <CartesianGrid {...GRID_PROPS} vertical={false} />
-                      <XAxis
-                        dataKey="date"
-                        {...AXIS_PROPS}
-                        tickFormatter={(v: string) => v.slice(5)}
-                      />
-                      <YAxis {...AXIS_PROPS} width={40} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="upgrades" fill="var(--color-upgrades)" radius={[4, 4, 0, 0]}
-                        isAnimationActive animationDuration={800} animationEasing="ease-out" />
-                      <Bar dataKey="downgrades" fill="var(--color-downgrades)" radius={[4, 4, 0, 0]}
-                        isAnimationActive animationDuration={800} animationEasing="ease-out" />
-                    </BarChart>
-                  </ChartContainer>
-                )}
-              </CardContent>
-            </Card>
+            <ChartCard
+              title="Customer distribution"
+              description="Active users by plan"
+              isLoading={isLoading}
+              awaitingData={planSegments.length === 0}
+              exportData={{ filename: 'plan-distribution', rows: planSegments }}
+            >
+              <DonutChart data={planSegments} centerSubLabel="Users" />
+            </ChartCard>
           </div>
 
-          {/* Bottom Row */}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {/* Churn Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Churn Details</CardTitle>
-                <CardDescription>User churn breakdown for the period</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex items-center gap-6">
-                    <div className="flex-1 space-y-3">
-                      {[0, 1, 2].map((i) => (
-                        <div key={i} className="flex items-center justify-between border-b pb-3 last:border-0">
-                          <Skeleton className="h-4 w-28" />
-                          <Skeleton className="h-5 w-16" />
-                        </div>
-                      ))}
-                    </div>
-                    <Skeleton className="h-20 w-20 shrink-0 rounded-full" />
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-6">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center justify-between border-b pb-3">
-                        <span className="text-sm text-muted-foreground">Churned Users</span>
-                        <span className="text-lg font-semibold text-destructive">
-                          <AnimatedNumber value={d?.churn?.churnedUsers ?? 0} />
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between border-b pb-3">
-                        <span className="text-sm text-muted-foreground">Previous Active</span>
-                        <span className="text-lg font-semibold"><AnimatedNumber value={d?.churn?.previousActiveUsers ?? 0} /></span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Churn Rate</span>
-                        <span className={`text-lg font-semibold ${churnRate > 0.1 ? 'text-destructive' : 'text-success'}`}>
-                          <AnimatedNumber value={churnRate * 100} decimals={1} suffix="%" />
-                        </span>
-                      </div>
-                    </div>
-                    <div className="shrink-0">
-                      <ProgressRing
-                        value={churnRate * 100}
-                        size={80}
-                        strokeWidth={8}
-                        color={churnRate > 0.1 ? SEMANTIC.danger : SEMANTIC.success}
-                      />
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <ChartCard
+              className="lg:col-span-2"
+              title="Conversion funnel"
+              description="Visitors → Signups → Activated → Paying"
+              isLoading={isLoading || growth.isLoading || engagement.isLoading}
+              awaitingData={!hasFunnel}
+            >
+              <FunnelSteps stages={funnelStages} />
+            </ChartCard>
 
-            {/* Revenue Placeholder */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Revenue</CardTitle>
-                <CardDescription>Coming Soon</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex flex-col items-center justify-center gap-2 py-6 text-center">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <Skeleton className="h-4 w-48" />
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center gap-2 py-12 text-center text-muted-foreground">
-                    <DollarSign className="h-8 w-8 opacity-50" aria-hidden />
-                    <p className="text-sm">
-                      {d?.revenue?.note ?? 'Revenue tracking is not yet available.'}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <InsightsPanel insights={insights} title="Business insights" isLoading={isLoading} />
           </div>
         </>
       )}

@@ -1,388 +1,324 @@
-import { SummaryCard } from '@/components/admin/SummaryCard';
-import { ProgressRing } from '@/components/admin/ProgressRing';
-import { StatCard } from '@/components/admin/StatCard';
+import { useMemo } from 'react';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { MetricsErrorState } from '@/components/admin/MetricsErrorState';
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import { KpiCard, type KpiCardProps } from '@/components/admin/KpiCard';
+import { ChartCard } from '@/components/admin/ChartCard';
+import { InsightsPanel } from '@/components/admin/InsightsPanel';
+import { HealthStatusStrip, type HealthSegment } from '@/components/admin/HealthStatusStrip';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { MultiLineChart } from '@/components/admin/charts/MultiLineChart';
 import {
-  useOverview,
+  useExecutiveOverview,
+  useUserGrowth,
   useBusiness,
   useGrowth,
   useEngagement,
   useReliability,
-  useSystem,
   useServerPerformance,
   useApiPerformance,
 } from '@/hooks/useAdminMetrics';
 import { useAdminTimeRange } from '@/hooks/useAdminTimeRange';
 import {
   CHART_COLORS,
-  SEMANTIC,
-  rateToneClass,
-  rateToneColor,
-  usageToneColor,
+  formatCompact,
+  formatCurrency,
+  formatNumber,
+  formatPercent,
 } from '@/components/admin/chartTheme';
+import { kpiDelta, rateStatus, usageStatus } from '@/lib/adminDerived';
 import {
-  DollarSign,
-  TrendingUp,
-  MousePointerClick,
-  ShieldCheck,
-  Activity,
-  Server,
-  Gauge,
-  UserPlus,
-  Users,
-  Briefcase,
-  AlertTriangle,
-  LogIn,
-  UserCircle,
-  CheckCircle2,
-  Zap,
-} from 'lucide-react';
-import type { StatTone } from '@/components/admin/StatCard';
+  aggregateInsights,
+  computeApiInsights,
+  computeBusinessInsights,
+  computeGrowthInsights,
+  computeReliabilityInsights,
+  computeServerInsights,
+  type HealthStatus,
+} from '@/lib/insights';
+import type { ExecutiveKpi } from '@/lib/adminApi';
 
-/** Deep-link to a time-range section, preserving the current `?days=`. */
+/** Deep-link to a section, preserving the active `?days=`. */
 function sectionLink(path: string, days: number): string {
   return `${path}?days=${days}`;
 }
 
-function QuickStats() {
-  const { data, isLoading, isError, refetch } = useOverview();
-  const d = data;
-
-  if (isError) {
-    return <MetricsErrorState compact title="Failed to load today's overview" onRetry={() => refetch()} />;
-  }
-
-  const items: { label: string; value: number | undefined; tone: StatTone; color?: string; icon: typeof UserPlus }[] = [
-    { label: 'Signups Today', value: d?.signups, tone: 'success', color: 'text-success', icon: UserPlus },
-    { label: 'DAU', value: d?.dau, tone: 'info', color: 'text-info', icon: Users },
-    { label: 'Jobs Created', value: d?.jobsCreated, tone: 'brand', icon: Briefcase },
-    { label: 'Jobs Failed', value: d?.jobsFailed, tone: 'destructive', color: 'text-destructive', icon: AlertTriangle },
-    { label: 'Logins', value: d?.logins, tone: 'info', icon: LogIn },
-    { label: 'Guest Sessions', value: d?.guestSessions, tone: 'default', icon: UserCircle },
-    { label: 'Jobs Completed', value: d?.jobsCompleted, tone: 'success', color: 'text-success', icon: CheckCircle2 },
-    { label: 'Plan Limit Hits', value: d?.planLimitHits, tone: 'warning', color: 'text-warning', icon: Zap },
-  ];
-
-  return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
-      {items.map((item) => (
-        <StatCard
-          key={item.label}
-          label={item.label}
-          value={item.value}
-          icon={item.icon}
-          tone={item.tone}
-          color={item.color}
-          isLoading={isLoading}
-        />
-      ))}
-    </div>
-  );
+interface KpiMetric {
+  current: number | null;
+  previous: number | null;
+  spark: number[];
 }
 
-function MiniRings({ items }: { items: { label: string; value: number; color: string; displayLabel?: string }[] }) {
-  return (
-    <div className="flex items-center justify-around gap-2">
-      {items.map((item) => (
-        <div key={item.label} className="flex flex-col items-center gap-1">
-          <ProgressRing size={56} strokeWidth={5} value={item.value} color={item.color} label={item.displayLabel} />
-          <span className="text-[9px] leading-none text-muted-foreground">{item.label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function BusinessCard({ days }: { days: number }) {
-  const { data, isLoading, isError, refetch } = useBusiness(days);
-  const d = data;
-  const signups = d?.signups?.total ?? 0;
-  const churn = (d?.churn?.churnRate ?? 0) * 100;
-  const conversion = (d?.conversionRate?.rate ?? 0) * 100;
-  return (
-    <SummaryCard
-      title="Business"
-      icon={<DollarSign className="h-4 w-4 text-success" />}
-      to={sectionLink('/admin/business', days)}
-      isLoading={isLoading}
-      error={isError}
-      onRetry={() => refetch()}
-      stats={[
-        { label: 'Total Signups', value: signups },
-        { label: 'Churn Rate', value: `${churn.toFixed(1)}%`, color: churn > 10 ? 'text-destructive' : 'text-success' },
-        { label: 'Conversion', value: `${conversion.toFixed(1)}%` },
-      ]}
-      chart={
-        <MiniRings items={[
-          { label: 'Signups', value: Math.min((signups / 100) * 100, 100), color: SEMANTIC.success, displayLabel: String(signups) },
-          { label: 'Churn', value: churn, color: churn > 10 ? SEMANTIC.danger : SEMANTIC.success },
-          { label: 'Conv.', value: conversion, color: CHART_COLORS[1] },
-        ]} />
-      }
-    />
-  );
-}
-
-function GrowthCard({ days }: { days: number }) {
-  const { data, isLoading, isError, refetch } = useGrowth(days);
-  const d = data;
-  return (
-    <SummaryCard
-      title="Growth"
-      icon={<TrendingUp className="h-4 w-4 text-info" />}
-      to={sectionLink('/admin/growth', days)}
-      isLoading={isLoading}
-      error={isError}
-      onRetry={() => refetch()}
-      stats={[
-        { label: 'DAU', value: d?.dau ?? 0, color: 'text-info' },
-        { label: 'WAU / MAU', value: `${d?.wau ?? 0} / ${d?.mau ?? 0}` },
-        { label: 'Stickiness', value: `${((d?.stickiness ?? 0) * 100).toFixed(1)}%` },
-      ]}
-      chart={
-        <div className="w-full space-y-2">
-          {[
-            { label: 'DAU', value: d?.dau ?? 0, color: 'bg-chart-1' },
-            { label: 'WAU', value: d?.wau ?? 0, color: 'bg-chart-2' },
-            { label: 'MAU', value: d?.mau ?? 0, color: 'bg-chart-3' },
-          ].map((item) => {
-            const max = Math.max(d?.mau ?? 1, 1);
-            return (
-              <div key={item.label} className="space-y-0.5">
-                <div className="flex justify-between text-[10px] text-muted-foreground">
-                  <span>{item.label}</span>
-                  <span>{item.value}</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className={`h-full rounded-full ${item.color} transition-all duration-700`}
-                    style={{ width: `${(item.value / max) * 100}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      }
-    />
-  );
-}
-
-function EngagementCard({ days }: { days: number }) {
-  const { data, isLoading, isError, refetch } = useEngagement(days);
-  const d = data;
-  const guest = d?.guestVsRegistered?.guestEvents ?? 0;
-  const registered = d?.guestVsRegistered?.registeredEvents ?? 0;
-  const power = d?.powerUsers?.length ?? 0;
-  const pieData = [
-    { name: 'Guest', value: guest || 1 },
-    { name: 'Registered', value: registered || 1 },
-    { name: 'Power', value: power || 1 },
-  ];
-  const pieColors = [CHART_COLORS[3], CHART_COLORS[4], CHART_COLORS[5]];
-  return (
-    <SummaryCard
-      title="Engagement"
-      icon={<MousePointerClick className="h-4 w-4 text-primary" />}
-      to={sectionLink('/admin/engagement', days)}
-      isLoading={isLoading}
-      error={isError}
-      onRetry={() => refetch()}
-      stats={[
-        { label: 'Avg Jobs/User', value: (d?.jobsPerUser?.average ?? 0).toFixed(1) },
-        { label: 'Guest Ratio', value: `${((d?.guestVsRegistered?.guestRatio ?? 0) * 100).toFixed(0)}%` },
-        { label: 'Power Users', value: power },
-      ]}
-      chart={
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={20} outerRadius={40} strokeWidth={0} animationDuration={800}>
-              {pieData.map((_, i) => (
-                <Cell key={i} fill={pieColors[i]} />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
-      }
-    />
-  );
-}
-
-function ReliabilityCard({ days }: { days: number }) {
-  const { data, isLoading, isError, refetch } = useReliability(days);
-  const d = data;
-  const total = d?.jobRate?.total ?? 0;
-  const failed = d?.jobRate?.failed ?? 0;
-  const rate = (d?.jobRate?.successRate ?? 0) * 100;
-  const p95 = d?.processingTime?.p95Seconds ?? 0;
-  return (
-    <SummaryCard
-      title="Reliability"
-      icon={<ShieldCheck className="h-4 w-4 text-success" />}
-      to={sectionLink('/admin/reliability', days)}
-      isLoading={isLoading}
-      error={isError}
-      onRetry={() => refetch()}
-      stats={[
-        { label: 'Success Rate', value: `${rate.toFixed(1)}%`, color: rateToneClass(rate) },
-        { label: 'P95 Latency', value: `${p95.toFixed(1)}s` },
-        { label: 'Failed Jobs', value: failed, color: 'text-destructive' },
-      ]}
-      chart={
-        <MiniRings items={[
-          { label: 'Success', value: rate, color: rateToneColor(rate) },
-          { label: 'P95', value: Math.max(100 - (p95 / 10) * 100, 0), color: p95 > 5 ? SEMANTIC.danger : SEMANTIC.success, displayLabel: `${p95.toFixed(1)}s` },
-          { label: 'Failed', value: total > 0 ? (failed / total) * 100 : 0, color: failed > 0 ? SEMANTIC.danger : SEMANTIC.success, displayLabel: String(failed) },
-        ]} />
-      }
-    />
-  );
-}
-
-function SystemCard() {
-  const { data, isLoading, isError, refetch } = useSystem();
-  const d = data;
-  const events = d?.eventsLastHour ?? 0;
-  const active = d?.activeUsersNow ?? 0;
-  const lag = d?.processingLag?.avgSeconds ?? 0;
-  return (
-    <SummaryCard
-      title="System Health"
-      icon={<Activity className="h-4 w-4 text-info" />}
-      to="/admin/system"
-      isLoading={isLoading}
-      error={isError}
-      onRetry={() => refetch()}
-      stats={[
-        { label: 'Events/Hour', value: events },
-        { label: 'Active Now', value: active, color: 'text-success' },
-        { label: 'Avg Lag', value: `${lag.toFixed(2)}s` },
-      ]}
-      chart={
-        <div className="w-full space-y-2">
-          {[
-            { label: 'Events/h', value: Math.min((events / 1000) * 100, 100), display: String(events), color: 'bg-chart-2' },
-            { label: 'Active', value: Math.min((active / 100) * 100, 100), display: String(active), color: 'bg-success' },
-            { label: 'Lag', value: Math.max(100 - lag * 10, 0), display: `${lag.toFixed(2)}s`, color: lag > 5 ? 'bg-destructive' : 'bg-warning' },
-          ].map((item) => (
-            <div key={item.label} className="space-y-0.5">
-              <div className="flex justify-between text-[10px] text-muted-foreground">
-                <span>{item.label}</span>
-                <span>{item.display}</span>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                <div
-                  className={`h-full rounded-full ${item.color} transition-all duration-700`}
-                  style={{ width: `${item.value}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      }
-    />
-  );
-}
-
-function ServerPerfCard() {
-  const { data, isLoading, isError, refetch } = useServerPerformance();
-  const d = data;
-  const cpu = d?.system?.cpu?.usagePercent ?? 0;
-  const mem = d?.system?.memory?.usagePercent ?? 0;
-  const disk = d?.system?.storage?.usagePercent ?? 0;
-
-  return (
-    <SummaryCard
-      title="Server"
-      icon={<Server className="h-4 w-4 text-warning" />}
-      to="/admin/server-performance"
-      isLoading={isLoading}
-      error={isError}
-      onRetry={() => refetch()}
-      stats={[
-        { label: 'CPU', value: `${cpu.toFixed(0)}%`, color: cpu > 80 ? 'text-destructive' : '' },
-        { label: 'Memory', value: `${mem.toFixed(0)}%`, color: mem > 80 ? 'text-destructive' : '' },
-        { label: 'Disk', value: `${disk.toFixed(0)}%`, color: disk > 80 ? 'text-destructive' : '' },
-      ]}
-      chart={
-        <div className="w-full space-y-2">
-          {[
-            { label: 'CPU', value: cpu },
-            { label: 'Mem', value: mem },
-            { label: 'Disk', value: disk },
-          ].map((item) => (
-            <div key={item.label} className="space-y-0.5">
-              <div className="flex justify-between text-[10px] text-muted-foreground">
-                <span>{item.label}</span>
-                <span>{item.value.toFixed(0)}%</span>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{ width: `${item.value}%`, backgroundColor: usageToneColor(item.value) }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      }
-    />
-  );
-}
-
-function ApiPerfCard() {
-  const { data: resp, isLoading, isError, refetch } = useApiPerformance();
-  const d = resp?.data;
-  const requests = d?.summary?.totalRequests ?? 0;
-  const latency = d?.summary?.avgLatencyMs ?? 0;
-  const errorRate = (d?.summary?.errorRate ?? 0) * 100;
-  return (
-    <SummaryCard
-      title="API"
-      icon={<Gauge className="h-4 w-4 text-primary" />}
-      to="/admin/api-performance"
-      isLoading={isLoading}
-      error={isError}
-      onRetry={() => refetch()}
-      stats={[
-        { label: 'Requests', value: requests },
-        { label: 'Avg Latency', value: `${latency.toFixed(0)}ms` },
-        { label: 'Error Rate', value: `${errorRate.toFixed(1)}%`, color: errorRate > 5 ? 'text-destructive' : 'text-success' },
-      ]}
-      chart={
-        <MiniRings items={[
-          { label: 'Reqs', value: Math.min((requests / 10000) * 100, 100), color: CHART_COLORS[0], displayLabel: requests > 999 ? `${(requests / 1000).toFixed(1)}k` : String(requests) },
-          { label: 'Latency', value: Math.max(100 - (latency / 1000) * 100, 0), color: latency > 500 ? SEMANTIC.warning : SEMANTIC.success, displayLabel: `${latency.toFixed(0)}ms` },
-          { label: 'Errors', value: errorRate, color: errorRate > 5 ? SEMANTIC.danger : SEMANTIC.success },
-        ]} />
-      }
-    />
-  );
+/** Pull a display-ready metric from an executive KPI, with a fallback. */
+function fromExec(
+  kpi: ExecutiveKpi | undefined,
+  fallback: KpiMetric,
+  scale = 1,
+): KpiMetric {
+  if (!kpi) return fallback;
+  return {
+    current: kpi.current != null ? kpi.current * scale : fallback.current,
+    previous: kpi.previous != null ? kpi.previous * scale : fallback.previous,
+    spark: kpi.sparkline?.length ? kpi.sparkline.map((p) => p.value * scale) : fallback.spark,
+  };
 }
 
 const AdminDashboard = () => {
   const { days } = useAdminTimeRange();
 
+  const exec = useExecutiveOverview(days);
+  const growthQ = useUserGrowth(days);
+  const business = useBusiness(days);
+  const growth = useGrowth(days);
+  const engagement = useEngagement(days);
+  const reliability = useReliability(days);
+  const server = useServerPerformance();
+  const api = useApiPerformance();
+
+  const e = exec.data ?? undefined;
+
+  // --- KPI metrics: prefer the executive endpoint, fall back to live hooks ---
+  const rel = reliability.data;
+  const relTotalSpark = (rel?.errorTrend ?? []).map((r) => r.total);
+  const relSuccessSpark = (rel?.errorTrend ?? []).map((r) =>
+    r.total > 0 ? (1 - r.failures / r.total) * 100 : 100,
+  );
+  const dauSpark = (growth.data?.dauTrend ?? []).map((r) => r.dau);
+
+  const totalUsers = fromExec(e?.totalUsers, { current: null, previous: null, spark: [] });
+  const activeUsers = fromExec(e?.activeUsers, {
+    current: growth.data?.dau ?? null,
+    previous: null,
+    spark: dauSpark,
+  });
+  const revenue = fromExec(e?.revenue, {
+    current: business.data?.revenue?.mrr ?? null,
+    previous: null,
+    spark: [],
+  });
+  const jobsCreated = fromExec(e?.jobsCreated, {
+    current: rel?.jobRate?.total ?? null,
+    previous: null,
+    spark: relTotalSpark,
+  });
+  const successRate = fromExec(
+    e?.successRate,
+    {
+      current: rel?.jobRate ? rel.jobRate.successRate * 100 : null,
+      previous: null,
+      spark: relSuccessSpark,
+    },
+    100, // exec returns a 0–1 ratio
+  );
+  const apiRequests = fromExec(e?.apiRequests, {
+    current: api.data?.data?.summary?.totalRequests ?? null,
+    previous: null,
+    spark: [],
+  });
+  const apiErrorRate = fromExec(
+    e?.apiErrorRate,
+    {
+      current: api.data?.data?.summary ? api.data.data.summary.errorRate * 100 : null,
+      previous: null,
+      spark: [],
+    },
+    100,
+  );
+
+  const serversCurrent = e?.activeServers?.current ?? server.data?.availability?.healthyServices ?? null;
+  const serversTotal = e?.activeServers?.total ?? server.data?.availability?.totalServices ?? 0;
+
+  const successStatus: HealthStatus =
+    successRate.current != null ? rateStatus(successRate.current) : 'healthy';
+  const errorStatus: HealthStatus =
+    apiErrorRate.current != null ? usageStatus(apiErrorRate.current, 1, 5) : 'healthy';
+  const serverStatus: HealthStatus =
+    serversTotal > 0 && serversCurrent != null && serversCurrent < serversTotal ? 'critical' : 'healthy';
+
+  const isKpiLoading = exec.isLoading && reliability.isLoading;
+
+  const kpis: (KpiCardProps & { key: string })[] = [
+    {
+      key: 'totalUsers',
+      label: 'Total Users',
+      value: totalUsers.current != null ? formatCompact(totalUsers.current) : '—',
+      sparkline: totalUsers.spark,
+      deltaPct: kpiDelta(totalUsers.current, totalUsers.previous),
+      to: sectionLink('/admin/growth', days),
+      insight: totalUsers.current == null ? 'Awaiting the executive metrics endpoint.' : undefined,
+    },
+    {
+      key: 'activeUsers',
+      label: 'Active Users',
+      value: activeUsers.current != null ? formatCompact(activeUsers.current) : '—',
+      sparkline: activeUsers.spark,
+      deltaPct: kpiDelta(activeUsers.current, activeUsers.previous),
+      status: 'healthy',
+      to: sectionLink('/admin/growth', days),
+    },
+    {
+      key: 'revenue',
+      label: 'Revenue (est.)',
+      value:
+        revenue.current != null
+          ? formatCurrency(revenue.current, e?.revenue?.currency ?? business.data?.revenue?.currency ?? 'USD')
+          : '—',
+      sparkline: revenue.spark,
+      deltaPct: kpiDelta(revenue.current, revenue.previous),
+      to: sectionLink('/admin/business', days),
+      insight: revenue.current == null ? 'Estimated MRR — configure plan prices to populate.' : 'Estimated from plan distribution.',
+    },
+    {
+      key: 'jobsCreated',
+      label: 'Jobs Created',
+      value: jobsCreated.current != null ? formatCompact(jobsCreated.current) : '—',
+      sparkline: jobsCreated.spark,
+      deltaPct: kpiDelta(jobsCreated.current, jobsCreated.previous),
+      to: sectionLink('/admin/reliability', days),
+    },
+    {
+      key: 'successRate',
+      label: 'Success Rate',
+      value: successRate.current != null ? formatPercent(successRate.current, 1, true) : '—',
+      sparkline: successRate.spark,
+      deltaPct: kpiDelta(successRate.current, successRate.previous),
+      status: successStatus,
+      to: sectionLink('/admin/reliability', days),
+    },
+    {
+      key: 'apiRequests',
+      label: 'API Requests',
+      value: apiRequests.current != null ? formatCompact(apiRequests.current) : '—',
+      sparkline: apiRequests.spark,
+      deltaPct: kpiDelta(apiRequests.current, apiRequests.previous),
+      to: '/admin/api-performance',
+    },
+    {
+      key: 'apiErrorRate',
+      label: 'Error Rate',
+      value: apiErrorRate.current != null ? formatPercent(apiErrorRate.current, 2, true) : '—',
+      sparkline: apiErrorRate.spark,
+      deltaPct: kpiDelta(apiErrorRate.current, apiErrorRate.previous),
+      invertGood: true,
+      status: errorStatus,
+      to: '/admin/api-performance',
+    },
+    {
+      key: 'activeServers',
+      label: 'Active Servers',
+      value: serversCurrent != null ? `${serversCurrent}/${serversTotal}` : '—',
+      status: serverStatus,
+      to: '/admin/server-performance',
+      insight:
+        serverStatus === 'critical'
+          ? 'One or more services are unhealthy.'
+          : serversCurrent != null
+            ? 'All services healthy.'
+            : undefined,
+    },
+  ];
+
+  // --- Activity chart: signups + DAU + jobs created, merged by date ---
+  const activityData = useMemo(() => {
+    const byDate = new Map<string, { date: string; signups: number; dau: number; jobs: number }>();
+    for (const r of growthQ.data?.rows ?? []) {
+      byDate.set(r.date, { date: r.date, signups: r.signups, dau: r.dau, jobs: 0 });
+    }
+    for (const r of rel?.errorTrend ?? []) {
+      const row = byDate.get(r.date) ?? { date: r.date, signups: 0, dau: 0, jobs: 0 };
+      row.jobs = r.total;
+      byDate.set(r.date, row);
+    }
+    return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+  }, [growthQ.data, rel]);
+
+  // --- Aggregated cross-domain insights ---
+  const insights = useMemo(
+    () =>
+      aggregateInsights(
+        [
+          computeBusinessInsights(business.data),
+          computeGrowthInsights(growth.data),
+          computeReliabilityInsights(reliability.data),
+          computeServerInsights(server.data),
+          computeApiInsights(api.data?.data),
+        ],
+        6,
+      ),
+    [business.data, growth.data, reliability.data, server.data, api.data],
+  );
+
+  // --- Health strip across subsystems ---
+  const healthSegments: HealthSegment[] = useMemo(() => {
+    const segs: HealthSegment[] = [];
+    const s = server.data;
+    if (s?.services) {
+      for (const [name, svc] of Object.entries(s.services)) {
+        segs.push({
+          label: name,
+          status: svc.status === 'healthy' ? 'healthy' : 'critical',
+          detail: svc.status === 'healthy' ? svc.uptime : svc.error,
+        });
+      }
+    }
+    return segs;
+  }, [server.data]);
+
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <AdminPageHeader
-        title="Admin Dashboard"
-        description="Platform overview — click any card for details"
-      />
+      <AdminPageHeader title="Executive Overview" description="Platform health at a glance — click any metric to drill in." />
 
-      <QuickStats />
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-        <BusinessCard days={days} />
-        <GrowthCard days={days} />
-        <EngagementCard days={days} />
-        <ReliabilityCard days={days} />
-        <SystemCard />
-        <ServerPerfCard />
-        <ApiPerfCard />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 2xl:grid-cols-8">
+        {kpis.map(({ key, ...props }) => (
+          <KpiCard key={key} {...props} isLoading={isKpiLoading} />
+        ))}
       </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <ChartCard
+          className="lg:col-span-2"
+          title="Platform activity"
+          description="Signups, daily active users, and jobs created"
+          isLoading={growthQ.isLoading}
+          isError={growthQ.isError}
+          onRetry={() => growthQ.refetch()}
+          exportData={{ filename: 'platform-activity', rows: activityData }}
+        >
+          <MultiLineChart
+            data={activityData}
+            xKey="date"
+            series={[
+              { key: 'dau', label: 'DAU', color: CHART_COLORS[1] },
+              { key: 'signups', label: 'Signups', color: CHART_COLORS[0] },
+              { key: 'jobs', label: 'Jobs created', color: CHART_COLORS[2] },
+            ]}
+            leftTickFormatter={formatCompact}
+            valueFormatter={(v) => formatNumber(v)}
+          />
+        </ChartCard>
+
+        <InsightsPanel
+          insights={insights}
+          title="Top insights"
+          description="Across all domains"
+          showDomain
+          isLoading={business.isLoading && reliability.isLoading}
+        />
+      </div>
+
+      <Card>
+        <CardHeader className="p-4 pb-2">
+          <h3 className="text-sm font-medium text-foreground">Service health</h3>
+          <p className="text-caption text-muted-foreground">Live status across all backend services</p>
+        </CardHeader>
+        <CardContent className="p-4 pt-2">
+          {healthSegments.length > 0 ? (
+            <HealthStatusStrip segments={healthSegments} />
+          ) : (
+            <p className="text-caption text-muted-foreground">
+              {server.isLoading ? 'Loading service status…' : 'Service status unavailable.'}
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

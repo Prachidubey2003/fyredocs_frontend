@@ -1,9 +1,9 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowDownRight, ArrowUpRight, Minus, type LucideIcon } from 'lucide-react';
+import { type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { TrendDirection } from '@/lib/adminTrends';
 import { AnimatedNumber } from './AnimatedNumber';
+import { TrendBadge, type TrendInfo } from './TrendBadge';
 
 export type StatTone = 'default' | 'brand' | 'success' | 'warning' | 'destructive' | 'info';
 
@@ -16,12 +16,7 @@ const TONE_STYLES: Record<StatTone, { icon: string; bg: string }> = {
   info: { icon: 'text-info', bg: 'bg-info-subtle' },
 };
 
-export interface StatTrend {
-  deltaPct: number;
-  direction: TrendDirection;
-  /** Set for metrics where "up" is bad (churn, failures, error rate). */
-  invertGood?: boolean;
-}
+export type StatTrend = TrendInfo;
 
 interface StatCardProps {
   label: string;
@@ -56,33 +51,6 @@ function parseNumericValue(value: string | number): {
   const dotIdx = match[2].indexOf('.');
   const decimals = dotIdx === -1 ? 0 : match[2].length - dotIdx - 1;
   return { num, decimals, prefix, suffix };
-}
-
-function TrendChip({ trend }: { trend: StatTrend }) {
-  const { deltaPct, direction, invertGood } = trend;
-  const isGood = direction === 'flat' ? null : (direction === 'up') !== Boolean(invertGood);
-  const Icon = direction === 'up' ? ArrowUpRight : direction === 'down' ? ArrowDownRight : Minus;
-  const toneClass =
-    isGood === null
-      ? 'bg-muted text-muted-foreground'
-      : isGood
-        ? 'bg-success-subtle text-success-subtle-foreground'
-        : 'bg-destructive-subtle text-destructive-subtle-foreground';
-  const label = `${deltaPct > 0 ? '+' : ''}${deltaPct.toFixed(1)}% vs previous period`;
-
-  return (
-    <span
-      className={cn(
-        'inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-caption font-medium tabular-nums',
-        toneClass,
-      )}
-      title={label}
-    >
-      <Icon className="h-3 w-3" aria-hidden />
-      {`${deltaPct > 0 ? '+' : ''}${deltaPct.toFixed(1)}%`}
-      <span className="sr-only">{label}</span>
-    </span>
-  );
 }
 
 export function StatCard({
@@ -123,7 +91,7 @@ export function StatCard({
                     value ?? 0
                   )}
                 </p>
-                {trend && <TrendChip trend={trend} />}
+                {trend && <TrendBadge trend={trend} />}
               </div>
               {subtitle && <p className="mt-1 truncate text-xs text-muted-foreground">{subtitle}</p>}
             </>

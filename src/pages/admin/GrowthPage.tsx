@@ -1,39 +1,34 @@
+import { useMemo } from 'react';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
-import { AnimatedNumber } from '@/components/admin/AnimatedNumber';
+import { ChartCard } from '@/components/admin/ChartCard';
+import { InsightsPanel } from '@/components/admin/InsightsPanel';
 import { MetricsErrorState } from '@/components/admin/MetricsErrorState';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { MultiLineChart, type LineSeries } from '@/components/admin/charts/MultiLineChart';
+import { StackedBarChart } from '@/components/admin/charts/StackedBarChart';
 import { Users, Repeat } from 'lucide-react';
-import { useGrowth } from '@/hooks/useAdminMetrics';
+import { useGrowth, useAcquisition } from '@/hooks/useAdminMetrics';
 import { useAdminTimeRange } from '@/hooks/useAdminTimeRange';
-import { AXIS_PROPS, CHART_COLORS, GRID_PROPS } from '@/components/admin/chartTheme';
+import {
+  CHART_COLORS,
+  SEMANTIC,
+  formatCompact,
+  formatNumber,
+} from '@/components/admin/chartTheme';
 import { computeDelta, seriesFrom } from '@/lib/adminTrends';
+import { computeGrowthInsights } from '@/lib/insights';
 
-const dauChartConfig = {
-  dau: { label: 'DAU', color: CHART_COLORS[1] },
-} satisfies ChartConfig;
+const CHANNEL_SERIES = [
+  { key: 'organic', label: 'Organic', color: CHART_COLORS[2] },
+  { key: 'referral', label: 'Referral', color: CHART_COLORS[1] },
+  { key: 'paid', label: 'Paid', color: CHART_COLORS[0] },
+  { key: 'campaign', label: 'Campaign', color: CHART_COLORS[4] },
+  { key: 'direct', label: 'Direct', color: CHART_COLORS[3] },
+  { key: 'unknown', label: 'Unknown', color: 'hsl(var(--muted-foreground))' },
+];
 
-const funnelChartConfig = {
-  value: { label: 'Users', color: CHART_COLORS[4] },
-} satisfies ChartConfig;
-
-/** Subtle chip classes for a retention percentage (higher is better). */
 function retentionChipClass(value: number): string {
   if (value > 50) return 'bg-success-subtle text-success-subtle-foreground';
   if (value > 20) return 'bg-warning-subtle text-warning-subtle-foreground';
@@ -42,9 +37,7 @@ function retentionChipClass(value: number): string {
 
 function RetentionChip({ value }: { value: number }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${retentionChipClass(value)}`}
-    >
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${retentionChipClass(value)}`}>
       {value.toFixed(1)}%
     </span>
   );
@@ -53,205 +46,127 @@ function RetentionChip({ value }: { value: number }) {
 const GrowthPage = () => {
   const { days } = useAdminTimeRange();
   const { data, isLoading, isError, refetch } = useGrowth(days);
+  const acquisition = useAcquisition(days);
   const d = data;
 
   const dauTrend = computeDelta(seriesFrom(d?.dauTrend, (row) => row.dau));
+  const insights = useMemo(() => computeGrowthInsights(d), [d]);
+
+  // Active-users line chart: prefer DAU/WAU/MAU, else DAU + previous-period overlay.
+  const { activeData, activeSeries } = useMemo(() => {
+    if (d?.activeTrend?.length) {
+      return {
+        activeData: d.activeTrend as Record<string, unknown>[],
+        activeSeries: [
+          { key: 'dau', label: 'DAU', color: CHART_COLORS[1] },
+          { key: 'wau', label: 'WAU', color: CHART_COLORS[2] },
+          { key: 'mau', label: 'MAU', color: CHART_COLORS[4] },
+        ] as LineSeries[],
+      };
+    }
+    const byDate = new Map<string, Record<string, number | string>>();
+    for (const r of d?.dauTrend ?? []) byDate.set(r.date, { date: r.date, dau: r.dau });
+    for (const r of d?.previousDauTrend ?? []) {
+      const row = byDate.get(r.date) ?? { date: r.date };
+      row.prevDau = r.dau;
+      byDate.set(r.date, row);
+    }
+    const series: LineSeries[] = [{ key: 'dau', label: 'DAU', color: CHART_COLORS[1] }];
+    if (d?.previousDauTrend?.length) series.push({ key: 'prevDau', label: 'Previous period', color: 'hsl(var(--muted-foreground))', dashed: true });
+    return {
+      activeData: [...byDate.values()].sort((a, b) => String(a.date).localeCompare(String(b.date))),
+      activeSeries: series,
+    };
+  }, [d?.activeTrend, d?.dauTrend, d?.previousDauTrend]);
+
+  // Stickiness trend from DAU/MAU per day (requires activeTrend).
+  const stickinessData = useMemo(
+    () => (d?.activeTrend ?? []).map((r) => ({ date: r.date, stickiness: r.mau > 0 ? (r.dau / r.mau) * 100 : 0 })),
+    [d?.activeTrend],
+  );
+
+  // Acquisition channels (long → wide by date).
+  const channelData = useMemo(() => {
+    const rows = acquisition.data?.daily ?? [];
+    if (!rows.length) return [];
+    const byDate = new Map<string, Record<string, number | string>>();
+    for (const r of rows) {
+      const row = byDate.get(r.date) ?? { date: r.date };
+      row[r.channel] = ((row[r.channel] as number) ?? 0) + r.signups;
+      byDate.set(r.date, row);
+    }
+    const out = [...byDate.values()].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    for (const row of out) for (const s of CHANNEL_SERIES) if (row[s.key] == null) row[s.key] = 0;
+    return out;
+  }, [acquisition.data]);
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <AdminPageHeader
-        title="Growth Metrics"
-        description="DAU/WAU/MAU, activation, retention, and conversion funnel"
-      />
+      <AdminPageHeader title="Growth" description="Active users, stickiness, acquisition, and retention" />
 
       {isError ? (
         <MetricsErrorState onRetry={() => refetch()} />
       ) : (
         <>
-          {/* Stat Cards */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              label="DAU"
-              value={d?.dau}
-              icon={Users}
-              tone="brand"
-              isLoading={isLoading}
-              trend={dauTrend ?? undefined}
-            />
-            <StatCard
-              label="WAU"
-              value={d?.wau}
-              icon={Users}
-              tone="info"
-              isLoading={isLoading}
-            />
-            <StatCard
-              label="MAU"
-              value={d?.mau}
-              icon={Users}
-              tone="info"
-              isLoading={isLoading}
-            />
-            <StatCard
-              label="Stickiness Ratio"
-              value={d?.stickiness != null ? `${(d.stickiness * 100).toFixed(1)}%` : null}
-              icon={Repeat}
-              tone="success"
-              subtitle="DAU / MAU"
-              isLoading={isLoading}
-            />
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+            <StatCard label="DAU" value={d?.dau} icon={Users} tone="brand" isLoading={isLoading} trend={dauTrend ?? undefined} />
+            <StatCard label="WAU" value={d?.wau} icon={Users} tone="info" isLoading={isLoading} />
+            <StatCard label="MAU" value={d?.mau} icon={Users} tone="info" isLoading={isLoading} />
+            <StatCard label="Stickiness" value={d?.stickiness != null ? `${(d.stickiness * 100).toFixed(1)}%` : null} icon={Repeat} tone="success" subtitle="DAU / MAU" isLoading={isLoading} />
           </div>
 
-          {/* DAU Trend Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>DAU Trend</CardTitle>
-              <CardDescription>Daily active users over the last {days} days</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-[300px] w-full" />
-              ) : d?.dauTrend ? (
-                <ChartContainer config={dauChartConfig} className="h-[300px] w-full">
-                  <AreaChart data={d.dauTrend} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
-                    <CartesianGrid {...GRID_PROPS} vertical={false} />
-                    <XAxis dataKey="date" {...AXIS_PROPS} tickFormatter={(v: string) => v.slice(5)} />
-                    <YAxis {...AXIS_PROPS} width={40} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Area
-                      type="monotone"
-                      dataKey="dau"
-                      stroke="var(--color-dau)"
-                      fill="var(--color-dau)"
-                      fillOpacity={0.2}
-                      strokeWidth={2}
-                      isAnimationActive
-                      animationDuration={800}
-                      animationEasing="ease-out"
-                    />
-                  </AreaChart>
-                </ChartContainer>
-              ) : (
-                <p className="py-8 text-center text-muted-foreground">No trend data available</p>
-              )}
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <ChartCard
+              className="lg:col-span-2"
+              title="Active users"
+              description={`DAU / WAU / MAU — last ${days} days`}
+              isLoading={isLoading}
+              exportData={{ filename: 'active-users', rows: activeData }}
+            >
+              <MultiLineChart data={activeData} xKey="date" series={activeSeries} leftTickFormatter={formatCompact} valueFormatter={(v) => formatNumber(v)} />
+            </ChartCard>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {/* Activation Rate */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Activation Rate</CardTitle>
-                <CardDescription>Signup to activation conversion</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-5 w-16" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-5 w-16" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-4 w-28" />
-                      <Skeleton className="h-9 w-24" />
-                    </div>
-                  </div>
-                ) : d?.activationRate ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Total Signups</span>
-                      <span className="text-lg font-semibold"><AnimatedNumber value={d.activationRate.signups} /></span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Activated</span>
-                      <span className="text-lg font-semibold text-success">
-                        <AnimatedNumber value={d.activationRate.activated} />
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Activation Rate</span>
-                      <span className="text-3xl font-bold text-primary">
-                        <AnimatedNumber value={d.activationRate.rate * 100} decimals={1} suffix="%" />
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="py-8 text-center text-muted-foreground">No activation data available</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Conversion Funnel */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Conversion Funnel</CardTitle>
-                <CardDescription>User progression through key stages</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <Skeleton className="h-[300px] w-full" />
-                ) : d?.funnel ? (
-                  <ChartContainer config={funnelChartConfig} className="h-[300px] w-full">
-                    <BarChart
-                      layout="vertical"
-                      data={[
-                        { stage: 'Signed Up', value: d.funnel.signedUp },
-                        { stage: 'Created Job', value: d.funnel.createdJob },
-                        { stage: 'Completed Job', value: d.funnel.completedJob },
-                        { stage: 'Repeat User', value: d.funnel.repeatUser },
-                      ]}
-                      margin={{ top: 0, right: 10, bottom: 0, left: 0 }}
-                    >
-                      <CartesianGrid {...GRID_PROPS} horizontal={false} />
-                      <XAxis type="number" {...AXIS_PROPS} />
-                      <YAxis type="category" dataKey="stage" {...AXIS_PROPS} width={96} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="value" fill="var(--color-value)" radius={[0, 4, 4, 0]}
-                        isAnimationActive animationDuration={800} animationEasing="ease-out" />
-                    </BarChart>
-                  </ChartContainer>
-                ) : (
-                  <p className="py-8 text-center text-muted-foreground">No funnel data available</p>
-                )}
-              </CardContent>
-            </Card>
+            <ChartCard
+              title="Stickiness"
+              description="DAU / MAU ratio over time"
+              isLoading={isLoading}
+              awaitingData={stickinessData.length === 0}
+              awaitingMessage="Stickiness trend requires the DAU/WAU/MAU series from the updated growth endpoint."
+              exportData={{ filename: 'stickiness', rows: stickinessData }}
+            >
+              <MultiLineChart
+                data={stickinessData}
+                xKey="date"
+                series={[{ key: 'stickiness', label: 'Stickiness', color: SEMANTIC.success }]}
+                leftTickFormatter={(v) => `${v.toFixed(0)}%`}
+                valueFormatter={(v) => `${v.toFixed(1)}%`}
+              />
+            </ChartCard>
           </div>
 
-          {/* Retention Cohorts */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <ChartCard
+              className="lg:col-span-2"
+              title="User acquisition"
+              description="Daily signups by channel"
+              isLoading={acquisition.isLoading}
+              awaitingData={channelData.length === 0}
+              awaitingMessage="Acquisition channels require referrer/UTM capture on signup."
+              exportData={{ filename: 'acquisition-channels', rows: channelData }}
+            >
+              <StackedBarChart data={channelData} xKey="date" series={CHANNEL_SERIES} valueTickFormatter={formatNumber} />
+            </ChartCard>
+
+            <InsightsPanel insights={insights} title="Growth insights" isLoading={isLoading} />
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle>Retention Cohorts</CardTitle>
+              <CardTitle>Retention cohorts</CardTitle>
               <CardDescription>User retention by signup cohort</CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Cohort Date</TableHead>
-                      <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">Size</TableHead>
-                      <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D1 (%)</TableHead>
-                      <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D7 (%)</TableHead>
-                      <TableHead className="text-right text-xs font-medium uppercase tracking-wide text-muted-foreground">D30 (%)</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="ml-auto h-4 w-12" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="ml-auto h-5 w-14" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="ml-auto h-5 w-14" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="ml-auto h-5 w-14" /></TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : d?.retention?.length ? (
+              {d?.retention?.length ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -275,7 +190,7 @@ const GrowthPage = () => {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="py-8 text-center text-muted-foreground">No retention data available</p>
+                <p className="py-8 text-center text-muted-foreground">{isLoading ? 'Loading…' : 'No retention data available'}</p>
               )}
             </CardContent>
           </Card>

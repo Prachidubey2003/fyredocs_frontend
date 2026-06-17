@@ -1,32 +1,35 @@
+import { useMemo } from 'react';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
+import { ChartCard } from '@/components/admin/ChartCard';
+import { InsightsPanel } from '@/components/admin/InsightsPanel';
 import { MetricsErrorState } from '@/components/admin/MetricsErrorState';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { MultiLineChart } from '@/components/admin/charts/MultiLineChart';
+import { StackedBarChart } from '@/components/admin/charts/StackedBarChart';
 import { CheckCircle2, XCircle, Clock, ShieldCheck } from 'lucide-react';
 import { useReliability } from '@/hooks/useAdminMetrics';
 import { useAdminTimeRange } from '@/hooks/useAdminTimeRange';
 import {
-  AXIS_PROPS,
   CHART_COLORS,
-  GRID_PROPS,
   SEMANTIC,
+  formatNumber,
+  formatPercent,
+  formatSeconds,
   rateToneClass,
 } from '@/components/admin/chartTheme';
 import { computeDelta, seriesFrom } from '@/lib/adminTrends';
+import { reliabilityRateTrend } from '@/lib/adminDerived';
+import { computeReliabilityInsights } from '@/lib/insights';
 
-const errorTrendConfig = {
-  failures: { label: 'Failures', color: SEMANTIC.danger },
-  total: { label: 'Total Jobs', color: CHART_COLORS[1] },
-} satisfies ChartConfig;
-
-const toolErrorConfig = {
-  completed: { label: 'Completed', color: SEMANTIC.success },
-  failed: { label: 'Failed', color: SEMANTIC.danger },
-} satisfies ChartConfig;
+const FAILURE_SERIES = [
+  { key: 'timeout', label: 'Timeout', color: SEMANTIC.warning },
+  { key: 'validation', label: 'Validation', color: CHART_COLORS[3] },
+  { key: 'processing', label: 'Processing', color: CHART_COLORS[4] },
+  { key: 'infrastructure', label: 'Infrastructure', color: SEMANTIC.danger },
+  { key: 'other', label: 'Other', color: CHART_COLORS[5] },
+];
 
 const ReliabilityPage = () => {
   const { days } = useAdminTimeRange();
@@ -34,115 +37,106 @@ const ReliabilityPage = () => {
   const d = data;
   const rate = (d?.jobRate?.successRate ?? 0) * 100;
 
-  const completedTrend = computeDelta(
-    seriesFrom(d?.errorTrend, (row) => row.total - row.failures),
-  );
+  const completedTrend = computeDelta(seriesFrom(d?.errorTrend, (row) => row.total - row.failures));
   const failedTrend = computeDelta(seriesFrom(d?.errorTrend, (row) => row.failures));
+
+  const rateTrend = useMemo(() => reliabilityRateTrend(d), [d]);
+  const insights = useMemo(() => computeReliabilityInsights(d), [d]);
+
+  // Pivot failure categories (long → wide by date).
+  const failureData = useMemo(() => {
+    if (!d?.failureCategories?.length) return [];
+    const byDate = new Map<string, Record<string, number | string>>();
+    for (const r of d.failureCategories) {
+      const row = byDate.get(r.date) ?? { date: r.date };
+      row[r.category] = ((row[r.category] as number) ?? 0) + r.count;
+      byDate.set(r.date, row);
+    }
+    const rows = [...byDate.values()].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    for (const row of rows) for (const s of FAILURE_SERIES) if (row[s.key] == null) row[s.key] = 0;
+    return rows;
+  }, [d]);
 
   return (
     <div className="space-y-6 p-4 md:p-6">
       <AdminPageHeader
-        title="Reliability Metrics"
-        description="Job success rates, processing time, and error analysis"
+        title="Reliability"
+        description="Job success rates, latency, and failure analysis"
       />
 
       {isError ? (
         <MetricsErrorState onRetry={() => refetch()} />
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            <StatCard
-              label="Success Rate"
-              value={`${rate.toFixed(1)}%`}
-              icon={ShieldCheck}
-              tone="success"
-              color={rateToneClass(rate)}
-              isLoading={isLoading}
-            />
-            <StatCard
-              label="Completed"
-              value={d?.jobRate?.completed}
-              icon={CheckCircle2}
-              tone="success"
-              color="text-success"
-              isLoading={isLoading}
-              trend={completedTrend ?? undefined}
-            />
-            <StatCard
-              label="Failed"
-              value={d?.jobRate?.failed}
-              icon={XCircle}
-              tone="destructive"
-              color="text-destructive"
-              isLoading={isLoading}
-              trend={failedTrend ? { ...failedTrend, invertGood: true } : undefined}
-            />
-            <StatCard
-              label="P50 Latency"
-              value={`${(d?.processingTime?.p50Seconds ?? 0).toFixed(2)}s`}
-              icon={Clock}
-              tone="info"
-              isLoading={isLoading}
-            />
-            <StatCard
-              label="P95 Latency"
-              value={`${(d?.processingTime?.p95Seconds ?? 0).toFixed(2)}s`}
-              icon={Clock}
-              tone="warning"
-              isLoading={isLoading}
-            />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-5">
+            <StatCard label="Success Rate" value={`${rate.toFixed(1)}%`} icon={ShieldCheck} tone="success" color={rateToneClass(rate)} isLoading={isLoading} />
+            <StatCard label="Completed" value={d?.jobRate?.completed} icon={CheckCircle2} tone="success" color="text-success" isLoading={isLoading} trend={completedTrend ?? undefined} />
+            <StatCard label="Failed" value={d?.jobRate?.failed} icon={XCircle} tone="destructive" color="text-destructive" isLoading={isLoading} trend={failedTrend ? { ...failedTrend, invertGood: true } : undefined} />
+            <StatCard label="P50 Latency" value={formatSeconds(d?.processingTime?.p50Seconds, 2)} icon={Clock} tone="info" isLoading={isLoading} />
+            <StatCard label="P95 Latency" value={formatSeconds(d?.processingTime?.p95Seconds, 2)} icon={Clock} tone="warning" isLoading={isLoading} />
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Error Trend</CardTitle>
-              <CardDescription>Daily failures vs total jobs — last {days} days</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? <Skeleton className="h-[300px] w-full" /> : (
-                <ChartContainer config={errorTrendConfig} className="h-[300px] w-full">
-                  <AreaChart data={d?.errorTrend ?? []} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                    <CartesianGrid {...GRID_PROPS} vertical={false} />
-                    <XAxis dataKey="date" {...AXIS_PROPS} tickMargin={8} tickFormatter={(v: string) => v.slice(5)} />
-                    <YAxis {...AXIS_PROPS} width={40} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Area dataKey="total" type="monotone" fill="var(--color-total)" fillOpacity={0.1} stroke="var(--color-total)" strokeWidth={2}
-                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
-                    <Area dataKey="failures" type="monotone" fill="var(--color-failures)" fillOpacity={0.3} stroke="var(--color-failures)" strokeWidth={2}
-                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
-                  </AreaChart>
-                </ChartContainer>
-              )}
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <ChartCard
+              title="Success & failure rate"
+              description={`Daily completion quality — last ${days} days`}
+              isLoading={isLoading}
+              exportData={{ filename: 'reliability-rate-trend', rows: rateTrend }}
+            >
+              <MultiLineChart
+                data={rateTrend}
+                xKey="date"
+                series={[
+                  { key: 'successRate', label: 'Success rate', color: SEMANTIC.success },
+                  { key: 'failureRate', label: 'Failure rate', color: SEMANTIC.danger },
+                ]}
+                leftTickFormatter={(v) => `${v.toFixed(0)}%`}
+                valueFormatter={(v) => formatPercent(v, 1, true)}
+              />
+            </ChartCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Tool-Specific Error Rates</CardTitle>
-              <CardDescription>Completed vs failed by tool</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? <Skeleton className="h-[300px] w-full" /> : (
-                <ChartContainer config={toolErrorConfig} className="h-[300px] w-full">
-                  <BarChart data={d?.toolErrors ?? []} layout="vertical" margin={{ top: 4, right: 20, bottom: 0, left: 0 }}>
-                    <CartesianGrid {...GRID_PROPS} horizontal={false} />
-                    <XAxis type="number" {...AXIS_PROPS} />
-                    <YAxis type="category" dataKey="toolType" {...AXIS_PROPS} fontSize={11} width={80} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="completed" fill="var(--color-completed)" radius={[0, 4, 4, 0]}
-                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
-                    <Bar dataKey="failed" fill="var(--color-failed)" radius={[0, 4, 4, 0]}
-                      isAnimationActive animationDuration={800} animationEasing="ease-out" />
-                  </BarChart>
-                </ChartContainer>
-              )}
-            </CardContent>
-          </Card>
+            <ChartCard
+              title="Processing latency"
+              description="P50 / P95 / P99 job duration"
+              isLoading={isLoading}
+              awaitingData={!d?.processingTimeTrend?.length}
+              awaitingMessage="Latency percentile trend requires the updated reliability endpoint."
+              exportData={{ filename: 'reliability-latency-trend', rows: d?.processingTimeTrend ?? [] }}
+            >
+              <MultiLineChart
+                data={d?.processingTimeTrend ?? []}
+                xKey="date"
+                series={[
+                  { key: 'p50', label: 'P50', color: CHART_COLORS[1] },
+                  { key: 'p95', label: 'P95', color: SEMANTIC.warning },
+                  { key: 'p99', label: 'P99', color: SEMANTIC.danger },
+                ]}
+                leftTickFormatter={(v) => `${v.toFixed(1)}s`}
+                valueFormatter={(v) => formatSeconds(v, 2)}
+              />
+            </ChartCard>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <ChartCard
+              className="lg:col-span-2"
+              title="Failure analysis"
+              description="Daily failures by root-cause category"
+              isLoading={isLoading}
+              awaitingData={!d?.failureCategories?.length}
+              awaitingMessage="Failure-category breakdown requires the updated reliability endpoint."
+              exportData={{ filename: 'failure-categories', rows: failureData }}
+            >
+              <StackedBarChart data={failureData} xKey="date" series={FAILURE_SERIES} valueTickFormatter={formatNumber} />
+            </ChartCard>
+
+            <InsightsPanel insights={insights} title="Reliability insights" isLoading={isLoading} />
+          </div>
 
           {(d?.planLimitHits?.length ?? 0) > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Plan Limit Hits</CardTitle>
+                <CardTitle>Plan limit hits</CardTitle>
                 <CardDescription>Users hitting plan limits over time</CardDescription>
               </CardHeader>
               <CardContent>

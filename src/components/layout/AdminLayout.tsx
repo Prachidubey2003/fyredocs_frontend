@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { TimeRangeSelect } from '@/components/admin/TimeRangeSelect';
+import { FilterBar } from '@/components/admin/FilterBar';
 import { findAdminSection } from '@/components/admin/adminNav';
 import { useRealtime } from '@/hooks/useAdminMetrics';
 
@@ -88,7 +88,6 @@ export function AdminLayout() {
           </Breadcrumb>
           <div className="ml-auto flex items-center gap-3">
             <LiveStatusDot />
-            {section.supportsTimeRange && <TimeRangeSelect />}
             <Button
               variant="outline"
               size="icon"
@@ -99,6 +98,9 @@ export function AdminLayout() {
             </Button>
           </div>
         </header>
+        <div className="sticky top-14 z-10 flex h-12 shrink-0 items-center border-b bg-background/95 px-4 backdrop-blur">
+          <FilterBar pathname={pathname} />
+        </div>
         <main className="flex-1">
           <Suspense fallback={<PageLoading />}>
             <Outlet />

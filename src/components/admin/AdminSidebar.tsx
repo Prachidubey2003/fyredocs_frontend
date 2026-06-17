@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/auth/useAuth';
-import { ADMIN_SECTIONS } from '@/components/admin/adminNav';
+import { ADMIN_NAV_GROUPS, ADMIN_SECTIONS } from '@/components/admin/adminNav';
 
 export function AdminSidebar() {
   const { pathname } = useLocation();
@@ -48,31 +48,33 @@ export function AdminSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Metrics</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {ADMIN_SECTIONS.map((section) => {
-                const to =
-                  section.supportsTimeRange && days ? `${section.path}?days=${days}` : section.path;
-                return (
-                  <SidebarMenuItem key={section.path}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === section.path}
-                      tooltip={section.title}
-                    >
-                      <NavLink to={to}>
-                        <section.icon aria-hidden />
-                        <span>{section.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {ADMIN_NAV_GROUPS.map((group) => (
+          <SidebarGroup key={group.id}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {ADMIN_SECTIONS.filter((section) => section.group === group.id).map((section) => {
+                  const to =
+                    section.supportsTimeRange && days ? `${section.path}?days=${days}` : section.path;
+                  return (
+                    <SidebarMenuItem key={section.path}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === section.path}
+                        tooltip={section.title}
+                      >
+                        <NavLink to={to}>
+                          <section.icon aria-hidden />
+                          <span>{section.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter>
