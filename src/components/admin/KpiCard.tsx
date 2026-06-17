@@ -55,9 +55,12 @@ export function KpiCard({
   const body = (
     <>
       <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', STATUS_BG[status])} aria-hidden />
-          <span className="truncate text-caption font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="flex min-w-0 items-start gap-1.5">
+          <span className={cn('mt-1 h-1.5 w-1.5 shrink-0 rounded-full', STATUS_BG[status])} aria-hidden />
+          <span
+            title={label}
+            className="line-clamp-2 text-[11px] font-medium uppercase leading-tight tracking-tight text-muted-foreground"
+          >
             {label}
           </span>
         </div>
@@ -72,37 +75,40 @@ export function KpiCard({
       {isLoading ? (
         <Skeleton className="mt-2 h-8 w-24" />
       ) : (
-        <div className="mt-1.5 flex items-end justify-between gap-2">
+        <div className="mt-1.5 flex flex-wrap items-end gap-x-2 gap-y-1">
           <span className="text-2xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
             {value}
           </span>
           {deltaPct != null && Number.isFinite(deltaPct) && (
-            <TrendBadge
-              trend={{ deltaPct, direction: directionOf(deltaPct), invertGood }}
-              className="mb-0.5"
-            />
+            <TrendBadge trend={{ deltaPct, direction: directionOf(deltaPct), invertGood }} className="mb-0.5" />
           )}
         </div>
-      )}
-
-      {!isLoading && sparkData.length >= 2 && (
-        <Sparkline data={sparkData} color={sparkColor} height={32} className="mt-3" />
       )}
 
       {!isLoading && insight && (
         <p className="mt-2 line-clamp-2 text-caption leading-snug text-muted-foreground">{insight}</p>
       )}
+
+      {/* Sparkline slot is always present (anchored to the bottom) so cards keep
+          a uniform height whether or not a series is available. */}
+      <div className="mt-auto pt-3">
+        {!isLoading && sparkData.length >= 2 ? (
+          <Sparkline data={sparkData} color={sparkColor} height={32} />
+        ) : (
+          <div className="h-8" aria-hidden />
+        )}
+      </div>
     </>
   );
 
   const cardClass = cn(
-    'group flex flex-col p-4 transition-colors',
+    'group flex h-full flex-col p-4 transition-colors',
     to && 'cursor-pointer hover:border-primary/40 hover:bg-muted/30',
   );
 
   if (to) {
     return (
-      <Link to={to} aria-label={`${label}: ${value}. View details`} className="block">
+      <Link to={to} aria-label={`${label}: ${value}. View details`} className="block h-full">
         <Card className={cardClass}>{body}</Card>
       </Link>
     );

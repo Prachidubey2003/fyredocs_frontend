@@ -266,7 +266,7 @@ const AdminDashboard = () => {
     <div className="space-y-6 p-4 md:p-6">
       <AdminPageHeader title="Executive Overview" description="Platform health at a glance — click any metric to drill in." />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 2xl:grid-cols-8">
+      <div className="grid auto-rows-fr grid-cols-2 gap-3 md:grid-cols-4 2xl:grid-cols-8">
         {kpis.map(({ key, ...props }) => (
           <KpiCard key={key} {...props} isLoading={isKpiLoading} />
         ))}
