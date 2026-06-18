@@ -4,6 +4,8 @@ import { apiJson, apiRequest, buildApiUrl } from '@/lib/apiClient';
 import { buildDownloadPath, buildJobPath } from '@/lib/toolApi';
 import { setGuestToken } from '@/lib/guestToken';
 import { ApiJob, mapApiJob, mapStatus } from '@/lib/jobMapper';
+import { setJobWorkspaceHint } from '@/lib/documentsApi';
+import { getActiveOrgId } from '@/components/app/ActiveOrgContext';
 
 interface UseJobOptions {
   pollingInterval?: number;
@@ -434,6 +436,9 @@ export const useJob = ({
 
           const mappedJob = mapApiJob(apiResponse.data, toolId, normalizedIds, options);
           setJob(mappedJob);
+          // If a workspace is active, file the finalized document into that org.
+          const activeOrg = getActiveOrgId();
+          if (activeOrg) void setJobWorkspaceHint(mappedJob.id, activeOrg);
           startSSE(toolId, mappedJob.id, normalizedIds, options);
         } catch (error) {
           const message =

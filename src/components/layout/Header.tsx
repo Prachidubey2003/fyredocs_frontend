@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { LogOut, Search, Shield, User } from 'lucide-react';
+import { LayoutDashboard, LogOut, Search, Shield, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -32,8 +32,8 @@ export const Header = () => {
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           <ToolsMegaMenu />
           {isAuthenticated && (
-            <Link to="/my-files" className={navLinkClass}>
-              My Files
+            <Link to="/app" className={navLinkClass}>
+              Dashboard
             </Link>
           )}
           <Link to="/pricing" className={navLinkClass}>
@@ -93,16 +93,20 @@ export const Header = () => {
                     <div className="truncate text-xs text-muted-foreground">{user?.email?.trim() || '—'}</div>
                   </div>
                 </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/app">
+                    <LayoutDashboard className="mr-2 h-4 w-4" aria-hidden />
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
                 {user?.role === 'super-admin' && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin/dashboard">
-                        <Shield className="mr-2 h-4 w-4" aria-hidden />
-                        Admin Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/dashboard">
+                      <Shield className="mr-2 h-4 w-4" aria-hidden />
+                      Admin Dashboard
+                    </Link>
+                  </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => void logout()}>

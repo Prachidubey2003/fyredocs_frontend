@@ -1,0 +1,182 @@
+import { apiJson, apiRequest } from '@/lib/apiClient';
+
+// ---- document-service shapes ----
+export interface ApiTag {
+  id: string;
+  name: string;
+  color?: string;
+  createdAt: string;
+}
+
+export interface ApiFolder {
+  id: string;
+  parentId?: string | null;
+  name: string;
+  createdAt: string;
+}
+
+export type DocumentStatus = 'uploaded' | 'processing' | 'ready' | 'failed';
+
+export interface ApiDocument {
+  id: string;
+  folderId?: string | null;
+  name: string;
+  fileType?: string;
+  mimeType?: string;
+  fileSize: number;
+  thumbnailPath?: string;
+  status: DocumentStatus;
+  metadata?: Record<string, unknown>;
+  uploadedAt?: string;
+  processedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  tags?: ApiTag[];
+}
+
+export interface DocumentListParams {
+  status?: string;
+  folderId?: string;
+  tagId?: string;
+  q?: string;
+  page?: number;
+  limit?: number;
+  /** List soft-deleted documents (Trash view). */
+  trashed?: boolean;
+  /** Organization scope; omit/undefined for personal documents. */
+  orgId?: string;
+}
+
+type Envelope<T> = { success: boolean; message: string; data: T; meta?: { total?: number; page?: number; limit?: number } };
+
+/** List documents. Resolves to empty on failure (service not yet populated/up). */
+export const listDocuments = async (params: DocumentListParams = {}): Promise<{ documents: ApiDocument[]; total: number }> => {
+  const q = new URLSearchParams();
+  if (params.status) q.set('status', params.status);
+  if (params.folderId) q.set('folderId', params.folderId);
+  if (params.tagId) q.set('tagId', params.tagId);
+  if (params.q) q.set('q', params.q);
+  if (params.page) q.set('page', String(params.page));
+  if (params.limit) q.set('limit', String(params.limit));
+  if (params.trashed) q.set('trashed', 'true');
+  if (params.orgId) q.set('orgId', params.orgId);
+  const qs = q.toString();
+  try {
+    const res = await apiJson<Envelope<ApiDocument[]>>(`/api/documents${qs ? `?${qs}` : ''}`);
+    return { documents: res.data ?? [], total: res.meta?.total ?? (res.data?.length ?? 0) };
+  } catch {
+    return { documents: [], total: 0 };
+  }
+};
+
+export interface CreateDocumentInput {
+  name: string;
+  folderId?: string;
+  fileType?: string;
+  mimeType?: string;
+  fileSize?: number;
+  storagePath?: string;
+  status?: DocumentStatus;
+  metadata?: Record<string, unknown>;
+}
+
+export const createDocument = (input: CreateDocumentInput): Promise<ApiDocument> =>
+  apiJson<Envelope<ApiDocument>>('/api/documents', { method: 'POST', body: JSON.stringify(input) }).then((r) => r.data);
+
+export const deleteDocument = (id: string, orgId?: string): Promise<void> =>
+  apiRequest(`/api/documents/${id}${orgId ? `?orgId=${orgId}` : ''}`, { method: 'DELETE' }).then(() => undefined);
+
+export const restoreDocument = (id: string): Promise<void> =>
+  apiJson(`/api/documents/${id}/restore`, { method: 'POST' }).then(() => undefined);
+
+export const purgeDocument = (id: string): Promise<void> =>
+  apiRequest(`/api/documents/${id}/permanent`, { method: 'DELETE' }).then(() => undefined);
+
+export interface UpdateDocumentInput {
+  name?: string;
+  /** Empty string moves the document to the root (no folder). */
+  folderId?: string;
+  status?: DocumentStatus;
+  metadata?: Record<string, unknown>;
+  /** Move scope: an org id, or "" for personal. */
+  organizationId?: string;
+}
+
+export const updateDocument = (id: string, patch: UpdateDocumentInput, orgId?: string): Promise<ApiDocument> =>
+  apiJson<Envelope<ApiDocument>>(`/api/documents/${id}${orgId ? `?orgId=${orgId}` : ''}`, {
+    method: 'PATCH',
+    body: JSON.stringify(patch),
+  }).then((r) => r.data);
+
+const orgQuery = (orgId?: string) => (orgId ? `?orgId=${orgId}` : '');
+
+export const attachTag = (documentId: string, tagId: string, orgId?: string): Promise<void> =>
+  apiJson(`/api/documents/${documentId}/tags${orgQuery(orgId)}`, { method: 'POST', body: JSON.stringify({ tagId }) }).then(() => undefined);
+
+export const detachTag = (documentId: string, tagId: string, orgId?: string): Promise<void> =>
+  apiRequest(`/api/documents/${documentId}/tags/${tagId}${orgQuery(orgId)}`, { method: 'DELETE' }).then(() => undefined);
+
+export const createFolder = (name: string, parentId?: string, orgId?: string): Promise<ApiFolder> =>
+  apiJson<Envelope<ApiFolder>>('/api/folders', {
+    method: 'POST',
+    body: JSON.stringify({ name, parentId, organizationId: orgId }),
+  }).then((r) => r.data);
+
+export const deleteFolder = (id: string, orgId?: string): Promise<void> =>
+  apiRequest(`/api/folders/${id}${orgQuery(orgId)}`, { method: 'DELETE' }).then(() => undefined);
+
+export const createTag = (name: string, color?: string, orgId?: string): Promise<ApiTag> =>
+  apiJson<Envelope<ApiTag>>('/api/tags', {
+    method: 'POST',
+    body: JSON.stringify({ name, color, organizationId: orgId }),
+  }).then((r) => r.data);
+
+export const deleteTag = (id: string, orgId?: string): Promise<void> =>
+  apiRequest(`/api/tags/${id}${orgQuery(orgId)}`, { method: 'DELETE' }).then(() => undefined);
+
+/**
+ * Hints that a job should finalize into an organization workspace. Best-effort:
+ * called at job creation; document-service applies it when the job completes.
+ */
+export const setJobWorkspaceHint = async (jobId: string, organizationId: string): Promise<void> => {
+  try {
+    await apiJson('/api/documents/workspace-hint', { method: 'POST', body: JSON.stringify({ jobId, organizationId }) });
+  } catch {
+    // Non-fatal: the document still finalizes into the personal library.
+  }
+};
+
+export const listFolders = async (orgId?: string): Promise<ApiFolder[]> => {
+  try {
+    const res = await apiJson<Envelope<ApiFolder[]>>(`/api/folders${orgId ? `?orgId=${orgId}` : ''}`);
+    return res.data ?? [];
+  } catch {
+    return [];
+  }
+};
+
+export const listTags = async (orgId?: string): Promise<ApiTag[]> => {
+  try {
+    const res = await apiJson<Envelope<ApiTag[]>>(`/api/tags${orgId ? `?orgId=${orgId}` : ''}`);
+    return res.data ?? [];
+  } catch {
+    return [];
+  }
+};
+
+/**
+ * Register many documents (one-time history backfill). Sequential to be gentle
+ * on the service; returns the count that succeeded. Skips individual failures.
+ */
+export const bulkRegisterDocuments = async (inputs: CreateDocumentInput[]): Promise<number> => {
+  let ok = 0;
+  for (const input of inputs) {
+    try {
+      await createDocument(input);
+      ok += 1;
+    } catch {
+      // skip and continue
+    }
+  }
+  return ok;
+};

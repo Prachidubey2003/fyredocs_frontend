@@ -123,9 +123,14 @@ export function MobileNav() {
 
               <nav className="mt-4 space-y-0.5 border-t pt-4" aria-label="Pages">
                 {isAuthenticated && (
-                  <Link to="/my-files" onClick={close} className={pageLinkClass}>
-                    My Files
-                  </Link>
+                  <>
+                    <Link to="/app" onClick={close} className={pageLinkClass}>
+                      Dashboard
+                    </Link>
+                    <Link to="/my-files" onClick={close} className={pageLinkClass}>
+                      My Files
+                    </Link>
+                  </>
                 )}
                 {PAGE_LINKS.map((link) => (
                   <Link key={link.href} to={link.href} onClick={close} className={pageLinkClass}>

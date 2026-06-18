@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from 'next-themes';
-import { FolderClock, Grid3x3, LogIn, Moon, Sun, Tag, BookOpen } from 'lucide-react';
+import { FolderClock, Grid3x3, LogIn, Moon, Sun, Tag, BookOpen, LayoutDashboard, Files } from 'lucide-react';
 
 import {
   CommandDialog,
@@ -90,10 +90,20 @@ function CommandPalette() {
             All tools
           </CommandItem>
           {isAuthenticated && (
-            <CommandItem onSelect={() => runCommand(() => navigate('/my-files'))}>
-              <FolderClock className="mr-2 h-4 w-4" aria-hidden />
-              My Files
-            </CommandItem>
+            <>
+              <CommandItem onSelect={() => runCommand(() => navigate('/app'))}>
+                <LayoutDashboard className="mr-2 h-4 w-4" aria-hidden />
+                Dashboard
+              </CommandItem>
+              <CommandItem onSelect={() => runCommand(() => navigate('/app/documents'))}>
+                <Files className="mr-2 h-4 w-4" aria-hidden />
+                Documents
+              </CommandItem>
+              <CommandItem onSelect={() => runCommand(() => navigate('/my-files'))}>
+                <FolderClock className="mr-2 h-4 w-4" aria-hidden />
+                My Files
+              </CommandItem>
+            </>
           )}
           <CommandItem onSelect={() => runCommand(() => navigate('/pricing'))}>
             <Tag className="mr-2 h-4 w-4" aria-hidden />

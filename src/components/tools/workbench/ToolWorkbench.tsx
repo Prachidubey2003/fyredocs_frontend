@@ -60,6 +60,8 @@ export const ToolWorkbench = ({ tool }: ToolWorkbenchProps) => {
 
   const { job, createJob, cancelJob, retryJob, resetJob } = useJob({
     onComplete: () => {
+      // The document library is populated server-side: document-service consumes
+      // the job-completion event and finalizes a document for signed-in users.
       toast.success(`${tool.name} completed successfully!`);
     },
     onError: (error) => {

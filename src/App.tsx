@@ -13,6 +13,7 @@ import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { Layout } from "@/components/layout/Layout";
 import { DocsLayout } from "@/components/layout/DocsLayout";
 import { AdminLayout } from "@/components/layout/AdminLayout";
+import { UserLayout } from "@/components/layout/UserLayout";
 import { getAllTools } from "@/config/tools";
 
 const Index = lazy(() => import("./pages/Index"));
@@ -32,6 +33,11 @@ const DevDocsIndexPage = lazy(() => import("./pages/docs/DevDocsIndexPage"));
 const DevDocsPage = lazy(() => import("./pages/docs/DevDocsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const MyFilesPage = lazy(() => import("./pages/MyFilesPage"));
+const UserDashboard = lazy(() => import("./pages/app/Dashboard"));
+const DocumentsPage = lazy(() => import("./pages/app/DocumentsPage"));
+const TrashPage = lazy(() => import("./pages/app/TrashPage"));
+const MembersPage = lazy(() => import("./pages/app/MembersPage"));
+const ExportsPage = lazy(() => import("./pages/app/ExportsPage"));
 const SignIn = lazy(() => import("./pages/auth/SignIn"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
@@ -93,6 +99,16 @@ const App = () => (
                     </Route>
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
+                  </Route>
+                  {/* Authenticated user workspace — its own shell, outside the marketing layout. */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route element={<UserLayout />}>
+                      <Route path="/app" element={<UserDashboard />} />
+                      <Route path="/app/documents" element={<DocumentsPage />} />
+                      <Route path="/app/trash" element={<TrashPage />} />
+                      <Route path="/app/members" element={<MembersPage />} />
+                      <Route path="/app/exports" element={<ExportsPage />} />
+                    </Route>
                   </Route>
                   {/* Admin lives in its own shell (sidebar + top bar), outside the marketing layout. */}
                   <Route element={<RoleRoute allowedRoles={['super-admin']} />}>
