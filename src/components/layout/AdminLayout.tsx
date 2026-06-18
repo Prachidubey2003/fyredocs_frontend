@@ -77,7 +77,7 @@ export function AdminLayout() {
             <BreadcrumbList>
               <BreadcrumbItem className="hidden sm:block">
                 <BreadcrumbLink asChild>
-                  <Link to="/admin/dashboard">Admin</Link>
+                  <Link to="/dashboard">Admin</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden sm:block" />

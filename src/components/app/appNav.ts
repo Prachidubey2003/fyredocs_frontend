@@ -29,7 +29,7 @@ export const APP_NAV: AppNavGroup[] = [
   {
     label: 'Workspace',
     items: [
-      { title: 'Dashboard', path: '/app', icon: LayoutDashboard },
+      { title: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
       { title: 'Documents', path: '/app/documents', icon: Files },
       { title: 'Processing Jobs', path: '/app/documents?status=active', icon: ListChecks },
       { title: 'Exports', path: '/app/exports', icon: Download },

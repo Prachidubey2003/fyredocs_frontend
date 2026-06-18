@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/auth/authContext";
 import { ThemeProvider } from "next-themes";
 import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from "@/auth/authGuard";
@@ -14,6 +14,7 @@ import { Layout } from "@/components/layout/Layout";
 import { DocsLayout } from "@/components/layout/DocsLayout";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { UserLayout } from "@/components/layout/UserLayout";
+import { RoleLayout } from "@/components/layout/RoleLayout";
 import { getAllTools } from "@/config/tools";
 
 const Index = lazy(() => import("./pages/Index"));
@@ -33,14 +34,13 @@ const DevDocsIndexPage = lazy(() => import("./pages/docs/DevDocsIndexPage"));
 const DevDocsPage = lazy(() => import("./pages/docs/DevDocsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const MyFilesPage = lazy(() => import("./pages/MyFilesPage"));
-const UserDashboard = lazy(() => import("./pages/app/Dashboard"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
 const DocumentsPage = lazy(() => import("./pages/app/DocumentsPage"));
 const TrashPage = lazy(() => import("./pages/app/TrashPage"));
 const MembersPage = lazy(() => import("./pages/app/MembersPage"));
 const ExportsPage = lazy(() => import("./pages/app/ExportsPage"));
 const SignIn = lazy(() => import("./pages/auth/SignIn"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const BusinessPage = lazy(() => import("./pages/admin/BusinessPage"));
 const GrowthPage = lazy(() => import("./pages/admin/GrowthPage"));
 const EngagementPage = lazy(() => import("./pages/admin/EngagementPage"));
@@ -85,7 +85,7 @@ const App = () => (
                     <Route element={<ProtectedRoute />}>
                       <Route path="/my-files" element={<MyFilesPage />} />
                     </Route>
-                    <Route element={<PublicOnlyRoute />}>
+                    <Route element={<PublicOnlyRoute redirectTo="/dashboard" />}>
                       <Route path="/signin" element={<SignIn />} />
                       <Route path="/signup" element={<SignUp />} />
                     </Route>
@@ -100,10 +100,18 @@ const App = () => (
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Route>
+                  {/* Unified role-aware dashboard — server filters data by role. Rendered
+                      inside AdminLayout for admins and UserLayout for regular users. */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route element={<RoleLayout />}>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                    </Route>
+                  </Route>
                   {/* Authenticated user workspace — its own shell, outside the marketing layout. */}
                   <Route element={<ProtectedRoute />}>
                     <Route element={<UserLayout />}>
-                      <Route path="/app" element={<UserDashboard />} />
+                      {/* /app is no longer a separate dashboard — it redirects to the unified one. */}
+                      <Route path="/app" element={<Navigate to="/dashboard" replace />} />
                       <Route path="/app/documents" element={<DocumentsPage />} />
                       <Route path="/app/trash" element={<TrashPage />} />
                       <Route path="/app/members" element={<MembersPage />} />
@@ -113,7 +121,8 @@ const App = () => (
                   {/* Admin lives in its own shell (sidebar + top bar), outside the marketing layout. */}
                   <Route element={<RoleRoute allowedRoles={['super-admin']} />}>
                     <Route element={<AdminLayout />}>
-                      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                      {/* The standalone admin dashboard is replaced by the unified /dashboard. */}
+                      <Route path="/admin/dashboard" element={<Navigate to="/dashboard" replace />} />
                       <Route path="/admin/business" element={<BusinessPage />} />
                       <Route path="/admin/growth" element={<GrowthPage />} />
                       <Route path="/admin/engagement" element={<EngagementPage />} />

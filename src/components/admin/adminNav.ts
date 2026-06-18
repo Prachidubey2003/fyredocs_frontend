@@ -26,7 +26,7 @@ export interface AdminSection {
 }
 
 export const ADMIN_SECTIONS: AdminSection[] = [
-  { title: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard, group: 'product', supportsTimeRange: true },
+  { title: 'Overview', path: '/dashboard', icon: LayoutDashboard, group: 'product', supportsTimeRange: true },
   { title: 'Business', path: '/admin/business', icon: DollarSign, group: 'product', supportsTimeRange: true },
   { title: 'Growth', path: '/admin/growth', icon: TrendingUp, group: 'product', supportsTimeRange: true },
   { title: 'Engagement', path: '/admin/engagement', icon: MousePointerClick, group: 'product', supportsTimeRange: true },

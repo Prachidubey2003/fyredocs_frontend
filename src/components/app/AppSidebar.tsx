@@ -33,7 +33,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link to="/app">
+              <Link to="/dashboard">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center">
                   <img src="/favicon.png" alt="" className="h-8 w-8 object-contain" aria-hidden />
                 </div>
@@ -67,7 +67,7 @@ export function AppSidebar() {
                       </SidebarMenuItem>
                     );
                   }
-                  const isActive = current === item.path || (item.path === '/app' && pathname === '/app');
+                  const isActive = current === item.path || (item.path === '/dashboard' && pathname === '/dashboard');
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>

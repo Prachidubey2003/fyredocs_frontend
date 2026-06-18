@@ -32,7 +32,7 @@ export const Header = () => {
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           <ToolsMegaMenu />
           {isAuthenticated && (
-            <Link to="/app" className={navLinkClass}>
+            <Link to="/dashboard" className={navLinkClass}>
               Dashboard
             </Link>
           )}
@@ -95,14 +95,14 @@ export const Header = () => {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/app">
+                  <Link to="/dashboard">
                     <LayoutDashboard className="mr-2 h-4 w-4" aria-hidden />
                     Dashboard
                   </Link>
                 </DropdownMenuItem>
                 {user?.role === 'super-admin' && (
                   <DropdownMenuItem asChild>
-                    <Link to="/admin/dashboard">
+                    <Link to="/dashboard">
                       <Shield className="mr-2 h-4 w-4" aria-hidden />
                       Admin Dashboard
                     </Link>

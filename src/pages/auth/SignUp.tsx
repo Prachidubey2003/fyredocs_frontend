@@ -67,7 +67,7 @@ const SignUp = () => {
         country: values.country.trim(),
         password: values.password,
       });
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (error) {
       const message = isAuthError(error)
         ? error.message

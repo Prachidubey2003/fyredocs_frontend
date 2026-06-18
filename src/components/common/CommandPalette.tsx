@@ -91,7 +91,7 @@ function CommandPalette() {
           </CommandItem>
           {isAuthenticated && (
             <>
-              <CommandItem onSelect={() => runCommand(() => navigate('/app'))}>
+              <CommandItem onSelect={() => runCommand(() => navigate('/dashboard'))}>
                 <LayoutDashboard className="mr-2 h-4 w-4" aria-hidden />
                 Dashboard
               </CommandItem>

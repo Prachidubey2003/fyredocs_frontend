@@ -41,7 +41,8 @@ const SignIn = () => {
     },
   });
 
-  const redirectTo = (location.state as { from?: { pathname?: string } } | undefined)?.from?.pathname ?? '/';
+  const fromPath = (location.state as { from?: { pathname?: string } } | undefined)?.from?.pathname;
+  const redirectTo = fromPath ?? '/dashboard';
 
   const handleSubmit = async (values: SignInValues) => {
     setFormError(null);
@@ -64,7 +65,7 @@ const SignIn = () => {
           <CardDescription>Access your account and continue your work.</CardDescription>
         </CardHeader>
         <CardContent>
-          {redirectTo !== '/' && (
+          {fromPath && (
             <Alert className="mb-4">
               <Info className="h-4 w-4" />
               <AlertTitle>Sign in required</AlertTitle>

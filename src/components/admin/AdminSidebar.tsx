@@ -33,7 +33,7 @@ export function AdminSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link to="/admin/dashboard">
+              <Link to="/dashboard">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center">
                   <img src="/favicon.png" alt="" className="h-8 w-8 object-contain" aria-hidden />
                 </div>

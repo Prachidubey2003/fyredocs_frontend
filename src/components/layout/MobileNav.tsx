@@ -124,7 +124,7 @@ export function MobileNav() {
               <nav className="mt-4 space-y-0.5 border-t pt-4" aria-label="Pages">
                 {isAuthenticated && (
                   <>
-                    <Link to="/app" onClick={close} className={pageLinkClass}>
+                    <Link to="/dashboard" onClick={close} className={pageLinkClass}>
                       Dashboard
                     </Link>
                     <Link to="/my-files" onClick={close} className={pageLinkClass}>
@@ -164,7 +164,7 @@ export function MobileNav() {
                 </div>
                 {user?.role === 'super-admin' && (
                   <Button variant="outline" className="w-full" asChild>
-                    <Link to="/admin/dashboard" onClick={close}>
+                    <Link to="/dashboard" onClick={close}>
                       <Shield aria-hidden />
                       Admin Dashboard
                     </Link>
