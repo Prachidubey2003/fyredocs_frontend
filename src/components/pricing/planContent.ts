@@ -25,6 +25,8 @@ export interface PlanTierContent {
   features: string[];
   cta: { label: string; href: string };
   highlighted?: boolean;
+  /** Marks the tier as not yet purchasable — renders a disabled "Coming soon" CTA. */
+  comingSoon?: boolean;
   /** Used while loading or when the plans request fails. */
   fallbackLimits: PlanLimits;
 }
@@ -81,6 +83,7 @@ export const PLAN_TIERS: PlanTierContent[] = [
     ],
     cta: { label: 'Get Pro', href: '/signup?plan=pro' },
     highlighted: true,
+    comingSoon: true,
     fallbackLimits: { maxFileSizeMb: 500, maxFilesPerJob: 50, retentionDays: 30 },
   },
 ];

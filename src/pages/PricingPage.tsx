@@ -70,11 +70,15 @@ const PricingPage = () => {
                   tier.highlighted && 'border-primary shadow-brand ring-1 ring-primary',
                 )}
               >
-                {tier.highlighted && (
+                {tier.comingSoon ? (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge variant="outline">Coming soon</Badge>
+                  </div>
+                ) : tier.highlighted ? (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge>Most popular</Badge>
                   </div>
-                )}
+                ) : null}
                 <CardHeader>
                   <CardTitle className="text-h3">{tier.name}</CardTitle>
                   <CardDescription>{tier.tagline}</CardDescription>
@@ -126,13 +130,19 @@ const PricingPage = () => {
                     ))}
                   </ul>
 
-                  <Button
-                    className="mt-auto w-full"
-                    variant={tier.highlighted ? 'default' : 'outline'}
-                    asChild
-                  >
-                    <Link to={tier.cta.href}>{tier.cta.label}</Link>
-                  </Button>
+                  {tier.comingSoon ? (
+                    <Button className="mt-auto w-full" variant="outline" disabled>
+                      Coming soon
+                    </Button>
+                  ) : (
+                    <Button
+                      className="mt-auto w-full"
+                      variant={tier.highlighted ? 'default' : 'outline'}
+                      asChild
+                    >
+                      <Link to={tier.cta.href}>{tier.cta.label}</Link>
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             );
