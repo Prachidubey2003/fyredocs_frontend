@@ -8,7 +8,11 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
         CLI["CLI / API Consumer"]
     end
 
-    subgraph Gateway["API Gateway :8080"]
+    subgraph Edge["Caddy Edge :80/:443"]
+        CADDY["caddy<br/>TLS (auto-HTTPS via PUBLIC_DOMAIN)<br/>SPA static files · object-byte routing"]
+    end
+
+    subgraph Gateway["API Gateway :8080 (internal-only)"]
         GW["api-gateway<br/>net/http reverse proxy"]
     end
 
@@ -29,17 +33,21 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     end
 
     subgraph Background
-        CW["cleanup-worker<br/>Ticker-based"]
+        CW["cleanup-worker<br/>job-service's cleanup binary (cmd/cleanup)<br/>Ticker-based"]
     end
 
     subgraph Infrastructure
         PG[(PostgreSQL)]
         RD[(Redis)]
         NATS["NATS JetStream"]
+        S3[("MinIO :9000 (internal)<br/>uploads · outputs buckets")]
     end
 
-    WebApp -->|HTTPS| GW
-    CLI -->|HTTPS| GW
+    WebApp -->|HTTPS| CADDY
+    CLI -->|HTTPS| CADDY
+
+    CADDY -->|"/api/* · /auth/* · /admin/*"| GW
+    CADDY -->|"/uploads/* · /outputs/*<br/>presigned, direct"| S3
 
     GW -->|/auth/*| AUTH
     GW -->|/api/*| JOB
@@ -68,35 +76,43 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     AN --> NATS
     AUTH -->|analytics events| NATS
     JOB -->|analytics events| NATS
+    JOB -->|presign · stat · multipart| S3
+    CFP -->|input download · output upload| S3
+    CTP -->|input download · output upload| S3
+    ORG -->|input download · output upload| S3
+    OPT -->|input download · output upload| S3
     CW --> PG
     CW --> RD
+    CW -->|RemoveObject · AbortMultipart| S3
     GW --> RD`,
     },
     {
       heading: 'Data Flow Overview',
       content: `flowchart LR
-    subgraph Upload
+    subgraph Upload["Upload (presigned, via the Caddy edge)"]
         A[Client] -->|1. Init upload| B[job-service]
-        A -->|2. Upload chunks| B
-        A -->|3. Complete upload| B
         B -->|Store state| Redis[(Redis)]
-        B -->|Save chunks| Disk[(File System)]
+        B -->|Presign part URLs| S3[("MinIO<br/>uploads bucket")]
+        A -->|"2. PUT parts via Caddy<br/>/uploads/*?X-Amz-..."| S3
+        A -->|3. Complete upload + ETags| B
+        B -->|CompleteMultipart| S3
     end
 
     subgraph Processing
         A -->|4. Create job| B
         B -->|5. Save job record| PG[(PostgreSQL)]
-        B -->|6. Publish event| NATS["NATS JetStream<br/>JOBS_DISPATCH"]
+        B -->|6. Publish event with object key| NATS["NATS JetStream<br/>JOBS_DISPATCH"]
         NATS -->|7. Deliver message| W["Worker Service"]
-        W -->|8. Process file| W
-        W -->|9. Update status| PG
+        W -->|8. Download input| S3
+        W -->|9. Upload output| S3O[("MinIO<br/>outputs bucket")]
+        W -->|10. Update status| PG
     end
 
     subgraph Retrieval
-        A -->|10. Poll job status| B
+        A -->|11. Poll job status| B
         B -->|Read job| PG
-        A -->|11. Download result| B
-        B -->|Read file| Disk
+        A -->|12. Request download → presigned URL| B
+        A -->|"13. GET via Caddy<br/>/outputs/*?X-Amz-..."| S3O
     end`,
     },
     {
@@ -142,7 +158,8 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     {
       heading: 'Authentication Flow',
       content: `flowchart TD
-    Client -->|Request with JWT cookie or Bearer token| GW[api-gateway]
+    Client -->|Request with JWT cookie or Bearer token| Caddy[Caddy edge]
+    Caddy -->|"/api/* · /auth/* · /admin/*"| GW[api-gateway]
     GW -->|Verify JWT via HS256 secret| GW
     GW -->|Check token denylist| Redis[(Redis)]
     GW -->|Guest? Validate guest token| Redis
@@ -154,7 +171,9 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     {
       heading: 'Component Diagram',
       content: `graph TB
-    subgraph api-gateway[" api-gateway :8080 "]
+    CADDY["Caddy edge :80/:443<br/>TLS · SPA static files · object bytes → MinIO"]
+
+    subgraph api-gateway[" api-gateway :8080 (internal-only) "]
         direction TB
 
         subgraph Middleware["Middleware Chain"]
@@ -186,7 +205,10 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
         METRICEP["/metrics endpoint"]
     end
 
-    Client["Client"] --> TRACE --> METRICS --> REQID --> CORS --> AUTHMW --> MUX
+    Client["Browser / CLI / SPA"] --> CADDY
+    CADDY -->|"/api/* · /auth/* · /admin/*"| TRACE
+    TRACE --> METRICS --> REQID --> CORS --> AUTHMW --> MUX
+    CADDY -->|"/uploads/* · /outputs/*<br/>presigned, direct"| Minio[("MinIO :9000<br/>uploads · outputs")]
 
     AUTHMW --> VERIFIER
     AUTHMW --> DENYLIST
@@ -217,7 +239,7 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     {
       heading: 'Middleware Execution Order',
       content: `flowchart LR
-    A["Incoming<br/>Request"] --> B["telemetry.<br/>HTTPTraceMiddleware"]
+    A["Incoming Request<br/>(via Caddy edge)"] --> B["telemetry.<br/>HTTPTraceMiddleware"]
     B --> C["metrics.<br/>HTTPMetricsMiddleware"]
     C --> D["logger.<br/>HTTPRequestID"]
     D --> E["withCORS"]
@@ -232,7 +254,7 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     GW[api-gateway] --> |shared/logger| Logger
     GW --> |shared/metrics| Metrics
     GW --> |shared/telemetry| Telemetry
-    GW --> |internal/authverify| AuthVerify
+    GW --> |shared/authverify| AuthVerify
 
     AuthVerify --> |go-redis/v9| Redis[(Redis)]
     AuthVerify --> |golang-jwt/jwt/v5| JWT
@@ -437,7 +459,7 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     AS --> |shared/telemetry| Telemetry
     AS --> |shared/response| Response
 
-    AS --> |internal/authverify| AuthVerify
+    AS --> |shared/authverify| AuthVerify
     AS --> |internal/models| Models
     AS --> |internal/token| TokenIssuer
 
@@ -771,7 +793,7 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     JS --> |shared/queue| Queue
     JS --> |shared/response| Response
 
-    JS --> |internal/authverify| AuthVerify
+    JS --> |shared/authverify| AuthVerify
     JS --> |internal/models| Models
     JS --> |internal/routing| Routing
 
@@ -1083,7 +1105,7 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     US --> |shared/response| Response
     US --> |shared/queue| Queue
 
-    US --> |internal/authverify| AuthVerify
+    US --> |shared/authverify| AuthVerify
     US --> |internal/models| Models
     US --> |internal/token| TokenIssuer
 
@@ -2183,36 +2205,38 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     {
       heading: 'Component Diagram',
       content: `graph TB
-    subgraph cleanup-worker[" cleanup-worker "]
+    subgraph cleanup-worker[" cleanup-worker (job-service/cmd/cleanup) "]
         direction TB
 
         subgraph Main["main() Loop"]
             INIT["Initialize<br/>Config, Logger, Telemetry"]
-            CONNECT["Connect DB, Redis"]
+            CONNECT["Connect DB, Redis,<br/>MinIO (storage.NewFromEnv)"]
             TICKER["time.Ticker<br/>(default: 15 min)"]
             LOOP["Infinite Loop<br/>runCleanup() on each tick"]
         end
 
-        subgraph Cleanup["Cleanup Functions"]
+        subgraph Cleanup["Cleanup Phases"]
             EXPIRED["cleanupExpiredJobs()"]
             UPLOAD["cleanupUploadState()"]
+            MULTIPART["abortStaleMultipartUploads()"]
+            BACKFILL["backfillExpiry()"]
         end
 
         subgraph ExpiredJobs["cleanupExpiredJobs()"]
-            QUERY["Query expired guest jobs<br/>WHERE user_id IS NULL<br/>AND expires_at <= now()"]
-            DELETE_FILES["Delete associated files<br/>from disk"]
+            QUERY["Query expired jobs<br/>WHERE expires_at IS NOT NULL<br/>AND expires_at <= now()"]
+            DELETE_FILES["RemoveObject per file_metadata row<br/>(input → uploads bucket,<br/>output → outputs bucket)"]
             DELETE_META["Delete file_metadata records"]
             DELETE_JOB["Delete processing_job records"]
         end
 
         subgraph UploadState["cleanupUploadState()"]
             SCAN["Redis SCAN upload:*"]
-            CHECK_TTL["Check createdAt > UPLOAD_TTL (30m)"]
-            DELETE_REDIS["DEL upload:<id>, upload:<id>:chunks"]
-            DELETE_DIR["Remove uploads/tmp/<id>/ directory"]
+            CHECK_TTL["Check age > 2 x UPLOAD_TTL (30m)"]
+            DELETE_REDIS["DEL upload:<id> keys"]
+            DELETE_OBJ["AbortMultipart + RemoveObject<br/>in uploads bucket"]
         end
 
-        subgraph Models["internal/models"]
+        subgraph Models["job-service/internal/models<br/>(job-service's own GORM models — no duplicated structs)"]
             DB_CONN["Database Connection<br/>(GORM)"]
             JOB_MODEL["ProcessingJob"]
             FILE_MODEL["FileMetadata"]
@@ -2222,28 +2246,33 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     INIT --> CONNECT --> TICKER --> LOOP
     LOOP --> EXPIRED
     LOOP --> UPLOAD
+    LOOP --> MULTIPART
+    LOOP --> BACKFILL
 
     EXPIRED --> QUERY --> DELETE_FILES --> DELETE_META --> DELETE_JOB
-    UPLOAD --> SCAN --> CHECK_TTL --> DELETE_REDIS --> DELETE_DIR
+    UPLOAD --> SCAN --> CHECK_TTL --> DELETE_REDIS --> DELETE_OBJ
 
     DB_CONN --> PG[(PostgreSQL)]
+    BACKFILL --> PG
     SCAN --> Redis[(Redis)]
     DELETE_REDIS --> Redis
-    DELETE_FILES --> Disk[(File System)]
-    DELETE_DIR --> Disk`,
+    DELETE_FILES --> S3[("MinIO<br/>uploads · outputs")]
+    DELETE_OBJ --> S3
+    MULTIPART --> S3`,
     },
     {
       heading: 'Cleanup Targets',
       content: `graph LR
     subgraph Targets["What Gets Cleaned Up"]
-        A["Expired Guest Jobs<br/>(user_id IS NULL,<br/>expires_at <= now)"]
-        B["Stale Upload State<br/>(Redis keys older than<br/>UPLOAD_TTL / 30 minutes)"]
-        C["Orphaned Chunk Directories<br/>(uploads/tmp/<id>/)"]
+        A["Any Expired Job<br/>(guest, free, pro-with-explicit-expires_at)<br/>expires_at <= now<br/>→ RemoveObject per file_metadata row"]
+        B["Stale Upload Sessions<br/>(Redis upload:* keys older than<br/>2 x UPLOAD_TTL)<br/>→ DEL + AbortMultipart + RemoveObject"]
+        C["Stale Multipart Uploads<br/>(incomplete > 24h in uploads bucket)<br/>→ AbortMultipart"]
     end
 
     subgraph NotCleaned["Not Cleaned (Handled Elsewhere)"]
-        D["Registered User Jobs<br/>(kept indefinitely)"]
+        D["Pro User Jobs<br/>(expires_at = NULL)"]
         E["NATS Message Redelivery<br/>(handled by JetStream AckWait)"]
+        F["Uploads-bucket lifecycle expiry<br/>(MinIO-side backstop)"]
     end`,
     },
     {
@@ -2251,8 +2280,9 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
       content: `graph TD
     subgraph EnvVars["Environment Variables"]
         A["CLEANUP_INTERVAL<br/>Default: 15m<br/>How often the ticker fires"]
-        B["UPLOAD_TTL<br/>Default: 30m<br/>Max age for upload state in Redis"]
-        C["UPLOAD_DIR<br/>Default: uploads<br/>Base directory for uploaded files"]
+        B["UPLOAD_TTL<br/>Default: 30m<br/>Upload sessions reaped at 2 x UPLOAD_TTL"]
+        C["S3_ENDPOINT / S3_ACCESS_KEY / S3_SECRET_KEY<br/>Required (fail-fast if missing)"]
+        D["S3_BUCKET_UPLOADS / S3_BUCKET_OUTPUTS<br/>Default: uploads / outputs"]
     end`,
     },
     {
@@ -2267,8 +2297,9 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     Main->>Config: LoadConfig()
     Main->>Main: logger.Init("cleanup-worker")
     Main->>Main: telemetry.Init("cleanup-worker")
-    Main->>DB: models.Connect() + Migrate()
+    Main->>DB: models.Connect() (job-service's own models)
     Main->>Redis: redisstore.Connect()
+    Main->>Main: storage.NewFromEnv()<br/>(exit if S3_* missing)
 
     Main->>Main: Start ticker (15 min interval)
 
@@ -2277,18 +2308,20 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
 
         Cleanup->>Cleanup: cleanupExpiredJobs(ctx)
         Cleanup->>Cleanup: cleanupUploadState(ctx)
+        Cleanup->>Cleanup: abortStaleMultipartUploads(ctx)
+        Cleanup->>Cleanup: backfillExpiry(ctx)
 
         Note over Main: Wait for next tick
     end`,
     },
     {
-      heading: 'Cleanup Expired Guest Jobs',
+      heading: 'Cleanup Expired Jobs',
       content: `sequenceDiagram
     participant CW as cleanup-worker
     participant PG as PostgreSQL
-    participant Disk as File System
+    participant S3 as MinIO
 
-    CW->>PG: SELECT * FROM processing_jobs<br/>WHERE user_id IS NULL<br/>AND expires_at IS NOT NULL<br/>AND expires_at <= now()<br/>LIMIT 100
+    CW->>PG: SELECT * FROM processing_jobs<br/>WHERE expires_at IS NOT NULL<br/>AND expires_at <= now()<br/>LIMIT 100
 
     PG-->>CW: [job1, job2, ..., jobN]
 
@@ -2297,8 +2330,8 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
         PG-->>CW: [file1, file2]
 
         loop For each file
-            CW->>Disk: os.Remove(file.Path)
-            Note over Disk: Remove input/output files
+            CW->>S3: RemoveObject(bucketFor(kind), path)
+            Note over S3: kind input → uploads bucket<br/>kind output → outputs bucket
         end
 
         CW->>PG: DELETE FROM file_metadata<br/>WHERE job_id = <job.id>
@@ -2318,26 +2351,25 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
       content: `sequenceDiagram
     participant CW as cleanup-worker
     participant Redis
-    participant Disk as File System
+    participant S3 as MinIO (uploads bucket)
 
     CW->>Redis: SCAN 0 MATCH upload:* COUNT 100
     Redis-->>CW: [cursor, keys]
 
     loop For each key (skip :chunks keys)
-        CW->>Redis: HGET upload:<id> createdAt
-        Redis-->>CW: "2024-01-15T10:30:00Z"
+        CW->>Redis: HGETALL upload:<id><br/>(createdAt, key, s3UploadId)
+        Redis-->>CW: {createdAt: "2024-01-15T10:30:00Z", ...}
 
-        CW->>CW: Parse timestamp<br/>Check: time.Since(createdAt) > 2h
+        CW->>CW: Parse timestamp<br/>Check: time.Since(createdAt) > 2 x UPLOAD_TTL
 
-        alt Upload is stale (> 2h old)
-            CW->>Redis: DEL upload:<id>
-            CW->>Redis: DEL upload:<id>:chunks
+        alt Upload session is stale
+            CW->>Redis: DEL upload:<id> keys
 
-            CW->>CW: Parse upload ID as UUID
+            CW->>S3: AbortMultipart(uploads, key, s3UploadId)
 
-            alt Valid UUID
-                CW->>Disk: os.RemoveAll(uploads/tmp/<id>/)
-                Note over Disk: Remove orphaned chunk directory
+            alt No file_metadata row references key
+                CW->>S3: RemoveObject(uploads, key)
+                Note over S3: Remove unconsumed upload object
             end
         else Upload is recent
             Note over CW: Skip (still valid)
@@ -2350,9 +2382,9 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
       heading: 'Cleanup Decision Flow',
       content: `flowchart TD
     A["Cleanup tick fires"] --> B["cleanupExpiredJobs()"]
-    B --> C{"Any expired guest jobs?"}
+    B --> C{"Any expired jobs?"}
     C -->|Yes| D["Batch delete (100 at a time)"]
-    D --> E["Delete files from disk"]
+    D --> E["RemoveObject from MinIO<br/>(uploads / outputs buckets)"]
     E --> F["Delete file_metadata records"]
     F --> G["Delete processing_jobs records"]
     G --> C
@@ -2361,12 +2393,14 @@ export const mermaidDiagrams: Record<string, { heading: string; content: string 
     H --> I["SCAN Redis for upload:* keys"]
     I --> J{"Key is :chunks suffix?"}
     J -->|Yes| K["Skip"]
-    J -->|No| L{"createdAt > UPLOAD_TTL?"}
+    J -->|No| L{"age > 2 x UPLOAD_TTL?"}
     L -->|No| K
     L -->|Yes| M["DEL Redis keys"]
-    M --> N["Remove chunk directory from disk"]
+    M --> N["AbortMultipart + RemoveObject<br/>in uploads bucket"]
     N --> I
-    K --> I`,
+    K --> I
+    I -->|SCAN done| O["abortStaleMultipartUploads()<br/>(incomplete > 24h)"]
+    O --> P["backfillExpiry()<br/>(legacy jobs get expires_at)"]`,
     },
     {
       heading: 'Timing Diagram',

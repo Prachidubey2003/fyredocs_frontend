@@ -190,7 +190,7 @@ export const developerDocs: DevDocEntry[] = [
         content: '',
         type: 'steps',
         items: [
-          'Client to Services: All traffic flows through the API Gateway via REST. The gateway reverse-proxies to backend services based on route prefix.',
+          'Client to Services: The Caddy edge (:80/:443) is the only public entrypoint — it serves the SPA, routes presigned /uploads/* and /outputs/* object traffic directly to MinIO, and proxies /api/*, /auth/*, and /admin/* to the internal API Gateway, which reverse-proxies to backend services based on route prefix.',
           'Service to Service: NATS JetStream for async job processing. Each worker service subscribes to tool-specific subjects within a durable consumer group.',
           'Caching/State: Redis for upload chunk storage, rate limiting counters, guest token sessions, and token denylist.',
           'Persistence: PostgreSQL with GORM. Each service owns its own schema and connection pool. No cross-service DB queries.',
@@ -842,12 +842,12 @@ export const developerDocs: DevDocEntry[] = [
   {
     slug: 'svc-api-gateway',
     title: 'API Gateway',
-    description: 'Central entry point for all client requests.',
+    description: 'Internal routing hub for all API traffic, behind the Caddy edge.',
     category: 'services',
     sections: [
       {
         heading: 'Responsibility',
-        content: 'The API Gateway is the single entry point for all client traffic. It handles CORS, authentication verification, request routing via reverse proxy, rate limiting, and security headers. It does not contain business logic; it only orchestrates middleware and forwards requests.',
+        content: 'The API Gateway (:8080) is internal-only — public traffic enters through the Caddy edge (:80/:443), which serves the SPA, routes presigned /uploads/* and /outputs/* object traffic directly to MinIO, and proxies /api/*, /auth/*, and /admin/* to the gateway. The gateway handles CORS, authentication verification, request routing via reverse proxy, rate limiting, and security headers. It does not serve the SPA, does not relay object bytes, and does not contain business logic; it only orchestrates middleware and forwards requests.',
         type: 'paragraph',
       },
       {
@@ -1010,7 +1010,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'File cleanup on job failure',
-        content: 'When a job fails permanently (exhausted retries or unrecoverable error), the Job Service deletes the input file from disk immediately. Output partial files, if any, are also deleted. The job record remains in the database with status "failed" for observability until the cleanup worker purges it.',
+        content: 'When a job fails permanently (exhausted retries or unrecoverable error), the Job Service removes the input object from the uploads bucket immediately. Partial output objects, if any, are also removed. The job record remains in the database with status "failed" for observability until the cleanup worker purges it.',
         type: 'paragraph',
       },
       {
@@ -1386,7 +1386,7 @@ export const developerDocs: DevDocEntry[] = [
     sections: [
       {
         heading: 'Responsibility',
-        content: 'Runs on a fixed schedule to clean up expired files and jobs. Ensures disk space is reclaimed and database records are kept manageable.',
+        content: 'Runs on a fixed schedule to clean up expired files and jobs. It is job-service\'s own cleanup binary (job-service/cmd/cleanup) shipped in the cleanup-worker container, reusing job-service\'s GORM models with no duplicated structs. Ensures object storage (the MinIO uploads and outputs buckets) is reclaimed and database records are kept manageable.',
         type: 'paragraph',
       },
       {
@@ -1421,15 +1421,15 @@ export const developerDocs: DevDocEntry[] = [
         type: 'steps',
         items: [
           'Query for all jobs where expires_at < NOW() and cleanup_status is pending',
-          'For each expired job, delete the input file from disk first (if it still exists)',
-          'Delete the output file from disk (if it still exists)',
+          'For each expired job, remove the input object from the uploads bucket first (if it still exists)',
+          'Remove the output object from the outputs bucket (if it still exists)',
           'Mark the database record with cleanup_status = "cleaned" and cleanup_at = NOW()',
-          'Scan the upload and output directories for orphaned files (files not referenced by any job) and delete them',
-          'Log a summary: number of jobs cleaned, disk space reclaimed, errors encountered',
+          'Sweep stale upload sessions and abort stale multipart uploads in the uploads bucket',
+          'Log a summary: number of jobs cleaned, storage reclaimed, errors encountered',
         ],
       },
       {
-        content: 'The cleanup worker deletes from disk first, then marks the DB record. This order ensures that if the worker crashes mid-cleanup, the next run will retry the disk deletion rather than leaving orphaned files.',
+        content: 'The cleanup worker removes objects from storage first, then marks the DB record. This order ensures that if the worker crashes mid-cleanup, the next run will retry the object deletion rather than leaving orphaned objects.',
         type: 'tip',
       },
     ],
@@ -1862,7 +1862,7 @@ export const developerDocs: DevDocEntry[] = [
     sections: [
       {
         heading: 'Overview',
-        content: 'The useFileUpload hook manages the complete file upload lifecycle. Files are split into 1MB chunks and uploaded to the gateway API with up to 3 parallel chunk uploads. The hook handles validation, progress tracking, pause/resume, retry, and cleanup.',
+        content: 'The useFileUpload hook manages the complete file upload lifecycle. An upload is initialized via POST /api/upload/init (through the gateway), then file parts are PUT directly to presigned MinIO URLs (/uploads/*?X-Amz-...) routed at the Caddy edge — the raw bytes never pass through the API Gateway — with up to 3 parallel part uploads. The hook handles validation, progress tracking, pause/resume, retry, and cleanup.',
         type: 'paragraph',
       },
       {
@@ -2446,7 +2446,7 @@ export const developerDocs: DevDocEntry[] = [
       // ── Service Topology ──────────────────────────────────────────────
       {
         heading: 'Why a Microservice Topology?',
-        content: 'Fyredocs is decomposed into single-responsibility services so that each conversion format (PDF-to-X, X-to-PDF) can scale independently based on actual workload. The API Gateway is the only internet-facing service — every other component sits behind it, communicating over an internal Docker network. This means you can horizontally scale a hot path like Convert-to-PDF without touching Auth or Analytics.',
+        content: 'Fyredocs is decomposed into single-responsibility services so that each conversion format (PDF-to-X, X-to-PDF) can scale independently based on actual workload. The Caddy edge (:80/:443) is the only internet-facing service — it terminates TLS, serves the SPA, routes presigned object traffic directly to MinIO, and proxies API traffic to the internal API Gateway. Every other component, the gateway included, communicates over an internal Docker network. This means you can horizontally scale a hot path like Convert-to-PDF without touching Auth or Analytics.',
         type: 'paragraph',
       },
       getMermaidSections('architecture')[0],
@@ -2504,7 +2504,7 @@ export const developerDocs: DevDocEntry[] = [
     sections: [
       {
         heading: 'About This Service',
-        content: 'The API Gateway is the single entry point for all client traffic. It handles CORS, authentication verification, request routing via reverse proxy, rate limiting, and security headers. It does not contain business logic — it only orchestrates middleware and forwards requests to downstream services.',
+        content: 'The API Gateway is the internal entry point for all API traffic. Public requests arrive at the Caddy edge (:80/:443), which serves the SPA, sends presigned /uploads/* and /outputs/* object traffic directly to MinIO, and proxies /api/*, /auth/*, and /admin/* to the gateway. The gateway handles CORS, authentication verification, request routing via reverse proxy, rate limiting, and security headers. It does not contain business logic — it only orchestrates middleware and forwards requests to downstream services.',
         type: 'paragraph',
       },
       {
@@ -2560,7 +2560,7 @@ export const developerDocs: DevDocEntry[] = [
       getMermaidSections('svc-api-gateway')[3],
       {
         heading: 'What the Authenticated Flow Reveals',
-        content: 'The gateway adds the validated user ID as a header before proxying, so downstream services never need to call auth-service themselves. This is a deliberate trust boundary: services behind the gateway trust the X-User-ID header because only the gateway can set it. If a downstream service were exposed directly, this header could be spoofed — which is why all traffic must enter through the gateway.',
+        content: 'The gateway adds the validated user ID as a header before proxying, so downstream services never need to call auth-service themselves. This is a deliberate trust boundary: services behind the gateway trust the X-User-ID header because only the gateway can set it. If a downstream service were exposed directly, this header could be spoofed — which is why all API traffic must enter through the gateway (via the Caddy edge).',
         type: 'paragraph',
       },
 
@@ -3561,7 +3561,7 @@ export const developerDocs: DevDocEntry[] = [
     sections: [
       {
         heading: 'About This Service',
-        content: 'The Cleanup Worker is a ticker-based background process (not a NATS consumer) that runs on a configurable interval. It removes expired guest jobs and their files, cleans up stale upload state from Redis, and purges orphaned files from disk. It deletes from disk first, then marks the DB record, so crashes result in retried deletions rather than orphaned files.',
+        content: 'The Cleanup Worker is a ticker-based background process (not a NATS consumer) that runs on a configurable interval. It is job-service\'s own cleanup binary (job-service/cmd/cleanup) shipped in the cleanup-worker container, reusing job-service\'s models directly. It removes expired jobs and their objects from the MinIO uploads and outputs buckets, cleans up stale upload state from Redis, and aborts stale multipart uploads. It removes objects from storage first, then deletes the DB record, so crashes result in retried deletions rather than orphaned objects.',
         type: 'paragraph',
       },
       {
@@ -3591,7 +3591,7 @@ export const developerDocs: DevDocEntry[] = [
       getMermaidSections('svc-cleanup')[1],
       {
         heading: 'The Cost of Not Cleaning Up',
-        content: 'Without the cleanup worker, disk usage would grow unbounded as guest users convert files and never return to download them. Redis would accumulate keys for uploads that were started but never finished. Over weeks, these orphaned resources add up — not just in storage costs, but in degraded performance as the filesystem and Redis keyspace grow larger than necessary.',
+        content: 'Without the cleanup worker, object storage usage would grow unbounded as guest users convert files and never return to download them. Redis would accumulate keys for uploads that were started but never finished, and MinIO would hold half-finished multipart uploads. Over weeks, these orphaned resources add up — not just in storage costs, but in degraded performance as the buckets and Redis keyspace grow larger than necessary.',
         type: 'paragraph',
       },
 
@@ -3624,13 +3624,13 @@ export const developerDocs: DevDocEntry[] = [
       // ── Cleanup Expired Guest Jobs ────────────────────────────────────
       {
         heading: 'Removing Expired Guest Jobs',
-        content: 'Guest users do not have accounts, so their converted files have a limited shelf life. When a guest job passes its retention window, the cleanup worker needs to remove both the output file on disk and the job record in the database. The order of these operations is not arbitrary — it is the most important design decision in this task.',
+        content: 'Guest users do not have accounts, so their converted files have a limited shelf life. When a job passes its retention window, the cleanup worker needs to remove both the objects in the MinIO uploads and outputs buckets and the job record in the database. The order of these operations is not arbitrary — it is the most important design decision in this task.',
         type: 'paragraph',
       },
       getMermaidSections('svc-cleanup')[4],
       {
         heading: 'Delete Files First, Then Records',
-        content: 'The worker deletes the file from disk before removing the database record. If the process crashes between these two steps, the database still references a file that no longer exists — and the next cleanup run will simply try to delete the file again, see that it is already gone, and proceed to remove the database record. The alternative — deleting the record first — would leave an orphaned file on disk with no way to find it. This crash-safe ordering is a pattern worth remembering.',
+        content: 'The worker removes the object from storage before removing the database record. If the process crashes between these two steps, the database still references an object that no longer exists — and the next cleanup run will simply try to remove the object again, see that it is already gone, and proceed to remove the database record. The alternative — deleting the record first — would leave an orphaned object in the bucket with no way to find it. This crash-safe ordering is a pattern worth remembering.',
         type: 'paragraph',
       },
 
