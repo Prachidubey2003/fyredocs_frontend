@@ -4,7 +4,7 @@ import { apiJson, apiRequest } from '@/lib/apiClient';
  * Client for S3-presigned multipart uploads.
  *
  * Flow: POST /api/upload/init → parallel PUTs of raw blobs to presigned URLs
- * (same-origin, gateway proxies /fyredocs-uploads/* to MinIO) → POST
+ * (same-origin, gateway proxies /uploads/* to MinIO) → POST
  * /api/upload/{uploadId}/complete with the collected part ETags.
  */
 

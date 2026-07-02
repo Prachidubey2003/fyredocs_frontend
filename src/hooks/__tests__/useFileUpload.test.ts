@@ -119,7 +119,7 @@ const jsonResponse = (status: number, body: unknown) =>
   });
 
 const presignedUrl = (uploadId: string, partNumber: number, refreshed = false) =>
-  `https://uploads.test/fyredocs-uploads/${uploadId}/part-${partNumber}${refreshed ? '?refreshed=1' : ''}`;
+  `https://uploads.test/uploads/${uploadId}/part-${partNumber}${refreshed ? '?refreshed=1' : ''}`;
 
 const makeParts = (uploadId: string, partNumbers: number[], refreshed = false) =>
   partNumbers.map((partNumber) => ({

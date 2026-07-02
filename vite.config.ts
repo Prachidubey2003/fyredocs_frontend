@@ -24,7 +24,7 @@ export default defineConfig({
         changeOrigin: true,
       },
       // Presigned multipart upload PUTs (the Caddy edge routes these to MinIO).
-      "/fyredocs-uploads": {
+      "/uploads": {
         target: "http://localhost",
         changeOrigin: true,
       },
