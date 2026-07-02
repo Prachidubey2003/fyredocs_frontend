@@ -10,6 +10,7 @@ import {
   fetchEngagement,
   fetchReliability,
   fetchSystem,
+  fetchNats,
   fetchServerPerformance,
   fetchApiPerformance,
   fetchExecutiveOverview,
@@ -87,6 +88,13 @@ export const useSystem = () =>
   useQuery({
     queryKey: ['admin', 'system'],
     queryFn: fetchSystem,
+    refetchInterval: 30_000,
+  });
+
+export const useNats = () =>
+  useQuery({
+    queryKey: ['admin', 'nats'],
+    queryFn: fetchNats,
     refetchInterval: 30_000,
   });
 

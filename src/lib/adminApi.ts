@@ -162,6 +162,56 @@ export type SystemData = {
 export const fetchSystem = () =>
   unwrap(apiRequest<ApiResponse<SystemData>>('/admin/metrics/system'));
 
+export type NatsServerInfo = {
+  status: 'healthy' | 'unreachable';
+  serverId?: string;
+  version?: string;
+  connections?: number;
+  totalConnections?: number;
+  memoryMB?: number;
+  cpuPercent?: number;
+  slowConsumers?: number;
+  uptime?: string;
+  error?: string;
+};
+
+export type NatsStreamRow = {
+  name: string;
+  messages: number;
+  bytes: number;
+  firstSeq: number;
+  lastSeq: number;
+  consumerCount: number;
+};
+
+export type NatsConsumerRow = {
+  stream: string;
+  name: string;
+  numPending: number;
+  numAckPending: number;
+  numRedelivered: number;
+  numWaiting: number;
+};
+
+export type NatsSummary = {
+  status: 'healthy' | 'unreachable';
+  totalStreams?: number;
+  totalConsumers?: number;
+  totalMessages?: number;
+  dlqDepth?: number;
+  error?: string;
+};
+
+export type NatsData = {
+  server: NatsServerInfo;
+  streams: NatsStreamRow[];
+  consumers: NatsConsumerRow[];
+  summary: NatsSummary;
+};
+
+export const fetchNats = () =>
+  unwrap(apiRequest<ApiResponse<NatsData>>('/admin/metrics/nats'));
+
 // --- Server Performance ---
 export type ServerPerformanceData = {
   system: {

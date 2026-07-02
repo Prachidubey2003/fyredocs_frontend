@@ -7,6 +7,7 @@ import {
   Server,
   ShieldCheck,
   TrendingUp,
+  Waypoints,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -32,6 +33,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   { title: 'Engagement', path: '/admin/engagement', icon: MousePointerClick, group: 'product', supportsTimeRange: true },
   { title: 'Reliability', path: '/admin/reliability', icon: ShieldCheck, group: 'infrastructure', supportsTimeRange: true },
   { title: 'System', path: '/admin/system', icon: Activity, group: 'infrastructure', supportsTimeRange: false },
+  { title: 'NATS', path: '/admin/nats', icon: Waypoints, group: 'infrastructure', supportsTimeRange: false },
   { title: 'Server', path: '/admin/server-performance', icon: Server, group: 'infrastructure', supportsTimeRange: false },
   { title: 'API', path: '/admin/api-performance', icon: Gauge, group: 'infrastructure', supportsTimeRange: false },
 ];

@@ -46,6 +46,7 @@ const GrowthPage = lazy(() => import("./pages/admin/GrowthPage"));
 const EngagementPage = lazy(() => import("./pages/admin/EngagementPage"));
 const ReliabilityPage = lazy(() => import("./pages/admin/ReliabilityPage"));
 const SystemPage = lazy(() => import("./pages/admin/SystemPage"));
+const NatsPage = lazy(() => import("./pages/admin/NatsPage"));
 const ServerPerformancePage = lazy(() => import("./pages/admin/ServerPerformancePage"));
 const ApiPerformancePage = lazy(() => import("./pages/admin/ApiPerformancePage"));
 
@@ -128,6 +129,7 @@ const App = () => (
                       <Route path="/admin/engagement" element={<EngagementPage />} />
                       <Route path="/admin/reliability" element={<ReliabilityPage />} />
                       <Route path="/admin/system" element={<SystemPage />} />
+                      <Route path="/admin/nats" element={<NatsPage />} />
                       <Route path="/admin/server-performance" element={<ServerPerformancePage />} />
                       <Route path="/admin/api-performance" element={<ApiPerformancePage />} />
                     </Route>
