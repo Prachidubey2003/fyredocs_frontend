@@ -172,7 +172,8 @@ export const developerDocs: DevDocEntry[] = [
         tableData: {
           headers: ['Service', 'Port', 'Description'],
           rows: [
-            ['API Gateway', '8080', 'Central entry point — CORS, auth middleware, reverse proxy'],
+            ['Caddy Edge', '80/443', 'Public entrypoint — TLS, SPA static files, object-byte routing to MinIO, API proxy'],
+            ['API Gateway', '8080 (internal)', 'CORS, auth middleware, reverse proxy — reachable only via the Caddy edge'],
             ['Job Service', '8081', 'Job orchestration, file uploads, job lifecycle management'],
             ['Convert From PDF', '8082', 'PDF to Word, Excel, PPT, Image, HTML, Text conversions'],
             ['Convert To PDF', '8083', 'Word, Excel, PPT, HTML, Image to PDF conversions'],
@@ -180,7 +181,7 @@ export const developerDocs: DevDocEntry[] = [
             ['Optimize PDF', '8085', 'Compress, repair, OCR operations'],
             ['Auth Service', '8086', 'User registration, login, JWT token management'],
             ['Analytics Service', '8087', 'Usage metrics and analytics tracking'],
-            ['Cleanup Worker', '—', 'Background worker for expired file/job cleanup'],
+            ['Cleanup Worker', '—', 'Job-service’s cleanup binary — background TTL sweep of expired files/jobs'],
           ],
         },
       },
@@ -1678,7 +1679,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Health check verification',
-        content: '# Verify liveness (should return 200 immediately)\ncurl -f http://localhost:8080/healthz\n\n# Verify readiness (checks DB, Redis, NATS connectivity)\ncurl -f http://localhost:8080/readyz\n\n# Check each service directly\nfor port in 8081 8082 8083 8084 8085 8086 8087; do\n  echo "Checking :$port..."\n  curl -sf "http://localhost:$port/healthz" && echo " OK" || echo " FAIL"\ndone',
+        content: '# Verify liveness through the public edge (should return 200 immediately)\ncurl -f http://localhost/healthz\n\n# Readiness (/readyz) is not exposed through the edge — probe services on the\n# internal Docker network, e.g. from the host when ports are published:\nfor port in 8081 8082 8083 8084 8085 8086 8087; do\n  echo "Checking :$port..."\n  curl -sf "http://localhost:$port/healthz" && echo " OK" || echo " FAIL"\ndone',
         type: 'code',
         language: 'Bash',
       },
