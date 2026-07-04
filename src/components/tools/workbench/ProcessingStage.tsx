@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Job } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -21,6 +22,23 @@ const STAGE_COPY: Record<string, string> = {
 
 /** Replaces JobProgress's processing UI. Monotonic progress lives in useJob. */
 export const ProcessingStage = ({ job, onCancel, className }: ProcessingStageProps) => {
+  // Backends emit only coarse progress (e.g. 20 → 100), so ease a simulated value
+  // upward while waiting to avoid a 0→100 jump. It creeps toward ~95% and always
+  // yields to any higher real backend progress (see `pct` below).
+  const [eased, setEased] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setEased((prev) => (prev >= 95 ? prev : prev + (95 - prev) * 0.06));
+    }, 300);
+    return () => clearInterval(id);
+  }, []);
+
+  const totalSteps = job.progress.totalSteps;
+  // Never regress (max with real progress) and never show 100 until we leave this
+  // stage on completion.
+  const pct = Math.min(99, Math.max(job.progress.percentage, Math.round(eased)));
+  const step = Math.min(Math.floor((pct / 100) * totalSteps) + 1, totalSteps);
+
   return (
     <div className={cn('rounded-xl border bg-card p-6', className)}>
       <div className="mb-6 flex items-center justify-between gap-4">
@@ -34,15 +52,14 @@ export const ProcessingStage = ({ job, onCancel, className }: ProcessingStagePro
       </div>
 
       <Progress
-        value={job.progress.percentage}
+        value={pct}
         className="h-2 [&>div]:transition-all [&>div]:duration-slow"
       />
       <div className="mt-2 flex justify-between text-body-sm text-muted-foreground">
         <span>
-          Step {Math.min(job.progress.completedSteps + 1, job.progress.totalSteps)} of{' '}
-          {job.progress.totalSteps}
+          Step {step} of {totalSteps}
         </span>
-        <span>{job.progress.percentage}%</span>
+        <span>{pct}%</span>
       </div>
 
       <div className="mt-6">

@@ -22,6 +22,36 @@ const SignPdfConfigure = ({ canSubmit, onSubmit }: BespokeConfigureProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
 
+  // Map a pointer event to canvas *buffer* coordinates. The canvas has a fixed
+  // 500x200 drawing buffer but is stretched by CSS (w-full), so display pixels
+  // must be scaled by buffer/displayed size — otherwise the drawn line is offset
+  // from the cursor and strokes can land outside the buffer (and get lost).
+  const getCanvasPoint = (
+    canvas: HTMLCanvasElement,
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+    };
+  };
+
+  // True when the canvas has no drawn (non-transparent) pixels.
+  const isCanvasBlank = (canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return true;
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] !== 0) return false; // any non-transparent alpha
+    }
+    return true;
+  };
+
   const startDraw = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -29,10 +59,8 @@ const SignPdfConfigure = ({ canSubmit, onSubmit }: BespokeConfigureProps) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.beginPath();
-    const rect = canvas.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    const { x, y } = getCanvasPoint(canvas, e);
+    ctx.moveTo(x, y);
   }, []);
 
   const draw = useCallback((e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -41,21 +69,21 @@ const SignPdfConfigure = ({ canSubmit, onSubmit }: BespokeConfigureProps) => {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const rect = canvas.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const { x, y } = getCanvasPoint(canvas, e);
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000';
-    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.lineTo(x, y);
     ctx.stroke();
   }, []);
 
   const endDraw = useCallback(() => {
+    if (!isDrawingRef.current) return;
     isDrawingRef.current = false;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    setSignatureDataUrl(canvas.toDataURL('image/png'));
+    // Only capture a real signature — a stray click leaves the canvas blank.
+    setSignatureDataUrl(isCanvasBlank(canvas) ? null : canvas.toDataURL('image/png'));
   }, []);
 
   const clearCanvas = () => {
