@@ -51,7 +51,6 @@ export const ToolWorkbench = ({ tool }: ToolWorkbenchProps) => {
     pauseUpload,
     resumeUpload,
     retryUpload: retryFileUpload,
-    resetForReupload,
   } = useFileUpload({
     tool,
     onValidationError: (errors) => {
@@ -205,15 +204,15 @@ export const ToolWorkbench = ({ tool }: ToolWorkbenchProps) => {
   }, [clearFiles, defaultValues, form, resetBatch, resetJob, resetPageCount]);
 
   // Uploads are single-use server-side, so a failed job cannot be re-run with the
-  // same upload IDs. Clear the job/batch and re-prime the retained files for a
-  // fresh upload: the stage falls back to 'configure' with the files re-uploading
-  // (batch mode preserved), and the user can submit again with valid IDs.
-  // Selected options are preserved. Used for both single and batch retries.
+  // same upload IDs. Clearing the files drops the stage back to the file upload UI
+  // (dropzone) so the user re-selects and re-runs. Selected options and batch mode
+  // are preserved (unlike "Start over"). Used for both single and batch retries.
   const handleRetry = useCallback(() => {
     resetJob();
     resetBatch();
-    resetForReupload();
-  }, [resetJob, resetBatch, resetForReupload]);
+    clearFiles();
+    resetPageCount();
+  }, [resetJob, resetBatch, clearFiles, resetPageCount]);
 
   const handleDownloadAll = useCallback(() => {
     batchJobs

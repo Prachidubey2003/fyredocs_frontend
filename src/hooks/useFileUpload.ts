@@ -619,23 +619,6 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
     removeFile(fileId);
   }, [removeFile]);
 
-  // Re-prime every retained file for a fresh upload. Uploads are single-use on
-  // the server (the session is released once a job consumes them), so a retry
-  // must fully reset each file — clearing serverFileId/parts — rather than
-  // resume. Setting files back to 'idle' triggers the auto-upload effect below.
-  const resetForReupload = useCallback(() => {
-    setFiles((prev) =>
-      prev.map((f) => ({
-        ...f,
-        state: 'idle' as UploadState,
-        error: undefined,
-        progress: { loaded: 0, total: f.file.size, percentage: 0 },
-        parts: createParts(f.file.size, PROVISIONAL_PART_SIZE),
-        serverFileId: undefined,
-      }))
-    );
-  }, []);
-
   const updateProgress = useCallback((fileId: string, loaded: number, total: number) => {
     const safeTotal = total > 0 ? total : 1;
     setFiles((prev) =>
@@ -681,7 +664,6 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
     resumeUpload,
     retryUpload,
     cancelUpload,
-    resetForReupload,
     updateProgress,
     setUploadState,
     setServerFileId,
