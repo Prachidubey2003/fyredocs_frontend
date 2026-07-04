@@ -9,6 +9,7 @@ import {
   putPart,
   PutPartError,
 } from '@/lib/uploadClient';
+import { friendlyError } from '@/lib/friendlyError';
 
 /**
  * Custom hook for managing file uploads via S3-presigned multipart uploads.
@@ -397,7 +398,8 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
         }
         // Stop sibling part uploads still in flight for this file.
         controller.abort();
-        const message = error instanceof Error ? error.message : 'Upload failed';
+        const message =
+          friendlyError(error instanceof Error ? error.message : undefined) ?? 'Upload failed';
         setUploadState(fileId, 'failed', message);
         // Keep accumulated ETags in state for a resume-style retry.
         commit();
@@ -617,6 +619,23 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
     removeFile(fileId);
   }, [removeFile]);
 
+  // Re-prime every retained file for a fresh upload. Uploads are single-use on
+  // the server (the session is released once a job consumes them), so a retry
+  // must fully reset each file — clearing serverFileId/parts — rather than
+  // resume. Setting files back to 'idle' triggers the auto-upload effect below.
+  const resetForReupload = useCallback(() => {
+    setFiles((prev) =>
+      prev.map((f) => ({
+        ...f,
+        state: 'idle' as UploadState,
+        error: undefined,
+        progress: { loaded: 0, total: f.file.size, percentage: 0 },
+        parts: createParts(f.file.size, PROVISIONAL_PART_SIZE),
+        serverFileId: undefined,
+      }))
+    );
+  }, []);
+
   const updateProgress = useCallback((fileId: string, loaded: number, total: number) => {
     const safeTotal = total > 0 ? total : 1;
     setFiles((prev) =>
@@ -662,6 +681,7 @@ export const useFileUpload = ({ tool, onValidationError }: UseFileUploadOptions)
     resumeUpload,
     retryUpload,
     cancelUpload,
+    resetForReupload,
     updateProgress,
     setUploadState,
     setServerFileId,

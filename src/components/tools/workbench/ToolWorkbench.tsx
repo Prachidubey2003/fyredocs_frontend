@@ -51,6 +51,7 @@ export const ToolWorkbench = ({ tool }: ToolWorkbenchProps) => {
     pauseUpload,
     resumeUpload,
     retryUpload: retryFileUpload,
+    resetForReupload,
   } = useFileUpload({
     tool,
     onValidationError: (errors) => {
@@ -58,7 +59,7 @@ export const ToolWorkbench = ({ tool }: ToolWorkbenchProps) => {
     },
   });
 
-  const { job, createJob, cancelJob, retryJob, resetJob } = useJob({
+  const { job, createJob, cancelJob, resetJob } = useJob({
     onComplete: () => {
       // The document library is populated server-side: document-service consumes
       // the job-completion event and finalizes a document for signed-in users.
@@ -73,7 +74,6 @@ export const ToolWorkbench = ({ tool }: ToolWorkbenchProps) => {
     batchJobs,
     startBatch,
     cancelBatch,
-    retryFailed,
     resetBatch,
     isProcessing: isBatchProcessing,
     completedCount,
@@ -204,6 +204,17 @@ export const ToolWorkbench = ({ tool }: ToolWorkbenchProps) => {
     form.reset(defaultValues);
   }, [clearFiles, defaultValues, form, resetBatch, resetJob, resetPageCount]);
 
+  // Uploads are single-use server-side, so a failed job cannot be re-run with the
+  // same upload IDs. Clear the job/batch and re-prime the retained files for a
+  // fresh upload: the stage falls back to 'configure' with the files re-uploading
+  // (batch mode preserved), and the user can submit again with valid IDs.
+  // Selected options are preserved. Used for both single and batch retries.
+  const handleRetry = useCallback(() => {
+    resetJob();
+    resetBatch();
+    resetForReupload();
+  }, [resetJob, resetBatch, resetForReupload]);
+
   const handleDownloadAll = useCallback(() => {
     batchJobs
       .filter((bj) => bj.status === 'completed' && bj.job?.result?.downloadUrl)
@@ -233,7 +244,7 @@ export const ToolWorkbench = ({ tool }: ToolWorkbenchProps) => {
             totalCount={totalCount}
             overallProgress={overallProgress}
             onCancel={cancelBatch}
-            onRetryFailed={retryFailed}
+            onRetryFailed={handleRetry}
             onDownloadAll={handleDownloadAll}
             onReset={handleStartOver}
           />
@@ -241,7 +252,7 @@ export const ToolWorkbench = ({ tool }: ToolWorkbenchProps) => {
           stage === 'processing' ? (
             <ProcessingStage job={job} onCancel={cancelJob} />
           ) : (
-            <ResultStage tool={tool} job={job} onStartOver={handleStartOver} onRetry={retryJob} />
+            <ResultStage tool={tool} job={job} onStartOver={handleStartOver} onRetry={handleRetry} />
           )
         ) : stage === 'upload' ? (
           <UploadStage

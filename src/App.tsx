@@ -10,6 +10,7 @@ import { AuthProvider } from "@/auth/authContext";
 import { ThemeProvider } from "next-themes";
 import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from "@/auth/authGuard";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { ScrollToTop } from "@/components/common/ScrollToTop";
 import { Layout } from "@/components/layout/Layout";
 import { DocsLayout } from "@/components/layout/DocsLayout";
 import { AdminLayout } from "@/components/layout/AdminLayout";
@@ -63,6 +64,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <ErrorBoundary>
+              <ScrollToTop />
               <Routes>
                   <Route element={<Layout />}>
                     <Route path="/" element={<Index />} />

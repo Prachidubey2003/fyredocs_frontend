@@ -4,6 +4,7 @@ import { apiJson, apiRequest, buildApiUrl } from '@/lib/apiClient';
 import { buildDownloadPath, buildJobPath } from '@/lib/toolApi';
 import { setGuestToken } from '@/lib/guestToken';
 import { ApiJob, mapApiJob, mapStatus } from '@/lib/jobMapper';
+import { friendlyError } from '@/lib/friendlyError';
 import { setJobWorkspaceHint } from '@/lib/documentsApi';
 import { getActiveOrgId } from '@/components/app/ActiveOrgContext';
 
@@ -204,7 +205,8 @@ export const useJob = ({
           attemptsRef.current += 1;
           if (attemptsRef.current >= maxPollingAttempts) {
             const message =
-              error instanceof Error ? error.message : 'Failed to poll job status.';
+              friendlyError(error instanceof Error ? error.message : undefined) ??
+              'Failed to poll job status.';
             setJob((prev) =>
               prev
                 ? {
@@ -320,7 +322,7 @@ export const useJob = ({
                 state === 'failed'
                   ? {
                       code: 'FAILED',
-                      message: data.failureReason || 'The job failed to complete.',
+                      message: friendlyError(data.failureReason) || 'The job failed to complete.',
                       isRetryable: true,
                     }
                   : prev.error,
@@ -350,7 +352,7 @@ export const useJob = ({
           if (status === 'failed') {
             sseTerminalRef.current = true;
             stopPolling();
-            onError?.(data.failureReason || 'The job failed to complete.');
+            onError?.(friendlyError(data.failureReason) || 'The job failed to complete.');
             return;
           }
         } catch {
@@ -443,7 +445,8 @@ export const useJob = ({
           startSSE(toolId, mappedJob.id, normalizedIds, options);
         } catch (error) {
           const message =
-            error instanceof Error ? error.message : 'Failed to create job.';
+            friendlyError(error instanceof Error ? error.message : undefined) ??
+            'Failed to create job.';
           setJob({
             ...pendingJob,
             state: 'failed',

@@ -1,6 +1,7 @@
 import { Job, JobState, ToolId, ToolOptions } from '@/types';
 import { buildApiUrl } from '@/lib/apiClient';
 import { buildDownloadPath } from '@/lib/toolApi';
+import { friendlyError } from '@/lib/friendlyError';
 
 /**
  * Shared mapping from the backend's job payloads (dual-cased fields) to the
@@ -176,8 +177,7 @@ export const mapApiJob = (
         ? {
             code: 'FAILED',
             message:
-              apiJob.failureReason ??
-              apiJob.FailureReason ??
+              friendlyError(apiJob.failureReason ?? apiJob.FailureReason) ??
               'The job failed to complete.',
             isRetryable: true,
           }
