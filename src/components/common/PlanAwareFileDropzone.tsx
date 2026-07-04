@@ -44,6 +44,7 @@ export const PlanAwareFileDropzone = forwardRef<FileDropzoneHandle, PlanAwareFil
   ) => {
     const { plan } = useAuth();
     const { plan: planData } = usePlan(plan);
+    const { plan: proPlan } = usePlan('pro');
 
     const MB = 1024 * 1024;
     const planMaxFileSize = planData ? planData.maxFileSizeMb * MB : undefined;
@@ -84,7 +85,7 @@ export const PlanAwareFileDropzone = forwardRef<FileDropzoneHandle, PlanAwareFil
         />
         {plan !== 'pro' && planData && (
           <p className="text-xs text-center text-muted-foreground">
-            {plan === 'anonymous' ? (
+            {plan === 'guest' ? (
               <>
                 <Link to="/signup" className="underline hover:text-foreground">
                   Sign up free
@@ -92,15 +93,17 @@ export const PlanAwareFileDropzone = forwardRef<FileDropzoneHandle, PlanAwareFil
                 for {planData.maxFileSizeMb}MB uploads &amp; {planData.maxFilesPerJob}-file jobs.{' '}
                 <Link to="/pricing" className="underline hover:text-foreground">
                   Upgrade to Pro
-                </Link>{' '}
-                for 500MB.
+                </Link>
+                {proPlan ? ` for ${proPlan.maxFileSizeMb}MB.` : '.'}
               </>
             ) : (
               <>
                 <Link to="/pricing" className="underline hover:text-foreground">
                   Upgrade to Pro
-                </Link>{' '}
-                for 500MB files &amp; 50 files per job.
+                </Link>
+                {proPlan
+                  ? ` for ${proPlan.maxFileSizeMb}MB files & ${proPlan.maxFilesPerJob} files per job.`
+                  : '.'}
               </>
             )}
           </p>

@@ -34,7 +34,7 @@ const buildRows = (limits: PlanComparisonTableProps['limits']): ComparisonRow[] 
   {
     label: 'Max file size',
     values: {
-      anonymous: formatFileSize(limits.anonymous.maxFileSizeMb),
+      guest: formatFileSize(limits.guest.maxFileSizeMb),
       free: formatFileSize(limits.free.maxFileSizeMb),
       pro: formatFileSize(limits.pro.maxFileSizeMb),
     },
@@ -42,7 +42,7 @@ const buildRows = (limits: PlanComparisonTableProps['limits']): ComparisonRow[] 
   {
     label: 'Files per job',
     values: {
-      anonymous: String(limits.anonymous.maxFilesPerJob),
+      guest: String(limits.guest.maxFilesPerJob),
       free: String(limits.free.maxFilesPerJob),
       pro: String(limits.pro.maxFilesPerJob),
     },
@@ -50,30 +50,30 @@ const buildRows = (limits: PlanComparisonTableProps['limits']): ComparisonRow[] 
   {
     label: 'File retention',
     values: {
-      anonymous: formatRetention(limits.anonymous.retentionDays),
+      guest: formatRetention(limits.guest.retentionDays),
       free: formatRetention(limits.free.retentionDays),
       pro: formatRetention(limits.pro.retentionDays),
     },
   },
   {
     label: 'Access to all tools',
-    values: { anonymous: true, free: true, pro: true },
+    values: { guest: true, free: true, pro: true },
   },
   {
     label: 'No sign-up required',
-    values: { anonymous: true, free: false, pro: false },
+    values: { guest: true, free: false, pro: false },
   },
   {
     label: 'Job history & re-downloads',
-    values: { anonymous: false, free: true, pro: true },
+    values: { guest: false, free: true, pro: true },
   },
   {
     label: 'Resumable chunked uploads',
-    values: { anonymous: true, free: true, pro: true },
+    values: { guest: true, free: true, pro: true },
   },
   {
     label: 'Encrypted in transit (HTTPS)',
-    values: { anonymous: true, free: true, pro: true },
+    values: { guest: true, free: true, pro: true },
   },
 ];
 

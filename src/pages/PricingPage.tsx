@@ -42,7 +42,7 @@ const PricingPage = () => {
         <title>Pricing — Fyredocs</title>
         <meta
           name="description"
-          content="Simple, transparent pricing for Fyredocs PDF tools. Use tools anonymously for free, or create an account for bigger limits and longer file retention."
+          content="Simple, transparent pricing for Fyredocs PDF tools. Use tools as a guest for free, or create an account for bigger limits and longer file retention."
         />
       </Helmet>
 

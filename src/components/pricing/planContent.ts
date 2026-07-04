@@ -1,13 +1,13 @@
 import type { Plan } from '@/hooks/usePlans';
 
 /**
- * Static marketing copy + hardcoded fallback limits for the three real plan
- * tiers served by `/auth/plans` (anonymous / free / pro). The fallbacks are
- * used while the plans query is loading or if it errors; live API values
- * always win once available.
+ * Static marketing copy + fallback limits for the three real plan tiers served
+ * by `/auth/plans` (guest / free / pro). The fallbacks are only used while the
+ * plans query is loading or if it errors; live API values (the DB — the single
+ * source of truth) always win once available.
  */
 
-export type PlanTierId = 'anonymous' | 'free' | 'pro';
+export type PlanTierId = 'guest' | 'free' | 'pro';
 
 export interface PlanLimits {
   maxFileSizeMb: number;
@@ -36,12 +36,12 @@ export interface PlanTierContent {
  * explained so the claim stays consistent across the site.
  */
 export const RETENTION_SENTENCE =
-  'File retention is plan-based: anonymous files are deleted as soon as processing finishes (0-day retention), Free accounts keep results for 7 days, and Pro keeps them for 30 days — after that, everything is deleted automatically.';
+  'File retention is plan-based: guest files are deleted as soon as processing finishes (0-day retention), Free accounts keep results for 7 days, and Pro keeps them for 30 days — after that, everything is deleted automatically.';
 
 export const PLAN_TIERS: PlanTierContent[] = [
   {
-    id: 'anonymous',
-    name: 'Anonymous',
+    id: 'guest',
+    name: 'Guest',
     tagline: 'No account, no sign-up — just use the tools.',
     price: '$0',
     period: 'no account needed',
@@ -52,7 +52,7 @@ export const PLAN_TIERS: PlanTierContent[] = [
       'Encrypted in transit (HTTPS)',
     ],
     cta: { label: 'Use tools now', href: '/all-tools' },
-    fallbackLimits: { maxFileSizeMb: 10, maxFilesPerJob: 5, retentionDays: 0 },
+    fallbackLimits: { maxFileSizeMb: 20, maxFilesPerJob: 5, retentionDays: 0 },
   },
   {
     id: 'free',
@@ -61,13 +61,13 @@ export const PLAN_TIERS: PlanTierContent[] = [
     price: '$0',
     period: 'forever',
     features: [
-      'Everything in Anonymous',
+      'Everything in Guest',
       'Job history and re-downloads',
       'Results kept for 7 days',
       'Resumable chunked uploads',
     ],
     cta: { label: 'Create free account', href: '/signup' },
-    fallbackLimits: { maxFileSizeMb: 25, maxFilesPerJob: 10, retentionDays: 7 },
+    fallbackLimits: { maxFileSizeMb: 50, maxFilesPerJob: 10, retentionDays: 7 },
   },
   {
     id: 'pro',

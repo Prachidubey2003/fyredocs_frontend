@@ -20,7 +20,7 @@ import {
 import { computeDelta, seriesFrom } from '@/lib/adminTrends';
 import { computeBusinessInsights } from '@/lib/insights';
 
-const FREE_PLANS = new Set(['free', 'anonymous', 'guest']);
+const FREE_PLANS = new Set(['free', 'guest']);
 
 const BusinessPage = () => {
   const { days } = useAdminTimeRange();

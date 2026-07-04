@@ -11,7 +11,7 @@ type GuardProps = {
 };
 
 // All tool pages are freely accessible — no account required.
-// The backend handles anonymous requests automatically.
+// The backend handles guest requests automatically.
 export const ProtectedRoute = ({ children }: GuardProps) => {
   const { isLoading } = useAuth();
 

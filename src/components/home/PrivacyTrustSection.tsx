@@ -3,7 +3,7 @@ import { Heading, Text } from '@/components/ui/typography';
 import { RETENTION_SENTENCE } from '@/components/pricing/planContent';
 
 const retentionChips = [
-  { plan: 'Anonymous', retention: '0 days' },
+  { plan: 'Guest', retention: '0 days' },
   { plan: 'Free', retention: '7 days' },
   { plan: 'Pro', retention: '30 days' },
 ];

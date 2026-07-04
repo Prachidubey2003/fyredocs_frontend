@@ -70,7 +70,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/all-tools" element={<AllToolsPage />} />
                     <Route path="/tools" element={<AllToolsPage />} />
-                    {/* Tool routes are public — backend supports anonymous (guest) usage. */}
+                    {/* Tool routes are public — backend supports guest usage. */}
                     {getAllTools().map((tool) => (
                       <Route
                         key={tool.id}

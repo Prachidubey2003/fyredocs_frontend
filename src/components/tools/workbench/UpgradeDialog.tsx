@@ -21,12 +21,13 @@ interface UpgradeDialogProps {
 
 /**
  * Shown when a file selection violates the user's plan limits.
- * Anonymous users are nudged to create a free account; free users to Pro.
+ * Guest users are nudged to create a free account; free users to Pro.
  */
 export const UpgradeDialog = ({ open, onOpenChange, reason }: UpgradeDialogProps) => {
   const { plan } = useAuth();
   const { plan: freePlan } = usePlan('free');
-  const isAnonymous = plan === 'anonymous';
+  const { plan: proPlan } = usePlan('pro');
+  const isGuest = plan === 'guest';
 
   const reasonCopy =
     reason === 'fileCount'
@@ -39,12 +40,12 @@ export const UpgradeDialog = ({ open, onOpenChange, reason }: UpgradeDialogProps
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" aria-hidden />
-            {isAnonymous ? 'Create a free account' : 'Upgrade to Pro'}
+            {isGuest ? 'Create a free account' : 'Upgrade to Pro'}
           </DialogTitle>
           <DialogDescription>{reasonCopy}</DialogDescription>
         </DialogHeader>
 
-        {isAnonymous ? (
+        {isGuest ? (
           <ul className="space-y-2 text-body-sm">
             {freePlan && (
               <>
@@ -69,18 +70,22 @@ export const UpgradeDialog = ({ open, onOpenChange, reason }: UpgradeDialogProps
           </ul>
         ) : (
           <ul className="space-y-2 text-body-sm">
-            <li className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-success" aria-hidden />
-              Files up to 500MB
-            </li>
-            <li className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-success" aria-hidden />
-              Up to 50 files per job
-            </li>
-            <li className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-success" aria-hidden />
-              Longer file retention
-            </li>
+            {proPlan && (
+              <>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-success" aria-hidden />
+                  Files up to {proPlan.maxFileSizeMb}MB
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-success" aria-hidden />
+                  Up to {proPlan.maxFilesPerJob} files per job
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-success" aria-hidden />
+                  Files kept for {proPlan.retentionDays} days
+                </li>
+              </>
+            )}
           </ul>
         )}
 
@@ -89,8 +94,8 @@ export const UpgradeDialog = ({ open, onOpenChange, reason }: UpgradeDialogProps
             Not now
           </Button>
           <Button asChild variant="gradient">
-            <Link to={isAnonymous ? '/signup' : '/pricing'}>
-              {isAnonymous ? 'Create a free account' : 'Upgrade to Pro'}
+            <Link to={isGuest ? '/signup' : '/pricing'}>
+              {isGuest ? 'Create a free account' : 'Upgrade to Pro'}
             </Link>
           </Button>
         </DialogFooter>

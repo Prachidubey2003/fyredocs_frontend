@@ -28,7 +28,7 @@ export const AuthContext = createContext<AuthContextValue | undefined>(undefined
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [role, setRole] = useState<string | null>(null);
-  const [plan, setPlan] = useState<string>('anonymous');
+  const [plan, setPlan] = useState<string>('guest');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const clearAuth = useCallback(() => {
     setUser(null);
     setRole(null);
-    setPlan('anonymous');
+    setPlan('guest');
     setIsAuthenticated(false);
     clearRefreshTimer();
   }, [clearRefreshTimer]);

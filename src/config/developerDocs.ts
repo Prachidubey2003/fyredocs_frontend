@@ -305,7 +305,7 @@ export const developerDocs: DevDocEntry[] = [
           'CORS check: API Gateway validates the Origin header against the configured allow-list. If the origin is not allowed, the request is rejected with 403 before reaching any middleware.',
           'Auth middleware: The gateway checks for credentials in 3 sources, in order: (1) access_token cookie, (2) Authorization: Bearer header, (3) X-Guest-Token header/cookie. If none are found, a guest token is auto-issued and set as a cookie.',
           'Token validation: JWT is decoded and verified (HS256). The jti claim is checked against the Redis denylist (SET denylist:{jti}). If the token is expired or denylisted, a 401 is returned.',
-          'Plan enforcement: The user plan (anonymous/free/pro) is extracted from the JWT and forwarded as the X-Plan header to downstream services. Services use this to enforce plan-based limits (file size, concurrent jobs, retention period).',
+          'Plan enforcement: The user plan (guest/free/pro) is extracted from the JWT and forwarded as the X-Plan header to downstream services. Services use this to enforce plan-based limits (file size, concurrent jobs, retention period).',
           'Rate limiting: The gateway increments a Redis counter (INCR ratelimit:{ip}:{endpoint}:{window}) and checks against per-endpoint thresholds. If exceeded, 429 Too Many Requests is returned.',
           'Reverse proxy: The request is forwarded to the target service based on route prefix. The proxy uses response streaming (ResponseHeaderTimeout 5min) to support long-running conversions.',
           'Service processing: The target service handles the request, interacts with its own database/Redis/NATS as needed, and returns the standard JSON response envelope.',
@@ -958,7 +958,7 @@ export const developerDocs: DevDocEntry[] = [
         tableData: {
           headers: ['Table', 'Purpose'],
           rows: [
-            ['users', 'User profiles: email, name, password_hash, role (user/admin/super-admin), plan (anonymous/free/pro)'],
+            ['users', 'User profiles: email, name, password_hash, role (user/admin/super-admin), plan (guest/free/pro)'],
             ['auth_metadata', 'OAuth provider tracking (provider name, external ID, linked user)'],
             ['subscription_plans', 'Plan definitions with limits: max file size, max concurrent jobs, retention period'],
             ['user_sessions', 'Active refresh token sessions: jti, user_agent, ip_address, expires_at'],
@@ -1027,7 +1027,7 @@ export const developerDocs: DevDocEntry[] = [
       },
       {
         heading: 'Plan-based limits enforcement',
-        content: 'The API Gateway extracts the user plan (anonymous, free, or pro) from the JWT and forwards it as the X-Plan header to the Job Service. The Job Service uses this header to enforce plan-specific limits: maximum file size per upload, maximum concurrent active jobs, and file retention period (2 hours for guests, 24 hours for free, 7 days for pro). When a limit is exceeded, the service returns a 403 with an error code indicating which limit was hit. This approach keeps plan logic centralized in the Job Service while letting the Gateway handle authentication.',
+        content: 'The API Gateway extracts the user plan (guest, free, or pro) from the JWT and forwards it as the X-Plan header to the Job Service. The Job Service uses this header to enforce plan-specific limits: maximum file size per upload, maximum concurrent active jobs, and file retention period (2 hours for guests, 24 hours for free, 7 days for pro). When a limit is exceeded, the service returns a 403 with an error code indicating which limit was hit. This approach keeps plan logic centralized in the Job Service while letting the Gateway handle authentication.',
         type: 'paragraph',
       },
       {
@@ -1768,7 +1768,7 @@ export const developerDocs: DevDocEntry[] = [
         tableData: {
           headers: ['Guard', 'Behavior', 'Used For'],
           rows: [
-            ['ProtectedRoute', 'Waits for auth loading to finish, then renders children. Does NOT require authentication — all tool pages are freely accessible. Backend handles anonymous requests with auto-issued guest tokens.', 'All tool pages (/merge, /split, /compress, etc.)'],
+            ['ProtectedRoute', 'Waits for auth loading to finish, then renders children. Does NOT require authentication — all tool pages are freely accessible. Backend handles guest requests with auto-issued guest tokens.', 'All tool pages (/merge, /split, /compress, etc.)'],
             ['PublicOnlyRoute', 'If user is already authenticated, redirects to "/" (home). Otherwise renders children. Prevents logged-in users from seeing login/signup pages.', 'Auth pages (/signin, /signup)'],
             ['RoleRoute', 'Requires authentication AND a specific role. If not authenticated, redirects to /signin with location state (for return-to). If authenticated but wrong role, redirects to /. Takes allowedRoles: string[] prop.', 'Admin pages (/dev-docs, /admin/*) — restricted to super-admin role'],
           ],
@@ -1798,7 +1798,7 @@ export const developerDocs: DevDocEntry[] = [
             ['isAuthenticated', 'boolean', 'True when a valid session exists'],
             ['isLoading', 'boolean', 'True during initial session hydration and logout'],
             ['role', 'string | null', 'User role extracted from user object (user, admin, super-admin)'],
-            ['plan', 'string', 'User plan: "anonymous" (no auth), "free" (default on login), or "pro"'],
+            ['plan', 'string', 'User plan: "guest" (no auth), "free" (default on login), or "pro"'],
           ],
         },
       },
@@ -1847,7 +1847,7 @@ export const developerDocs: DevDocEntry[] = [
         items: [
           'handleLogout() sets isLoading = true',
           'Calls logout() API function which POSTs to /auth/logout (server clears cookies and denylists the JWT)',
-          'In the finally block, clearAuth() resets all state: user = null, role = null, plan = "anonymous", isAuthenticated = false',
+          'In the finally block, clearAuth() resets all state: user = null, role = null, plan = "guest", isAuthenticated = false',
           'clearRefreshTimer() cancels any pending refresh setTimeout',
           'isLoading is set back to false',
         ],
@@ -2752,8 +2752,8 @@ export const developerDocs: DevDocEntry[] = [
 
       // 11. Guest Session Creation
       {
-        heading: 'Anonymous Guest Sessions',
-        content: 'Not every user wants to create an account just to try the product. Guest sessions let anonymous users access a limited feature set without signing up. The following diagram shows how these lightweight sessions are created and stored.',
+        heading: 'Guest Guest Sessions',
+        content: 'Not every user wants to create an account just to try the product. Guest sessions let guest users access a limited feature set without signing up. The following diagram shows how these lightweight sessions are created and stored.',
         type: 'paragraph',
       },
       getMermaidSections('svc-auth')[10],
@@ -2895,7 +2895,7 @@ export const developerDocs: DevDocEntry[] = [
       getMermaidSections('svc-job')[9],
       {
         heading: '',
-        content: 'Guest tokens are intentionally limited — they grant access only to the specific job that was created in that session, and they expire aggressively. This prevents abuse while still letting anonymous users try the product without signing up.',
+        content: 'Guest tokens are intentionally limited — they grant access only to the specific job that was created in that session, and they expire aggressively. This prevents abuse while still letting guest users try the product without signing up.',
         type: 'paragraph',
       },
       {

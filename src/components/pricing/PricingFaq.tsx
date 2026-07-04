@@ -8,10 +8,10 @@ import { RETENTION_SENTENCE } from './planContent';
 
 const FAQ_ITEMS = [
   {
-    id: 'anonymous',
-    question: 'What does "anonymous" mean?',
+    id: 'guest',
+    question: 'What does "guest" mean?',
     answer:
-      'You can use every tool without creating an account. Anonymous jobs have smaller limits (file size and files per job), and your files are deleted as soon as processing finishes — nothing is kept on our servers afterwards.',
+      'You can use every tool without creating an account. Guest jobs have smaller limits (file size and files per job), and your files are deleted as soon as processing finishes — nothing is kept on our servers afterwards.',
   },
   {
     id: 'retention',
