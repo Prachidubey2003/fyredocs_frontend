@@ -250,6 +250,7 @@ export const useJob = ({
             progress: number;
             toolType: string;
             fileSize?: number;
+            failureReason?: string;
           };
 
           const eventToStatus = (eventType: string): string => {
@@ -319,7 +320,7 @@ export const useJob = ({
                 state === 'failed'
                   ? {
                       code: 'FAILED',
-                      message: 'The job failed to complete.',
+                      message: data.failureReason || 'The job failed to complete.',
                       isRetryable: true,
                     }
                   : prev.error,
@@ -349,7 +350,7 @@ export const useJob = ({
           if (status === 'failed') {
             sseTerminalRef.current = true;
             stopPolling();
-            onError?.('The job failed to complete.');
+            onError?.(data.failureReason || 'The job failed to complete.');
             return;
           }
         } catch {

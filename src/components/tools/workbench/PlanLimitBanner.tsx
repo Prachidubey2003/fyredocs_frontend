@@ -32,7 +32,7 @@ export const PlanLimitBanner = ({ tool, files, className }: PlanLimitBannerProps
   const largestFile = files.reduce((max, f) => Math.max(max, f.file.size), 0);
 
   const nearLimit =
-    (Number.isFinite(maxFiles) && fileCount / maxFiles >= 0.8) ||
+    (maxFiles > 1 && Number.isFinite(maxFiles) && fileCount / maxFiles >= 0.8) ||
     (Number.isFinite(maxFileSize) && largestFile / maxFileSize >= 0.8);
 
   return (

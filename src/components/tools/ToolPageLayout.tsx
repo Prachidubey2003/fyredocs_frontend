@@ -54,7 +54,7 @@ export const ToolPageLayout = ({ tool, children, className }: ToolPageLayoutProp
           <PageHeader
             breadcrumb={
               <Link
-                to="/"
+                to="/all-tools"
                 className="inline-flex items-center gap-1 text-body-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 <ChevronLeft className="h-4 w-4" aria-hidden />

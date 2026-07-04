@@ -15,7 +15,6 @@ import { ToolIcon } from '@/components/icons/ToolIcon';
 import { OPTIONS_PANELS, OptionsFormValues } from '../options';
 import { BespokeConfigureProps } from '../bespoke/types';
 import { PlanLimitBanner } from './PlanLimitBanner';
-import { cn } from '@/lib/utils';
 
 // Lazy bespoke bodies — keeps the canvas/annotation code out of the main chunk.
 const SignPdfConfigure = lazy(() => import('../bespoke/SignPdfConfigure'));
@@ -47,8 +46,8 @@ interface ConfigureStageProps {
 }
 
 /**
- * Two-column configure stage on lg: file management left, options right.
- * Single column when the tool has no options panel or bespoke body.
+ * Stacked configure stage: file management on top (file cards + plan info in a
+ * single row), options/bespoke body full-width below.
  */
 export const ConfigureStage = ({
   tool,
@@ -75,6 +74,19 @@ export const ConfigureStage = ({
 
   const allowMoreFiles = tool.maxFiles > 1;
   const orderMatters = tool.id === 'merge' || tool.id === 'scan-to-pdf';
+
+  const fileList = (
+    <FileList
+      files={files}
+      onRemove={onRemoveFile}
+      onRetry={onRetryFile}
+      onPause={onPauseFile}
+      onResume={onResumeFile}
+      onReorder={allowMoreFiles ? onReorderFiles : undefined}
+      showReorder={allowMoreFiles && files.length > 1}
+      showOrdinals={orderMatters}
+    />
+  );
 
   const filesColumn = (
     <div className="space-y-4">
@@ -119,24 +131,16 @@ export const ConfigureStage = ({
         </div>
       </div>
 
-      <FileList
-        files={files}
-        onRemove={onRemoveFile}
-        onRetry={onRetryFile}
-        onPause={onPauseFile}
-        onResume={onResumeFile}
-        onReorder={allowMoreFiles ? onReorderFiles : undefined}
-        showReorder={allowMoreFiles && files.length > 1}
-        showOrdinals={orderMatters}
-      />
+      <div className="grid items-stretch gap-4 sm:grid-cols-2">
+        {fileList}
+        <PlanLimitBanner tool={tool} files={files} className="h-full" />
+      </div>
 
       {orderMatters && files.length > 1 && (
         <p className="text-center text-body-sm text-muted-foreground">
           Drag files to reorder. The output will follow this order.
         </p>
       )}
-
-      <PlanLimitBanner tool={tool} files={files} />
 
       {tool.supportsBatch && (
         <BatchModeToggle
@@ -149,7 +153,7 @@ export const ConfigureStage = ({
   );
 
   return (
-    <div className={cn('grid gap-6', hasRightColumn && 'lg:grid-cols-2')}>
+    <div className="space-y-6">
       {filesColumn}
       {hasRightColumn && (
         <div className="min-w-0">

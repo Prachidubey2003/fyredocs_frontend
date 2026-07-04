@@ -14,7 +14,7 @@ const ToolPage = ({ toolId }: ToolPageProps) => {
 
   return (
     <ToolPageLayout tool={tool}>
-      <ToolWorkbench tool={tool} />
+      <ToolWorkbench key={tool.id} tool={tool} />
     </ToolPageLayout>
   );
 };

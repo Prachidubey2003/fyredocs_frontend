@@ -34,7 +34,7 @@ export const SplitOptionsPanel = ({ form, pageCount }: OptionsPanelProps) => {
       <RadioGroup
         value={mode}
         onValueChange={(value) => form.setValue('mode', value as SplitMode, { shouldValidate: true })}
-        className="space-y-4"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2"
       >
         <div className={MODE_CARD_CLASSES}>
           <RadioGroupItem value="all" id="split-all" className="mt-0.5" />
