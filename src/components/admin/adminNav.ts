@@ -3,6 +3,7 @@ import {
   DollarSign,
   Gauge,
   LayoutDashboard,
+  LineChart,
   MousePointerClick,
   Server,
   ShieldCheck,
@@ -36,6 +37,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   { title: 'NATS', path: '/admin/nats', icon: Waypoints, group: 'infrastructure', supportsTimeRange: false },
   { title: 'Server', path: '/admin/server-performance', icon: Server, group: 'infrastructure', supportsTimeRange: false },
   { title: 'API', path: '/admin/api-performance', icon: Gauge, group: 'infrastructure', supportsTimeRange: false },
+  { title: 'Observability', path: '/admin/observability', icon: LineChart, group: 'infrastructure', supportsTimeRange: false },
 ];
 
 export const ADMIN_NAV_GROUPS: { id: AdminNavGroup; label: string }[] = [

@@ -50,6 +50,7 @@ const SystemPage = lazy(() => import("./pages/admin/SystemPage"));
 const NatsPage = lazy(() => import("./pages/admin/NatsPage"));
 const ServerPerformancePage = lazy(() => import("./pages/admin/ServerPerformancePage"));
 const ApiPerformancePage = lazy(() => import("./pages/admin/ApiPerformancePage"));
+const ObservabilityPage = lazy(() => import("./pages/admin/ObservabilityPage"));
 
 const queryClient = new QueryClient();
 
@@ -134,6 +135,7 @@ const App = () => (
                       <Route path="/admin/nats" element={<NatsPage />} />
                       <Route path="/admin/server-performance" element={<ServerPerformancePage />} />
                       <Route path="/admin/api-performance" element={<ApiPerformancePage />} />
+                      <Route path="/admin/observability" element={<ObservabilityPage />} />
                     </Route>
                   </Route>
               </Routes>
