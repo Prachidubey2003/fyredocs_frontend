@@ -23,6 +23,19 @@ export default defineConfig({
         target: "http://localhost",
         changeOrigin: true,
       },
+      // Embedded Grafana (observability profile). The edge @grafana route
+      // forward_auths this before proxying to Grafana. Intentionally NO
+      // `ws: true`: the only WebSocket is Grafana Live, which the kiosk overview
+      // dashboard doesn't need. Proxying it made Vite's dev server spam the
+      // console with unhandled EPIPE on every socket teardown (Vite attaches its
+      // own error loggers, so a `configure` hook can't suppress them). Without
+      // `ws`, Vite leaves the Live upgrade unproxied (it fails silently in the
+      // browser) and panels load over HTTP as normal. Production (Caddy) proxies
+      // the WS fine, so Live works there.
+      "/grafana": {
+        target: "http://localhost",
+        changeOrigin: true,
+      },
       // Presigned multipart upload PUTs (the Caddy edge routes these to MinIO).
       "/uploads": {
         target: "http://localhost",

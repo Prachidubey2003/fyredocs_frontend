@@ -88,27 +88,31 @@ export const useSystem = () =>
   useQuery({
     queryKey: ['admin', 'system'],
     queryFn: fetchSystem,
-    refetchInterval: 30_000,
+    refetchInterval: 15_000,
   });
 
 export const useNats = () =>
   useQuery({
     queryKey: ['admin', 'nats'],
     queryFn: fetchNats,
-    refetchInterval: 30_000,
+    // Near-realtime: the /varz + /jsz scrape is cheap and internal. React
+    // Query pauses this while the tab is backgrounded (refetchIntervalInBackground
+    // defaults to false), so it only polls when someone is watching.
+    refetchInterval: 5_000,
   });
 
 export const useServerPerformance = () =>
   useQuery({
     queryKey: ['admin', 'serverPerformance'],
     queryFn: fetchServerPerformance,
-    refetchInterval: 10_000,
+    refetchInterval: 15_000,
   });
 
 export const useApiPerformance = (params?: EndpointQueryParams) =>
   useQuery({
     queryKey: ['admin', 'apiPerformance', params],
     queryFn: () => fetchApiPerformance(params),
+    refetchInterval: 15_000,
     staleTime: 60_000,
   });
 
@@ -139,7 +143,7 @@ export const useQueueStatus = () =>
   useQuery({
     queryKey: ['admin', 'queues'],
     queryFn: fetchQueueStatus,
-    refetchInterval: 30_000,
+    refetchInterval: 15_000,
   });
 
 export const useApiTrends = (days = 7) =>

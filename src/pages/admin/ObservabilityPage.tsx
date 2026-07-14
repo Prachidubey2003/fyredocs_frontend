@@ -15,6 +15,26 @@ const GRAFANA_BASE = (import.meta.env.VITE_GRAFANA_BASE_URL as string | undefine
 /** Provisioned overview dashboard (deployment/grafana/dashboards/fyredocs-overview.json). */
 const DASHBOARD_UID = 'fyredocs-overview';
 
+/**
+ * Shared service → colour key. The by-service charts hide their own legends
+ * (they'd repeat this 11-row list on every panel); this single key documents
+ * the mapping instead. Colours MUST match the fixed per-series `color`
+ * overrides in fyredocs-overview.json.
+ */
+const SERVICE_COLORS: readonly { label: string; color: string }[] = [
+  { label: 'analytics-service', color: '#73BF69' },
+  { label: 'api-gateway', color: '#3B82F6' },
+  { label: 'auth-service', color: '#FF9830' },
+  { label: 'convert-from-pdf', color: '#FACC15' },
+  { label: 'convert-to-pdf', color: '#EF4444' },
+  { label: 'document-service', color: '#A855F7' },
+  { label: 'job-service', color: '#EC4899' },
+  { label: 'notification-service', color: '#06B6D4' },
+  { label: 'optimize-pdf', color: '#84CC16' },
+  { label: 'organize-pdf', color: '#F97316' },
+  { label: 'user-service', color: '#6366F1' },
+];
+
 const ObservabilityPage = () => {
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'light' ? 'light' : 'dark';
@@ -48,6 +68,22 @@ const ObservabilityPage = () => {
         </code>
         . If the panel is blank, the stack is not running.
       </Text>
+
+      {/* Shared service colour key — the by-service charts hide their legends
+          to stay readable, so the mapping lives here once. */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+        <span className="text-caption font-medium text-muted-foreground">Services</span>
+        {SERVICE_COLORS.map(({ label, color }) => (
+          <span key={label} className="flex items-center gap-1.5 text-caption text-muted-foreground">
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: color }}
+              aria-hidden
+            />
+            {label}
+          </span>
+        ))}
+      </div>
 
       <Card className="overflow-hidden">
         <CardContent className="p-0">

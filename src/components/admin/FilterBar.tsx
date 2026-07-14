@@ -68,7 +68,7 @@ export function FilterBar({ pathname, className }: { pathname: string; className
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              <span className="text-xs">This view streams live data and ignores the date range.</span>
+              <span className="text-xs">This view refreshes live every few seconds and ignores the date range.</span>
             </TooltipContent>
           </Tooltip>
         )}
