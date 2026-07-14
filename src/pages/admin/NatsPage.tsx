@@ -1,14 +1,49 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { StatCard } from '@/components/admin/StatCard';
+import { KpiCard } from '@/components/admin/KpiCard';
 import { HealthStatusStrip, type HealthSegment } from '@/components/admin/HealthStatusStrip';
 import { MetricsErrorState } from '@/components/admin/MetricsErrorState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTable, type Column } from '@/components/admin/DataTable';
-import { Database, Layers, Users, AlertTriangle } from 'lucide-react';
 import { useNats } from '@/hooks/useAdminMetrics';
 import type { NatsStreamRow, NatsConsumerRow } from '@/lib/adminApi';
 import { formatNumber } from '@/components/admin/chartTheme';
+
+/** ~5 min of history at the 5s NATS poll. */
+const MAX_POINTS = 60;
+
+interface NatsPoint {
+  time: string;
+  messages: number;
+  streams: number;
+  backlog: number;
+  dlq: number;
+}
+
+/**
+ * Module-level rolling buffer. NATS has no server-side history (it's a live
+ * snapshot), so we accumulate one point per 5s poll. Keeping it at module scope
+ * means the sparklines survive navigating away from and back to the tab within
+ * the session (a full page reload clears it — acceptable).
+ */
+const natsHistory: NatsPoint[] = [];
+
+function pushNatsPoint(p: NatsPoint) {
+  const last = natsHistory[natsHistory.length - 1];
+  if (!last || last.time !== p.time) {
+    natsHistory.push(p);
+    if (natsHistory.length > MAX_POINTS) natsHistory.shift();
+  }
+}
+
+/**
+ * Series for a metric. A single point is duplicated so the Sparkline (which
+ * needs ≥2 points) draws a line on the very first poll instead of staying blank.
+ */
+function seriesOf(sel: (p: NatsPoint) => number): number[] {
+  const s = natsHistory.map(sel);
+  return s.length === 1 ? [s[0], s[0]] : s;
+}
 
 /** Human-readable bytes (KiB/MiB/GiB). */
 function formatBytes(bytes: number): string {
@@ -40,14 +75,45 @@ const consumerColumns: Column<NatsConsumerRow>[] = [
 ];
 
 const NatsPage = () => {
-  const { data, isLoading, isError, refetch } = useNats();
+  const { data, isLoading, isError, refetch, dataUpdatedAt } = useNats();
   const server = data?.server;
   const summary = data?.summary;
   const streams = data?.streams ?? [];
-  const consumers = data?.consumers ?? [];
+  // Memoized so the identity is stable for the backlog useMemo below.
+  const consumers = useMemo(() => data?.consumers ?? [], [data?.consumers]);
 
   const unreachable = server?.status === 'unreachable' || summary?.status === 'unreachable';
   const dlqDepth = summary?.dlqDepth ?? 0;
+  const streamCount = summary?.totalStreams ?? streams.length;
+  const messageCount = summary?.totalMessages ?? 0;
+  const backlog = useMemo(
+    () => consumers.reduce((sum, c) => sum + c.numPending + c.numAckPending, 0),
+    [consumers],
+  );
+
+  // Append one history point per poll (module-level buffer, see pushNatsPoint).
+  const [, bump] = useState(0);
+  useEffect(() => {
+    if (!data || !dataUpdatedAt || unreachable) return;
+    pushNatsPoint({
+      time: new Date(dataUpdatedAt).toISOString(),
+      messages: messageCount,
+      streams: streamCount,
+      backlog,
+      dlq: dlqDepth,
+    });
+    bump((n) => n + 1);
+  }, [data, dataUpdatedAt, unreachable, messageCount, streamCount, backlog, dlqDepth]);
+
+  const spark = useMemo(
+    () => ({
+      messages: seriesOf((p) => p.messages),
+      streams: seriesOf((p) => p.streams),
+      backlog: seriesOf((p) => p.backlog),
+      dlq: seriesOf((p) => p.dlq),
+    }),
+    [dataUpdatedAt], // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   const healthSegments: HealthSegment[] = useMemo(() => {
     const segs: HealthSegment[] = [];
@@ -61,14 +127,13 @@ const NatsPage = () => {
       status: dlqDepth > 0 ? 'warning' : 'healthy',
       detail: `${dlqDepth} dead-lettered`,
     });
-    const backlog = consumers.reduce((sum, c) => sum + c.numPending + c.numAckPending, 0);
     segs.push({
       label: 'Consumer backlog',
       status: backlog > 1000 ? 'warning' : 'healthy',
       detail: `${formatNumber(backlog)} pending`,
     });
     return segs;
-  }, [server, consumers, unreachable, dlqDepth]);
+  }, [server, backlog, unreachable, dlqDepth]);
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -90,16 +155,35 @@ const NatsPage = () => {
           )}
 
           <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-            <StatCard label="Streams" value={summary?.totalStreams ?? streams.length} icon={Layers} tone="info" isLoading={isLoading} />
-            <StatCard label="Consumers" value={summary?.totalConsumers ?? consumers.length} icon={Users} tone="info" isLoading={isLoading} />
-            <StatCard label="Total Messages" value={summary?.totalMessages != null ? formatNumber(summary.totalMessages) : '—'} icon={Database} tone="default" isLoading={isLoading} />
-            <StatCard
+            <KpiCard
+              label="Total Messages"
+              value={summary?.totalMessages != null ? formatNumber(messageCount) : '—'}
+              sparkline={spark.messages}
+              status="healthy"
+              isLoading={isLoading && natsHistory.length === 0}
+            />
+            <KpiCard
+              label="Streams"
+              value={formatNumber(streamCount)}
+              sparkline={spark.streams}
+              status="healthy"
+              isLoading={isLoading && natsHistory.length === 0}
+            />
+            <KpiCard
+              label="Consumer backlog"
+              value={formatNumber(backlog)}
+              sparkline={spark.backlog}
+              status={backlog > 1000 ? 'warning' : 'healthy'}
+              insight={backlog > 0 ? `${formatNumber(backlog)} pending` : undefined}
+              isLoading={isLoading && natsHistory.length === 0}
+            />
+            <KpiCard
               label="DLQ Depth"
-              value={dlqDepth}
-              icon={AlertTriangle}
-              tone={dlqDepth > 0 ? 'warning' : 'success'}
-              color={dlqDepth > 0 ? 'text-warning' : 'text-success'}
-              isLoading={isLoading}
+              value={formatNumber(dlqDepth)}
+              sparkline={spark.dlq}
+              status={dlqDepth > 0 ? 'critical' : 'healthy'}
+              insight={dlqDepth > 0 ? `${formatNumber(dlqDepth)} dead-lettered` : undefined}
+              isLoading={isLoading && natsHistory.length === 0}
             />
           </div>
 
