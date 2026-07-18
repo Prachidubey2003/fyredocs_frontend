@@ -11,6 +11,7 @@ import { ThemeProvider } from "next-themes";
 import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from "@/auth/authGuard";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
+import { CookieConsent } from "@/components/common/CookieConsent";
 import { Layout } from "@/components/layout/Layout";
 import { DocsLayout } from "@/components/layout/DocsLayout";
 import { AdminLayout } from "@/components/layout/AdminLayout";
@@ -66,6 +67,7 @@ const App = () => (
           <AuthProvider>
             <ErrorBoundary>
               <ScrollToTop />
+              <CookieConsent />
               <Routes>
                   <Route element={<Layout />}>
                     <Route path="/" element={<Index />} />

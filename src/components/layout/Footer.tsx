@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Github, Twitter, Mail, Shield } from 'lucide-react';
+import { openCookiePreferences } from '@/lib/consent';
 import { getPopularTools } from '@/config/tools';
 import { getToolsByNavGroup, toolNavName } from '@/config/navigation';
 import type { ToolDefinition } from '@/types';
@@ -121,6 +122,11 @@ export const Footer = () => {
                   </Link>
                 </li>
               ))}
+              <li>
+                <button type="button" onClick={openCookiePreferences} className={footerLinkClass}>
+                  Cookie settings
+                </button>
+              </li>
             </ul>
           </div>
         </div>
