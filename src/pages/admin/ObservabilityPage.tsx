@@ -1,19 +1,41 @@
+import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { ExternalLink } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/typography';
 import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 /**
  * Base path Grafana is served from. Same-origin `/grafana` by default (proxied
  * by the Caddy edge and gated with forward_auth); overridable for cross-origin
  * setups, mirroring VITE_API_BASE_URL.
  */
-const GRAFANA_BASE = (import.meta.env.VITE_GRAFANA_BASE_URL as string | undefined)?.trim() || '/grafana';
+const GRAFANA_BASE =
+  (import.meta.env.VITE_GRAFANA_BASE_URL as string | undefined)?.trim() ||
+  '/grafana';
 
-/** Provisioned overview dashboard (deployment/grafana/dashboards/fyredocs-overview.json). */
-const DASHBOARD_UID = 'fyredocs-overview';
+/**
+ * Provisioned dashboards (deployment/grafana/dashboards/). "Metrics" is the
+ * Prometheus overview; "Logs" is the Loki centralized-logs view.
+ */
+type ViewKey = 'metrics' | 'logs';
+const DASHBOARDS: Record<
+  ViewKey,
+  { uid: string; label: string; title: string }
+> = {
+  metrics: {
+    uid: 'fyredocs-overview',
+    label: 'Metrics',
+    title: 'Grafana — fyredocs overview',
+  },
+  logs: {
+    uid: 'fyredocs-logs',
+    label: 'Logs',
+    title: 'Grafana — fyredocs logs (Loki)',
+  },
+};
 
 /**
  * Shared service → colour key. The by-service charts hide their own legends
@@ -38,26 +60,49 @@ const SERVICE_COLORS: readonly { label: string; color: string }[] = [
 const ObservabilityPage = () => {
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'light' ? 'light' : 'dark';
+  const [view, setView] = useState<ViewKey>('metrics');
 
+  const active = DASHBOARDS[view];
   // kiosk hides Grafana's own chrome for a clean embed; theme matches the app.
-  const dashboardPath = `${GRAFANA_BASE}/d/${DASHBOARD_UID}/${DASHBOARD_UID}?kiosk&theme=${theme}`;
-  const grafanaHome = `${GRAFANA_BASE}/`;
+  const dashboardPath = `${GRAFANA_BASE}/d/${active.uid}/${active.uid}?kiosk&theme=${theme}`;
+  // Open the currently-viewed dashboard in Grafana (non-kiosk, full chrome).
+  const grafanaOpen = `${GRAFANA_BASE}/d/${active.uid}/${active.uid}?theme=${theme}`;
 
   return (
     <div className="space-y-6 p-4 md:p-6">
       <AdminPageHeader
         title="Observability"
-        description="Metrics and traces from the Grafana / Prometheus / Tempo stack"
+        description="Metrics, traces and centralized logs from the Grafana / Prometheus / Tempo / Loki stack"
         actions={
-          <a
-            href={grafanaHome}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
-          >
-            Open in Grafana
-            <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
-          </a>
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-md border border-border p-0.5">
+              {(Object.keys(DASHBOARDS) as ViewKey[]).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setView(key)}
+                  className={cn(
+                    'rounded px-3 py-1 text-sm font-medium transition-colors',
+                    view === key
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  aria-pressed={view === key}
+                >
+                  {DASHBOARDS[key].label}
+                </button>
+              ))}
+            </div>
+            <a
+              href={grafanaOpen}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+            >
+              Open {active.label} in Grafana
+              <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
+            </a>
+          </div>
         }
       />
 
@@ -70,26 +115,34 @@ const ObservabilityPage = () => {
       </Text>
 
       {/* Shared service colour key — the by-service charts hide their legends
-          to stay readable, so the mapping lives here once. */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
-        <span className="text-caption font-medium text-muted-foreground">Services</span>
-        {SERVICE_COLORS.map(({ label, color }) => (
-          <span key={label} className="flex items-center gap-1.5 text-caption text-muted-foreground">
-            <span
-              className="inline-block h-2.5 w-2.5 rounded-full"
-              style={{ backgroundColor: color }}
-              aria-hidden
-            />
-            {label}
+          to stay readable, so the mapping lives here once. Metrics view only
+          (the logs view has its own service filter). */}
+      {view === 'metrics' && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+          <span className="text-caption font-medium text-muted-foreground">
+            Services
           </span>
-        ))}
-      </div>
+          {SERVICE_COLORS.map(({ label, color }) => (
+            <span
+              key={label}
+              className="flex items-center gap-1.5 text-caption text-muted-foreground"
+            >
+              <span
+                className="inline-block h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: color }}
+                aria-hidden
+              />
+              {label}
+            </span>
+          ))}
+        </div>
+      )}
 
       <Card className="overflow-hidden">
         <CardContent className="p-0">
           <iframe
-            key={theme}
-            title="Grafana — fyredocs overview"
+            key={`${view}-${theme}`}
+            title={active.title}
             src={dashboardPath}
             className="h-[calc(100vh-16rem)] min-h-[600px] w-full border-0"
             loading="lazy"
