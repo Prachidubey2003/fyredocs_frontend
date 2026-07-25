@@ -1,4 +1,5 @@
 import { AuthError, parseAuthError } from '@/auth/authErrors';
+import { versionPath } from '@/lib/apiVersion';
 
 export type AuthUser = {
   id: string;
@@ -38,7 +39,9 @@ const buildAuthUrl = (path: string) => {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
   }
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  // See apiVersion.ts: /auth/* is served under /api/v1/auth/* too, and the
+  // rewrite happens once, here.
+  const normalizedPath = versionPath(path.startsWith('/') ? path : `/${path}`);
   return `${normalizeBaseUrl(getBaseUrl())}${normalizedPath}`;
 };
 

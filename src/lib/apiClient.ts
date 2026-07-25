@@ -1,3 +1,5 @@
+import { versionPath } from '@/lib/apiVersion';
+
 type ApiRequestOptions = RequestInit & {
   skipRefresh?: boolean;
 };
@@ -16,6 +18,7 @@ export class ApiHttpError extends Error {
     this.status = status;
   }
 }
+
 
 const getBaseUrl = () => {
   const envUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
@@ -40,7 +43,10 @@ export const buildApiUrl = (path: string) => {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
   }
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  // Call sites use the legacy spelling (/api/jobs, /auth/login); versionPath
+  // rewrites it onto the gateway's canonical /api/v1 root here, at the single
+  // point where a URL is built.
+  const normalizedPath = versionPath(path.startsWith('/') ? path : `/${path}`);
   return `${normalizeBaseUrl(getBaseUrl())}${normalizedPath}`;
 };
 

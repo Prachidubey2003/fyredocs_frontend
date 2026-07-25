@@ -1,3 +1,16 @@
+// ⚠️  THIS FILE IS SHIPPED TO THE BROWSER.
+//
+// The developer-docs route is gated by RoleRoute, but that gates RENDERING, not
+// DELIVERY: the lazy-loaded chunk containing this content is a static asset any
+// visitor can fetch directly. Treat everything here as public.
+//
+// Therefore it must never contain: real secrets or credentials, internal
+// host:port topology, infrastructure addresses, or anything else whose value to
+// an attacker is knowing how the inside is wired. Placeholder examples
+// (localhost, "your-secret-here") are fine. If a document genuinely needs
+// internal detail, it belongs in docs/developer/ in the backend repo, which is
+// never served to browsers.
+
 import type { DocSection } from '@/config/docs';
 import { mermaidDiagrams } from '@/config/mermaidDiagrams';
 
@@ -173,14 +186,14 @@ export const developerDocs: DevDocEntry[] = [
           headers: ['Service', 'Port', 'Description'],
           rows: [
             ['Caddy Edge', '80/443', 'Public entrypoint — TLS, SPA static files, object-byte routing to MinIO, API proxy'],
-            ['API Gateway', '8080 (internal)', 'CORS, auth middleware, reverse proxy — reachable only via the Caddy edge'],
-            ['Job Service', '8081', 'Job orchestration, file uploads, job lifecycle management'],
-            ['Convert From PDF', '8082', 'PDF to Word, Excel, PPT, Image, HTML, Text conversions'],
-            ['Convert To PDF', '8083', 'Word, Excel, PPT, HTML, Image to PDF conversions'],
-            ['Organize PDF', '8084', 'Merge, split, rotate, extract, watermark, sign, edit'],
-            ['Optimize PDF', '8085', 'Compress, repair, OCR operations'],
-            ['Auth Service', '8086', 'User registration, login, JWT token management'],
-            ['Analytics Service', '8087', 'Usage metrics and analytics tracking'],
+            ['API Gateway', 'internal', 'CORS, auth middleware, reverse proxy — reachable only via the Caddy edge'],
+            ['Job Service', 'internal', 'Job orchestration, file uploads, job lifecycle management'],
+            ['Convert From PDF', 'internal', 'PDF to Word, Excel, PPT, Image, HTML, Text conversions'],
+            ['Convert To PDF', 'internal', 'Word, Excel, PPT, HTML, Image to PDF conversions'],
+            ['Organize PDF', 'internal', 'Merge, split, rotate, extract, watermark, sign, edit'],
+            ['Optimize PDF', 'internal', 'Compress, repair, OCR operations'],
+            ['Auth Service', 'internal', 'User registration, login, JWT token management'],
+            ['Analytics Service', 'internal', 'Usage metrics and analytics tracking'],
             ['Cleanup Worker', '—', 'Job-service’s cleanup binary — background TTL sweep of expired files/jobs'],
           ],
         },

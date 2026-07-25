@@ -3,9 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+    <!-- Inter is bundled (see src/main.tsx) — the edge CSP is same-origin, so a
+         Google Fonts link would be blocked and silently fall back. -->
     <title>Fyredocs — Free Online PDF Tools</title>
     <meta name="description" content="Merge, split, compress, and convert PDFs online for free. Fast, secure, no installation required." />
     <meta name="author" content="Fyredocs" />
@@ -18,8 +17,11 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <!-- Plausible Analytics (privacy-friendly, no cookies) -->
-    <!-- Replace data-domain with your actual domain when deploying -->
+    <!-- Plausible Analytics (privacy-friendly, no cookies).
+         plausible.io is explicitly allowlisted in the edge CSP (script-src and
+         connect-src for the beacon) — see deployment/caddy/Caddyfile. Without
+         that allowance both the script and its beacon are blocked silently.
+         Replace data-domain with your actual domain when deploying. -->
     <script defer data-domain="fyredocs.com" src="https://plausible.io/js/script.js"></script>
   </head>
 
