@@ -9,6 +9,12 @@ const KEY = ['notifications'] as const;
  * Live notifications via Server-Sent Events. Each pushed notification refreshes
  * the cache so the bell updates instantly; the 30s poll remains a fallback if
  * the stream drops. EventSource auto-reconnects on its own.
+ *
+ * The third SSE consumer in the app, and the simplest: unlike useJob it needs no
+ * intentional-close sentinel or polling fallback of its own, because a
+ * notification is not a terminal state to wait for — a dropped stream just means
+ * the next react-query poll refreshes the list. See src/hooks/useJob.ts for the
+ * full transport contract the other two implement.
  */
 export const useNotificationStream = () => {
   const qc = useQueryClient();

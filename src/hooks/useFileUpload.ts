@@ -12,9 +12,43 @@ import {
 import { friendlyError } from '@/lib/friendlyError';
 
 /**
- * Custom hook for managing file uploads via S3-presigned multipart uploads.
- * Parts are PUT directly to presigned storage URLs in parallel; the backend
- * only sees init/refresh/complete JSON calls.
+ * File uploads via S3-presigned multipart. Parts are PUT straight to storage in
+ * parallel; the backend only ever sees the init, refresh, and complete JSON calls,
+ * so file bytes never traverse the API.
+ *
+ * The constants below are each documented individually. What follows is how they
+ * interact, which is the part that is easy to break.
+ *
+ * TWO INDEPENDENT RETRY BUDGETS. A part has MAX_PART_ATTEMPTS for genuine
+ * failures and a SEPARATE MAX_EXPIRED_REFRESHES budget for 403-expired-URL
+ * cycles. Keeping them apart is deliberate: a presigned URL expiring is not the
+ * part failing, and charging it against the failure budget would abort a slow
+ * upload of a large file purely for taking too long. Merging them reintroduces
+ * that bug. Both are capped, because an expiry that re-presigns to another
+ * immediately-expired URL would otherwise loop forever.
+ *
+ * TWO LAYERS OF EXPIRY DEFENCE. URL_MAX_AGE_MS (25 min, under the server's ~30
+ * min) refreshes proactively before reuse, so a resumed upload does not spend its
+ * first request discovering the URLs are dead. The 403 path is the reactive
+ * backstop for URLs that expired mid-flight anyway. Neither alone is sufficient.
+ *
+ * PART SIZE IS DECIDED TWICE. Parts are sliced with PROVISIONAL_PART_SIZE so the
+ * UI can show a part count immediately, then RE-SLICED once init returns the
+ * server's authoritative partSize. Uploading with the provisional size would
+ * produce parts the server refuses to assemble. Any state derived from the part
+ * list must therefore tolerate being rebuilt after init.
+ *
+ * PROGRESS IS THROTTLED AND ESTIMATED. Per-part XHR progress events fire far
+ * faster than React should re-render, so flushes are throttled to
+ * PROGRESS_FLUSH_MS and in-flight bytes are tracked alongside completed ones —
+ * without the in-flight portion, a PART_CONCURRENCY of 4 makes the bar advance in
+ * visible jumps as each part lands.
+ *
+ * PAUSE AND ABORT ARE THE SAME MECHANISM. Both reject with a DOMException named
+ * AbortError, distinguished only by intent: pause keeps the collected ETags so
+ * resume re-PUTs only the outstanding parts, whereas abort discards the session.
+ * Treating an AbortError as a failure would surface a user-initiated pause as an
+ * upload error.
  */
 
 /** Provisional client-side part size — re-sliced with the server's partSize after init. */

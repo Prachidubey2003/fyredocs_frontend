@@ -1,3 +1,18 @@
+// Tailwind theme. This file MAPS tokens; it does not define them.
+//
+// The single source of truth for colour values is the CSS custom properties in
+// src/index.css — every colour here reads a var(), which is what makes light/dark
+// switching work without duplicating the palette. Changing a colour means editing
+// index.css, not this file.
+//
+// DESIGN.md is the binding contract for how these tokens may be used: raw
+// Tailwind palette classes (bg-blue-500 and the like) are prohibited, chart
+// colours must come from src/components/admin/chartTheme.ts rather than literal
+// hsl/hex values, and a new colour pair must clear 4.5:1 contrast in both modes.
+// DESIGN.md ships a grep command to check the first of those before merging.
+//
+// Note the legacy tool colours below are aliased to category tokens as part of a
+// migration that is still IN PROGRESS — they are not a second palette to add to.
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
 

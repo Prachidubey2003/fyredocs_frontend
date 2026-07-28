@@ -52,6 +52,14 @@ export class PutPartError extends Error {
 }
 
 /** Initialize a multipart upload session and receive presigned part URLs. */
+/**
+ * Starts a multipart session and returns the server's authoritative part size
+ * plus the presigned part URLs.
+ *
+ * The returned partSize is what the parts MUST be sliced to — the caller's
+ * provisional size is only for showing a count before this resolves. See
+ * src/hooks/useFileUpload.ts for the surrounding orchestration.
+ */
 export const initUpload = async (file: File, signal?: AbortSignal): Promise<InitUploadResult> => {
   const response = await apiJson<{ data: InitUploadResult }>('/api/upload/init', {
     method: 'POST',

@@ -112,6 +112,9 @@ const ServerPerformancePage = () => {
       }));
     }
     return bufferRef.current.slice();
+    // Keyed on dataUpdatedAt so this re-derives only when react-query reports
+    // the payload actually changed, not on every refetch returning the same
+    // history.
   }, [d?.history, dataUpdatedAt]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const serviceRows = useMemo(() => deriveServiceRows(d), [d]);

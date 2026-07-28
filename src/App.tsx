@@ -1,3 +1,30 @@
+/**
+ * Root component: providers, then the route table.
+ *
+ * This file is where the app's rendering and performance posture lives.
+ *
+ * EVERY route is React.lazy. The tool pages pull in heavy, mutually exclusive
+ * dependencies (canvas signing, mermaid, shiki, pdf page counting), so a single
+ * bundle would make a visitor who only wants to merge two PDFs download all of
+ * it. Suspense fallbacks are skeletons rather than spinners so layout does not
+ * shift when a chunk lands. Adding a non-lazy route silently undoes this for
+ * everyone.
+ *
+ * NO VIRTUALIZATION ANYWHERE, by choice. Long lists are bounded by pagination
+ * instead — see components/admin/DataTable.tsx. That keeps every list keyboard-
+ * and screen-reader-navigable and Ctrl-F-able, which windowing breaks. Reach for
+ * pagination before a windowing library.
+ *
+ * MotionConfig reducedMotion="user" is one line that makes EVERY framer-motion
+ * animation in the app honour prefers-reduced-motion. It is easy to miss and
+ * expensive to rediscover: without it each animated component would need to check
+ * the media query itself, and the ones that forgot would be an accessibility
+ * regression nobody notices. Do not remove it when refactoring providers.
+ *
+ * Provider order matters below: the error boundary sits inside the router so a
+ * crash can still offer navigation, and inside auth so the boundary's own UI can
+ * read session state.
+ */
 import { lazy } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { MotionConfig } from "framer-motion";

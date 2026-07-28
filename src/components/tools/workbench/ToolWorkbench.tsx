@@ -33,6 +33,21 @@ interface ToolWorkbenchProps {
  * tool in the registry. Composes the existing upload/job hooks unchanged;
  * options panels and bespoke bodies plug in via src/config/tools.ts.
  */
+/**
+ * The shared shell every tool page renders inside: file selection, options,
+ * submission, progress, and result.
+ *
+ * Stage is DERIVED from upload and job state rather than held in a state machine.
+ * That is a deliberate choice — with a separate stage variable, every async
+ * transition would need to keep two sources of truth in step, and the failure mode
+ * is a UI stuck in a stage its data no longer supports. Deriving it means the
+ * stage cannot disagree with reality.
+ *
+ * Retry drops all the way back to file selection rather than resubmitting. Upload
+ * sessions are single-use server-side, so the previously uploaded object has
+ * already been consumed and a resubmit would fail on a session that no longer
+ * exists.
+ */
 export const ToolWorkbench = ({ tool }: ToolWorkbenchProps) => {
   const [batchMode, setBatchMode] = useState(false);
   const [upgradeDialog, setUpgradeDialog] = useState<{ open: boolean; reason?: PlanLimitReason }>({

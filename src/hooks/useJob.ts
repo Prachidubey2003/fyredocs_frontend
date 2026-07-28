@@ -1,3 +1,37 @@
+/**
+ * Single-file job lifecycle: submit, track to completion, expose download.
+ *
+ * This file is the authoritative description of the SSE + polling contract, which
+ * three hooks in this app implement independently (this one, useBatchJob, and
+ * useNotifications). Read this before touching either of the others.
+ *
+ * TRANSPORT. Progress arrives over an EventSource stream, with timer polling as
+ * the fallback. Two transports exist because SSE is blocked by some corporate
+ * proxies and dropped by others mid-stream, and a job that silently stops
+ * reporting looks identical to a hung backend. Polling is not a redundant
+ * belt — it is the only thing that makes progress reliable off the happy path.
+ *
+ * `sseRef.current === null` IS THE INTENTIONAL-CLOSE SENTINEL. The `done`
+ * handler and stopPolling both null the ref before closing, and onerror returns
+ * early when it is already null. Without that, every normal completion would fire
+ * onerror as the connection tears down and start a polling loop for a job that
+ * has already finished. Any new close path must null the ref first.
+ *
+ * MONOTONIC PROGRESS. Progress is clamped to never decrease, in both the polling
+ * and the SSE handler. The two transports interleave: a poll issued before an SSE
+ * event can land after it, carrying a stale lower percentage, and a progress bar
+ * that jumps backwards reads as a bug. `maxProgressRef` is reset to 0 on failure
+ * so a retry starts clean. The clamp is duplicated rather than extracted because
+ * the two sites operate on different shapes — a whole mapped job versus a raw
+ * event — and unifying them would need a shared intermediate for no real gain.
+ *
+ * RELATIONSHIP TO useBatchJob. useBatchJob is a near-duplicate of this machinery
+ * fanned across N files, and the two have diverged: this hook refetches the full
+ * job after SSE completion to pick up output file metadata, and files results
+ * into an org workspace. A fix applied here very likely needs applying there too;
+ * nothing enforces that. Extracting a shared hook is tracked as follow-up work,
+ * not attempted here.
+ */
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Job, JobState, SplitOptions, WatermarkOptions, ToolId, ToolOptions } from '@/types';
 import { apiJson, apiRequest, buildApiUrl } from '@/lib/apiClient';
@@ -24,6 +58,23 @@ interface UseJobReturn {
   isPolling: boolean;
 }
 
+/**
+ * Translate UI option objects into the exact payload each backend tool expects.
+ *
+ * This is the client half of an untyped cross-repo contract. The backend accepts
+ * free-form JSON per tool (see job-service/handlers/tool_options.go), so nothing
+ * checks that what this produces matches what the worker reads — a renamed field
+ * fails at processing time, not at compile time.
+ *
+ * Two consumers depend on this beyond the callers here:
+ *   - src/components/tools/options/schemas.ts validates the UI shape BEFORE this
+ *     runs, and its header names this function explicitly. Adding a field means
+ *     touching both.
+ *   - fyredocs_app has its own divergent copy of this switch.
+ *
+ * Returns undefined for absent options so the request omits the key entirely
+ * rather than sending null, which some tools would reject.
+ */
 export const normalizeOptions = (toolId: ToolId, options: ToolOptions) => {
   if (!options) return undefined;
 
@@ -177,7 +228,8 @@ export const useJob = ({
           const apiResponse = await apiRequest<{ data: ApiJob }>(buildJobPath(toolId, jobId));
           const mappedJob = mapApiJob(apiResponse.data, toolId, fileIds, options);
 
-          // Enforce monotonic progress — never show regression to the user.
+          // Clamp progress upward — see the file header. A poll can carry a
+          // value older than an SSE event that already landed.
           if (mappedJob.state === 'failed') {
             maxProgressRef.current = 0;
           } else if (mappedJob.progress.percentage < maxProgressRef.current) {
@@ -275,7 +327,7 @@ export const useJob = ({
           setJob((prev) => {
             if (!prev) return prev;
 
-            // Enforce monotonic progress
+            // Same upward clamp as the polling path, on the raw event shape.
             let pct = progress;
             if (state === 'failed') {
               maxProgressRef.current = 0;

@@ -1,3 +1,25 @@
+// TypeScript project root. Real settings live in tsconfig.app.json (src) and
+// tsconfig.node.json (vite.config.ts); this file holds the shared relaxations and
+// the project references.
+//
+// TYPE SAFETY IS DELIBERATELY RELAXED HERE, and it is worth knowing before you
+// trust a type in this codebase:
+//   - strictNullChecks: false — a `string` may in fact be null or undefined at
+//     runtime, so an unguarded property access can still throw. This is the most
+//     consequential setting in the file.
+//   - noImplicitAny: false — an untyped parameter silently becomes `any`.
+//   - allowJs: true — .js files compile alongside .ts.
+//   - noUnusedLocals / noUnusedParameters: false — matched by
+//     @typescript-eslint/no-unused-vars being off in eslint.config.js.
+//
+// This is inherited from the project scaffold rather than chosen, and tightening
+// it is a worthwhile but non-trivial migration (turning on strictNullChecks
+// surfaces errors across the app). Note the ASYMMETRY: the mobile app in
+// fyredocs_app sets strict: true, so a pattern that typechecks here may not there.
+//
+// The @/* path alias must stay in sync with resolve.alias in vite.config.ts —
+// tsc and Vite resolve it independently, so changing one alone breaks either the
+// build or the editor.
 {
   "compilerOptions": {
     "allowJs": true,

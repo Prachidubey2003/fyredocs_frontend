@@ -15,6 +15,16 @@ import {
 import { Search, ArrowUpDown, ArrowUp, ArrowDown, Inbox } from 'lucide-react';
 import { useDataTable } from '@/hooks/useDataTable';
 
+/**
+ * One column definition. `render` receives the cell value and the whole row, so a
+ * column can display data from other fields; `truncate` is a character budget
+ * applied only when no `render` is supplied.
+ *
+ * NOTE: this table does not virtualize. Row count is bounded by pagination
+ * instead, which is the deliberate strategy platform-wide — there is no
+ * virtualization anywhere in the app. A page size large enough to matter for
+ * rendering cost is the thing to avoid, not a missing windowing library.
+ */
 export interface Column<T> {
   key: keyof T;
   label: string;
@@ -25,7 +35,13 @@ export interface Column<T> {
   truncate?: number;
 }
 
-// --- Client-side mode props ---
+/**
+ * Client-side mode: the table owns search, sort, and pagination over `data`.
+ *
+ * Use this when the full row set is already in memory. Mutually exclusive with
+ * ServerSideProps — the union is discriminated by `serverSide`, so supplying a
+ * prop from the other variant is a type error, not a silent no-op.
+ */
 interface ClientSideProps<T> {
   serverSide?: false;
   data: T[];
@@ -38,7 +54,16 @@ interface ClientSideProps<T> {
   onRowClick?: (row: T) => void;
 }
 
-// --- Server-side mode props ---
+/**
+ * Server-side mode: the CALLER owns search, sort, and pagination state and the
+ * table is presentational.
+ *
+ * Use this when rows are paginated by an API. Pair it with useServerDataTable,
+ * which holds exactly this state shape. Passing client-side props such as
+ * `searchableFields` here would be meaningless — the table cannot filter rows it
+ * has not been given — which is why the two prop sets are a discriminated union
+ * rather than one optional-everything interface.
+ */
 interface ServerSideProps<T> {
   serverSide: true;
   data: T[];

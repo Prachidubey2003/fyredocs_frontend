@@ -45,7 +45,6 @@ export const CodeBlock = ({ content, language }: CodeBlockProps) => {
 
   return (
     <div className="rounded-lg overflow-hidden border border-docs-panel-border bg-docs-panel">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-docs-panel-border">
         <span className="text-xs font-medium text-docs-panel-foreground/60 uppercase tracking-wider">
           {language || 'code'}
@@ -61,7 +60,6 @@ export const CodeBlock = ({ content, language }: CodeBlockProps) => {
         </button>
       </div>
 
-      {/* Code content */}
       {html ? (
         <div
           className="p-4 overflow-x-auto text-sm [&_pre]:!bg-transparent [&_code]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-0"

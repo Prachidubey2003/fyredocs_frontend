@@ -1,3 +1,13 @@
+/**
+ * Reads a PDF's page count in the browser, for options panels that need it (page
+ * ranges, split points).
+ *
+ * SWALLOWS ALL ERRORS AND RETURNS null. A corrupt, encrypted, or non-PDF file
+ * simply yields no count. That is deliberate — the count is an input hint, and
+ * blocking the whole panel because it could not be read would be worse than
+ * omitting it — but it means callers cannot distinguish "not a PDF" from "not
+ * loaded yet". Treat null as "unknown" and keep the field usable.
+ */
 import { useState, useCallback } from 'react';
 import { PDFDocument } from 'pdf-lib';
 

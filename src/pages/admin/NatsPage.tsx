@@ -112,6 +112,9 @@ const NatsPage = () => {
       backlog: seriesOf((p) => p.backlog),
       dlq: seriesOf((p) => p.dlq),
     }),
+    // Keyed on dataUpdatedAt so this re-derives only when react-query reports
+    // the payload actually changed. Depending on the data object instead would
+    // re-run on every refetch, including ones returning identical rows.
     [dataUpdatedAt], // eslint-disable-line react-hooks/exhaustive-deps
   );
 

@@ -1,6 +1,16 @@
 import { AuthError, parseAuthError } from '@/auth/authErrors';
 import { versionPath } from '@/lib/apiVersion';
 
+/**
+ * Transport for the auth endpoints. Session semantics — HttpOnly cookies, the
+ * refresh schedule, the unauthorized event — are documented once in
+ * src/auth/authContext.tsx; this file only performs the calls.
+ *
+ * These use fetch directly rather than lib/apiClient.ts on purpose: apiClient
+ * retries a 401 through the shared refresh lock, and routing /auth/refresh
+ * through that would be self-referential. Errors are normalized to AuthError
+ * here instead of ApiHttpError for the same reason.
+ */
 export type AuthUser = {
   id: string;
   email?: string;

@@ -1,3 +1,5 @@
+// shadcn/ui dialog, locally modified: adds a `size` prop so callers do not
+// hand-roll max-w-* classes (see DESIGN.md). Re-running the shadcn CLI drops it.
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";

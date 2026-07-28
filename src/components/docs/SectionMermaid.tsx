@@ -151,7 +151,6 @@ export const SectionMermaid = ({ content }: SectionMermaidProps) => {
         <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] flex flex-col p-0 gap-0">
           <DialogTitle className="sr-only">Diagram viewer</DialogTitle>
 
-          {/* Zoom toolbar */}
           <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/50 flex-shrink-0">
             <div className="flex items-center gap-1">
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleZoomOut} disabled={zoom <= 0.25}>

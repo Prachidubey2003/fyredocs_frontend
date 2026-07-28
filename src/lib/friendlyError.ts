@@ -10,6 +10,9 @@
  */
 
 // Keep these in sync with the backend `friendlyMessage` (worker.go) copy.
+// Duplicated deliberately: the backend needs them for the failure_reason it
+// persists, and the client needs them for legacy rows and client-side failures.
+// Nothing links the two copies, so a reworded message must be changed in both.
 const CODE_MESSAGES: Record<string, string> = {
   TIMEOUT: 'This file took too long to process. Please try again, or use a smaller file.',
   UNSUPPORTED_TOOL: "This operation isn't supported for this file.",

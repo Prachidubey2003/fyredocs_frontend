@@ -95,6 +95,18 @@ export function usePagination<T>({ data, pageSize = 10 }: UsePaginationOptions<T
 
 // --- useDataTable (composer) ---
 
+/**
+ * Composes search, sort, and pagination over an in-memory row set — the hook
+ * behind DataTable's client-side mode.
+ *
+ * Choosing between the two hooks in this file:
+ *   - useDataTable when you HAVE all the rows and want them filtered and paged.
+ *   - useServerDataTable when the API pages for you and you only need the state
+ *     to send it.
+ *
+ * The individual useSearch/useSort/usePagination hooks are exported for the rare
+ * case that needs one in isolation; prefer this composer.
+ */
 export interface UseDataTableOptions<T> {
   data: T[];
   pageSize?: number;
@@ -163,6 +175,16 @@ export function useDataTable<T extends Record<string, unknown>>({
 
 // --- useServerDataTable (state-only, for server-side pagination) ---
 
+/**
+ * State-only variant for server-paginated tables: it tracks search, sort, and
+ * page but never touches rows, because it has none.
+ *
+ * Its return shape is deliberately the prop shape DataTable's ServerSideProps
+ * expects, so the two spread together. Note the page-reset-on-search/sort
+ * behaviour that useDataTable provides must be reproduced by the caller here —
+ * changing a filter while on page 5 otherwise requests page 5 of a result set that
+ * may only have one page.
+ */
 export interface UseServerDataTableOptions<T> {
   pageSize?: number;
   defaultSort?: { key: keyof T; desc: boolean };

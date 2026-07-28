@@ -163,7 +163,6 @@ export const FileDropzone = forwardRef<FileDropzoneHandle, FileDropzoneProps>(
         />
 
         <div className="flex flex-col items-center text-center">
-          {/* Icon */}
           <div
             className={cn(
               'rounded-2xl p-4 mb-4 transition-all duration-200',
@@ -181,7 +180,6 @@ export const FileDropzone = forwardRef<FileDropzoneHandle, FileDropzoneProps>(
             )}
           </div>
 
-          {/* Main text */}
           {!compact && (
             <>
               <h3 className="text-xl font-semibold text-foreground mb-2">
@@ -200,7 +198,6 @@ export const FileDropzone = forwardRef<FileDropzoneHandle, FileDropzoneProps>(
             </>
           )}
 
-          {/* File constraints */}
           <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <FileType className="w-4 h-4" aria-hidden />

@@ -1,3 +1,11 @@
+/**
+ * Organization list and membership mutations, cached by react-query.
+ *
+ * Organizations gate document visibility, so a mutation here changes what the
+ * library shows. Mutations invalidate rather than optimistically patch: server
+ * authorization can reject a role change the UI believed would succeed, and an
+ * optimistic update would briefly show a permission the user does not have.
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   listOrgs,

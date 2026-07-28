@@ -4,10 +4,23 @@ import { buildDownloadPath } from '@/lib/toolApi';
 import { friendlyError } from '@/lib/friendlyError';
 
 /**
- * Shared mapping from the backend's job payloads (dual-cased fields) to the
- * frontend Job shape. Used by useJob (live jobs) and useJobHistory (My Files).
+ * The backend-to-frontend job boundary. Every job the UI renders passes through
+ * here, so this is the one place a backend payload change has to be absorbed.
+ *
+ * Fields are accepted in two casings (`id` and `ID`, `status` and `Status`, ...)
+ * because Go's encoding/json emits the exported field name when a struct has no
+ * json tag, and not every payload on this path is fully tagged. Tolerating both is
+ * cheaper and safer than depending on which endpoint produced the object.
+ *
+ * Queued and pending both map to "Processing" on purpose: the queue is a backend
+ * implementation detail, and telling a user their job is "queued" invites the
+ * question of how long, which the UI cannot answer. Mirrored in
+ * fyredocs_app/src/lib/jobMapper.ts.
+ *
+ * Consumed by useJob and useBatchJob (live) and useJobHistory (My Files).
  */
 
+/** Backend job payload as received. Everything optional — see the dual-casing note above. */
 export interface ApiJob {
   id?: string;
   ID?: string;

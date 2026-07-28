@@ -1,3 +1,17 @@
+/**
+ * Auth-specific error mapping — the auth branch of the app's error pipeline
+ * (layer 1 and 3 live in src/lib/apiClient.ts and src/lib/friendlyError.ts; this
+ * file is their equivalent for the auth endpoints, which return their own codes).
+ *
+ * Codes are matched rather than messages, so the backend can reword a message
+ * without changing UI behaviour. Both the bare and AUTH_-prefixed spellings of
+ * unauthorized/forbidden are listed because the gateway and auth-service emit
+ * different ones for the same condition — see shared/authverify/errors.go.
+ *
+ * Messages here are user-facing and deliberately vague about whether an account
+ * exists: the backend does not distinguish "no such user" from "wrong password",
+ * and neither may this.
+ */
 export type AuthErrorCode =
   | 'INVALID_CREDENTIALS'
   | 'USER_ALREADY_EXISTS'
@@ -11,6 +25,11 @@ export type AuthErrorCode =
   | 'RATE_LIMIT_EXCEEDED'
   | 'SERVER_ERROR';
 
+/**
+ * Auth failure carrying a stable code alongside the message, so callers branch on
+ * `code` and never on message text. `status` and `details` are optional because
+ * a client-side validation failure has neither.
+ */
 export class AuthError extends Error {
   code: AuthErrorCode;
   status?: number;

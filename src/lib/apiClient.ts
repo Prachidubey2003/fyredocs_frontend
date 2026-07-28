@@ -20,14 +20,23 @@ export class ApiHttpError extends Error {
 }
 
 
+/**
+ * API origin from VITE_API_BASE_URL, or "" for same-origin requests. Empty is
+ * the normal production case: Caddy serves the app and proxies /api on one
+ * origin, which keeps cookies first-party. A cross-origin value is a
+ * development convenience and requires the gateway's CORS allowlist to permit it
+ * WITH credentials.
+ */
 const getBaseUrl = () => {
   const envUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
   return envUrl.trim().length > 0 ? envUrl : '';
 };
 
+/** Strip a trailing slash so joining with a leading-slash path cannot double it. */
 const normalizeBaseUrl = (baseUrl: string) =>
   baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
 
+/** Merge headers with overrides winning, via Headers so names stay case-insensitive. */
 const mergeHeaders = (source?: HeadersInit, overrides?: HeadersInit) => {
   const headers = new Headers(source);
   if (overrides) {
@@ -39,6 +48,11 @@ const mergeHeaders = (source?: HeadersInit, overrides?: HeadersInit) => {
   return headers;
 };
 
+/**
+ * Resolve a call-site path to a full URL, passing absolute URLs through
+ * untouched. This is the single point where legacy paths are rewritten onto the
+ * gateway's /api/v1 root, so call sites keep the short spelling.
+ */
 export const buildApiUrl = (path: string) => {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
@@ -50,6 +64,22 @@ export const buildApiUrl = (path: string) => {
   return `${normalizeBaseUrl(getBaseUrl())}${normalizedPath}`;
 };
 
+/**
+ * Normalize any backend error response into a single human-readable string.
+ *
+ * This is layer 1 of the app's error pipeline, and the reason it looks
+ * repetitive is that the backend genuinely emits four shapes — the standard
+ * { error: { code, details } } envelope, an { error: { message } } variant, a
+ * bare string error, and a top-level { message }. Each branch exists because a
+ * real endpoint produces it; deleting one silently degrades those errors to
+ * "Request failed with 500".
+ *
+ * The message here is still technical. Layer 2 is ApiHttpError (adds status so
+ * callers can branch — 404 on an upload means the session expired). Layer 3 is
+ * friendlyError() in lib/friendlyError.ts, which is what maps this to prose fit
+ * for a user and strips tool names like pdfcpu or ghostscript. Never render this
+ * string directly in the UI.
+ */
 const parseErrorMessage = async (response: Response) => {
   const contentType = response.headers.get('content-type') ?? '';
   let message = response.statusText || `Request failed with ${response.status}`;
@@ -76,13 +106,33 @@ const parseErrorMessage = async (response: Response) => {
   return message;
 };
 
+/** Wrap HeadersInit in a Headers instance so downstream mutation is safe. */
 const buildHeaders = (headers?: HeadersInit): Headers => {
   return new Headers(headers);
 };
 
-// Shared refresh lock — prevents multiple concurrent refresh calls
+/**
+ * Single-flight lock for token refresh.
+ *
+ * Module-level on purpose. A page typically fires several requests at once, so
+ * an expiring access token produces several simultaneous 401s. Without this
+ * lock each would POST /auth/refresh independently — and because refresh
+ * rotates the refresh token server-side, the later calls would present an
+ * already-rotated token, be treated as reuse, and log the user out. Sharing one
+ * in-flight promise means N concurrent 401s cause exactly one refresh.
+ *
+ * Cleared in .finally() rather than after the await so a failed refresh does not
+ * wedge every later request on a permanently rejected promise.
+ */
 let refreshPromise: Promise<boolean> | null = null;
 
+/**
+ * POST /auth/refresh, reporting success as a boolean.
+ *
+ * Never throws: a network failure is indistinguishable from a rejected refresh
+ * as far as the caller's decision goes, and an exception here would escape the
+ * shared promise and reject every waiting request with the wrong error.
+ */
 const attemptRefresh = async (): Promise<boolean> => {
   try {
     const res = await fetch(buildApiUrl('/auth/refresh'), {
@@ -95,6 +145,29 @@ const attemptRefresh = async (): Promise<boolean> => {
   }
 };
 
+/**
+ * Fetch wrapper carrying the app's auth and error conventions.
+ *
+ * Auth is cookie-based: credentials are always included and no Authorization
+ * header is set, because the access token is an HttpOnly cookie that JavaScript
+ * cannot read. That is also why nothing here decodes a token to check expiry.
+ *
+ * On 401 it refreshes once through the shared lock and retries. The retry passes
+ * skipRefresh, which is the recursion guard — without it a request that 401s
+ * again after a successful refresh would recurse until the stack blew.
+ *
+ * Both 401 and 403 dispatch the `fyredocs:unauthorized` window event. Using an
+ * event rather than calling into auth state keeps this module free of a
+ * dependency on the React tree; authContext listens and clears the session. 403
+ * is included because the backend returns it for a revoked or downgraded
+ * session, which is indistinguishable from a logout from the client's side.
+ *
+ * Returns: parsed JSON for a JSON response, raw text otherwise, and undefined
+ * for 204 — cast to T because a caller expecting a body from a 204 endpoint is a
+ * type-level mistake, not a runtime one.
+ *
+ * Throws ApiHttpError for every non-2xx response.
+ */
 export const apiRequest = async <T>(
   path: string,
   options: ApiRequestOptions = {}
@@ -144,6 +217,11 @@ export const apiRequest = async <T>(
   return text as unknown as T;
 };
 
+/**
+ * apiRequest with a JSON Content-Type, set only when the caller has not already
+ * chosen one — so a caller sending FormData or a specific content type is not
+ * overridden.
+ */
 export const apiJson = async <T>(
   path: string,
   options: ApiRequestOptions = {}

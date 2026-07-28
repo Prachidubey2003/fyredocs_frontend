@@ -1,4 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
+// shadcn/ui button, locally modified: adds the `gradient` variant and the `xs`/`xl`
+// sizes, plus shadow-brand. Re-running the shadcn CLI for this file drops them.
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";

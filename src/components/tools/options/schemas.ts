@@ -1,3 +1,21 @@
+/**
+ * Zod validation for each tool's options panel — the UI-side gate before a job is
+ * submitted.
+ *
+ * This is one half of a contract with normalizeOptions() in src/hooks/useJob.ts:
+ * this file decides what the USER may enter, that function decides what the
+ * BACKEND receives. Neither checks the other, and the backend accepts free-form
+ * JSON per tool, so a field added on one side and not the other fails silently —
+ * either validated and then dropped, or sent and then ignored. Adding or renaming
+ * an option means touching both.
+ *
+ * superRefine is used where a field's validity depends on another field (a page
+ * range against a page count, for example), which a per-field schema cannot
+ * express.
+ *
+ * Validation failures here surface inline next to the field, never as a toast —
+ * toasts are reserved for async outcomes (see DESIGN.md and src/lib/toast.ts).
+ */
 import { z } from 'zod';
 import { OptionsPanelId } from '@/types';
 

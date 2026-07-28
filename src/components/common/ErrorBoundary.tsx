@@ -3,6 +3,19 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 type Props = { children: ReactNode };
 type State = { hasError: boolean; error: Error | null };
 
+/**
+ * App-wide error boundary, mounted inside the router and auth provider.
+ *
+ * KNOWN LIMITATION: "Try again" only resets `hasError`. It does not remount the
+ * subtree or reset router state, so if the failing component re-renders from the
+ * same props and state it will throw again immediately and the button appears to
+ * do nothing. Genuinely recovering needs a key change on the boundary or a
+ * navigation; this is a stopgap, not a fix.
+ *
+ * It also reports via console.error rather than to an error-tracking service, so
+ * production crashes are only visible in a user's own devtools. Both gaps are
+ * tracked as follow-up work.
+ */
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);

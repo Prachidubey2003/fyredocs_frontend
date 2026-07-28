@@ -1,3 +1,26 @@
+/**
+ * Multi-file job tracking: one job per file, aggregated into a single progress
+ * view.
+ *
+ * A NEAR-DUPLICATE OF useJob, AND DIVERGED FROM IT. The SSE + polling contract,
+ * the `sseRef === null` intentional-close sentinel, and the monotonic-progress
+ * clamp are all documented in src/hooks/useJob.ts — read that file first; this one
+ * deliberately does not restate them.
+ *
+ * Where it differs, and why the divergence matters:
+ *   - Per-file state. Each file gets its own job, its own stream, and its own
+ *     clamp, so one failure must not stall or reset the others. Aggregate progress
+ *     is derived from the set rather than tracked directly.
+ *   - No post-completion refetch. useJob re-fetches the full job after SSE
+ *     completion to pick up output file metadata; this hook does not, so batch
+ *     results carry less metadata.
+ *   - No org workspace filing. useJob files results into the active org
+ *     workspace; batch results are not filed.
+ *
+ * Those gaps are divergence, not design. A fix to the job lifecycle almost always
+ * needs applying in both files, and nothing enforces that — extracting a shared
+ * hook is tracked follow-up work.
+ */
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Job, ToolId, ToolOptions } from '@/types';
 import { apiJson, apiRequest, buildApiUrl } from '@/lib/apiClient';
@@ -5,6 +28,7 @@ import { buildJobPath } from '@/lib/toolApi';
 import { setGuestToken } from '@/lib/guestToken';
 import { ApiJob, mapApiJob, mapStatus } from '@/lib/jobMapper';
 
+/** One file's slot in a batch: its identity plus the job tracking it. */
 export interface BatchJob {
   id: string;
   fileName: string;

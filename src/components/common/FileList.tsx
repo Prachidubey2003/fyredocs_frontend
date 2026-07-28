@@ -106,7 +106,14 @@ export const FileList = ({
   className,
 }: FileListProps) => {
   const sensors = useSensors(
+    // The 4px activation distance is what keeps buttons inside a row clickable.
+    // Without it dnd-kit claims the pointer on mousedown and swallows the click,
+    // so remove/preview never fire — the row just twitches. 4px is below the
+    // threshold of an intentional drag but above incidental mouse jitter.
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    // Makes the list reorderable by keyboard, not just pointer. sortableKeyboardCoordinates
+    // maps arrow keys onto the sortable axis; without it reordering is
+    // mouse-only and unusable with a screen reader.
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
