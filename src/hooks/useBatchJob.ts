@@ -3,6 +3,8 @@ import { Job, JobState, ToolId, ToolOptions } from '@/types';
 import { apiJson, apiRequest, buildApiUrl } from '@/lib/apiClient';
 import { buildDownloadPath, buildJobPath } from '@/lib/toolApi';
 import { setGuestToken } from '@/lib/guestToken';
+import { track } from '@/lib/activity';
+import { ACTIVITY_EVENTS, ActivityStatus } from '@/lib/activityEvents';
 
 export interface BatchJob {
   id: string;
@@ -217,6 +219,37 @@ export const useBatchJob = ({
   const pollingTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const sseConnectionsRef = useRef<Map<string, EventSource>>(new Map());
   const sseTerminalJobsRef = useRef<Set<string>>(new Set());
+  // NOTE: mirrors trackedTerminalRef in useJob.ts — SSE and the polling
+  // fallback can both observe the same terminal state, but each server job
+  // must emit exactly one terminal activity event. Keyed by server jobId.
+  const trackedTerminalJobsRef = useRef<Set<string>>(new Set());
+
+  const trackBatchTerminal = useCallback(
+    (
+      jobId: string,
+      toolId: ToolId,
+      status: Extract<ActivityStatus, 'success' | 'failed' | 'cancelled'>,
+      extra?: { failureReason?: string; errorCode?: string }
+    ) => {
+      if (trackedTerminalJobsRef.current.has(jobId)) return;
+      trackedTerminalJobsRef.current.add(jobId);
+      const eventType =
+        status === 'success'
+          ? ACTIVITY_EVENTS.jobCompleted
+          : status === 'cancelled'
+          ? ACTIVITY_EVENTS.jobCancelled
+          : ACTIVITY_EVENTS.jobFailed;
+      track({
+        eventType,
+        status,
+        toolId,
+        correlationId: jobId,
+        metadata: { batch: true },
+        ...extra,
+      });
+    },
+    []
+  );
   const attemptsRef = useRef<Map<string, number>>(new Map());
   const lastBatchRef = useRef<{
     toolId: ToolId;
@@ -286,6 +319,7 @@ export const useBatchJob = ({
 
           if (mappedJob.state === 'completed') {
             stopPolling(batchId);
+            trackBatchTerminal(jobId, toolId, 'success');
             setBatchJobs((prev) => {
               const updated = prev.find((bj) => bj.id === batchId);
               if (updated) onJobComplete?.({ ...updated, job: mappedJob, status: 'completed' });
@@ -297,6 +331,9 @@ export const useBatchJob = ({
 
           if (mappedJob.state === 'failed') {
             stopPolling(batchId);
+            trackBatchTerminal(jobId, toolId, 'failed', {
+              failureReason: mappedJob.error?.message,
+            });
             const errorMsg = mappedJob.error?.message ?? 'Job failed';
             setBatchJobs((prev) => {
               const updated = prev.find((bj) => bj.id === batchId);
@@ -314,6 +351,10 @@ export const useBatchJob = ({
 
           if (currentAttempts >= maxPollingAttempts) {
             const message = error instanceof Error ? error.message : 'Polling failed';
+            trackBatchTerminal(jobId, toolId, 'failed', {
+              failureReason: message,
+              errorCode: 'POLLING_FAILED',
+            });
             setBatchJobs((prev) =>
               prev.map((bj) =>
                 bj.id === batchId
@@ -332,7 +373,7 @@ export const useBatchJob = ({
 
       void poll();
     },
-    [checkAllComplete, maxPollingAttempts, onJobComplete, onJobError, pollingInterval, stopPolling]
+    [checkAllComplete, maxPollingAttempts, onJobComplete, onJobError, pollingInterval, stopPolling, trackBatchTerminal]
   );
 
   const startSSEForJob = useCallback(
@@ -405,6 +446,7 @@ export const useBatchJob = ({
           if (status === 'completed') {
             sseTerminalJobsRef.current.add(batchId);
             stopPolling(batchId);
+            trackBatchTerminal(jobId, toolId, 'success');
             setBatchJobs((prev) => {
               const updated = prev.find((bj) => bj.id === batchId);
               if (updated) onJobComplete?.({ ...updated, status: 'completed' });
@@ -417,6 +459,9 @@ export const useBatchJob = ({
           if (status === 'failed') {
             sseTerminalJobsRef.current.add(batchId);
             stopPolling(batchId);
+            trackBatchTerminal(jobId, toolId, 'failed', {
+              failureReason: 'The job failed to complete.',
+            });
             const errorMsg = 'The job failed to complete.';
             setBatchJobs((prev) => {
               const updated = prev.find((bj) => bj.id === batchId);
@@ -452,7 +497,7 @@ export const useBatchJob = ({
         }
       };
     },
-    [checkAllComplete, onJobComplete, onJobError, startPolling, stopPolling]
+    [checkAllComplete, onJobComplete, onJobError, startPolling, stopPolling, trackBatchTerminal]
   );
 
   const processFile = useCallback(
@@ -482,6 +527,13 @@ export const useBatchJob = ({
         }
 
         const mappedJob = mapApiJob(apiResponse.data, toolId, [serverFileId], options);
+        track({
+          eventType: ACTIVITY_EVENTS.jobStarted,
+          status: 'started',
+          toolId,
+          correlationId: mappedJob.id,
+          metadata: { batch: true },
+        });
 
         setBatchJobs((prev) =>
           prev.map((bj) =>
@@ -494,6 +546,15 @@ export const useBatchJob = ({
         startSSEForJob(batchId, toolId, mappedJob.id, serverFileId, options);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to create job';
+        // No server job id exists on a create failure, so no correlationId.
+        track({
+          eventType: ACTIVITY_EVENTS.jobFailed,
+          status: 'failed',
+          toolId,
+          failureReason: message,
+          errorCode: 'CREATE_FAILED',
+          metadata: { batch: true },
+        });
         setBatchJobs((prev) =>
           prev.map((bj) =>
             bj.id === batchId

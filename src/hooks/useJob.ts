@@ -3,6 +3,8 @@ import { Job, JobState, SplitOptions, WatermarkOptions, ToolId, ToolOptions } fr
 import { apiJson, apiRequest, buildApiUrl } from '@/lib/apiClient';
 import { buildDownloadPath, buildJobPath } from '@/lib/toolApi';
 import { setGuestToken } from '@/lib/guestToken';
+import { track } from '@/lib/activity';
+import { ACTIVITY_EVENTS, ActivityStatus } from '@/lib/activityEvents';
 
 interface UseJobOptions {
   pollingInterval?: number;
@@ -316,6 +318,30 @@ export const useJob = ({
   } | null>(null);
   const maxProgressRef = useRef(0);
   const sseTerminalRef = useRef(false);
+  // A job's terminal activity event must fire exactly once, but terminal
+  // state can be observed twice (SSE delivers it, then the polling fallback
+  // re-fetches it). This ref remembers which job already got its event.
+  const trackedTerminalRef = useRef<string | null>(null);
+
+  const trackTerminal = useCallback(
+    (
+      jobId: string,
+      toolId: ToolId,
+      status: Extract<ActivityStatus, 'success' | 'failed' | 'cancelled'>,
+      extra?: { failureReason?: string; errorCode?: string }
+    ) => {
+      if (trackedTerminalRef.current === jobId) return;
+      trackedTerminalRef.current = jobId;
+      const eventType =
+        status === 'success'
+          ? ACTIVITY_EVENTS.jobCompleted
+          : status === 'cancelled'
+          ? ACTIVITY_EVENTS.jobCancelled
+          : ACTIVITY_EVENTS.jobFailed;
+      track({ eventType, status, toolId, correlationId: jobId, ...extra });
+    },
+    []
+  );
 
   const stopPolling = useCallback(() => {
     if (pollingTimerRef.current) {
@@ -353,12 +379,16 @@ export const useJob = ({
 
           if (mappedJob.state === 'completed') {
             stopPolling();
+            trackTerminal(jobId, toolId, 'success');
             onComplete?.(mappedJob);
             return;
           }
 
           if (mappedJob.state === 'failed') {
             stopPolling();
+            trackTerminal(jobId, toolId, 'failed', {
+              failureReason: mappedJob.error?.message,
+            });
             onError?.(mappedJob.error?.message ?? 'The job failed to complete.');
             return;
           }
@@ -383,6 +413,10 @@ export const useJob = ({
                 : prev
             );
             stopPolling();
+            trackTerminal(jobId, toolId, 'failed', {
+              failureReason: message,
+              errorCode: 'POLLING_FAILED',
+            });
             onError?.(message);
             return;
           }
@@ -393,7 +427,7 @@ export const useJob = ({
 
       void poll();
     },
-    [maxPollingAttempts, onComplete, onError, pollingInterval, stopPolling]
+    [maxPollingAttempts, onComplete, onError, pollingInterval, stopPolling, trackTerminal]
   );
 
   const startSSE = useCallback(
@@ -501,6 +535,7 @@ export const useJob = ({
             sseTerminalRef.current = true;
             maxProgressRef.current = 0;
             stopPolling();
+            trackTerminal(jobId, toolId, 'success');
             // Fetch full job data to get file metadata (size, name)
             try {
               const apiResponse = await apiRequest<{ data: ApiJob }>(buildJobPath(toolId, jobId));
@@ -520,6 +555,9 @@ export const useJob = ({
           if (status === 'failed') {
             sseTerminalRef.current = true;
             stopPolling();
+            trackTerminal(jobId, toolId, 'failed', {
+              failureReason: 'The job failed to complete.',
+            });
             onError?.('The job failed to complete.');
             return;
           }
@@ -548,7 +586,7 @@ export const useJob = ({
         }
       };
     },
-    [onComplete, onError, startPolling, stopPolling]
+    [onComplete, onError, startPolling, stopPolling, trackTerminal]
   );
 
   const createJob = useCallback(
@@ -606,11 +644,27 @@ export const useJob = ({
           }
 
           const mappedJob = mapApiJob(apiResponse.data, toolId, normalizedIds, options);
+          trackedTerminalRef.current = null;
+          track({
+            eventType: ACTIVITY_EVENTS.jobStarted,
+            status: 'started',
+            toolId,
+            correlationId: mappedJob.id,
+            metadata: { fileCount: normalizedIds.length },
+          });
           setJob(mappedJob);
           startSSE(toolId, mappedJob.id, normalizedIds, options);
         } catch (error) {
           const message =
             error instanceof Error ? error.message : 'Failed to create job.';
+          // No server job id exists on a create failure, so no correlationId.
+          track({
+            eventType: ACTIVITY_EVENTS.jobFailed,
+            status: 'failed',
+            toolId,
+            failureReason: message,
+            errorCode: 'CREATE_FAILED',
+          });
           setJob({
             ...pendingJob,
             state: 'failed',
@@ -631,6 +685,7 @@ export const useJob = ({
   const cancelJob = useCallback(() => {
     if (!job) return;
     stopPolling();
+    trackTerminal(job.id, job.toolId, 'cancelled');
     void apiRequest(buildJobPath(job.toolId, job.id), { method: 'DELETE' }).catch(() => undefined);
     setJob({
       ...job,
@@ -641,7 +696,7 @@ export const useJob = ({
         isRetryable: true,
       },
     });
-  }, [job, stopPolling]);
+  }, [job, stopPolling, trackTerminal]);
 
   const retryJob = useCallback(() => {
     if (lastJobRef.current) {

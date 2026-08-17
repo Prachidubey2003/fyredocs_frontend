@@ -22,6 +22,24 @@ export const ProtectedRoute = ({ children }: GuardProps) => {
   return children ? <>{children}</> : <Outlet />;
 };
 
+// Unlike ProtectedRoute (a deliberate pass-through so tools stay
+// guest-accessible), this guard genuinely requires a signed-in user — pages
+// behind it render user-scoped data that has no guest equivalent.
+export const RequireAuthRoute = ({ redirectTo = '/signin', children }: GuardProps) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to={redirectTo} replace state={{ from: location }} />;
+  }
+
+  return children ? <>{children}</> : <Outlet />;
+};
+
 export const PublicOnlyRoute = ({ redirectTo = '/', children }: GuardProps) => {
   const { isAuthenticated, isLoading } = useAuth();
 

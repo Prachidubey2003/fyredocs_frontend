@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Menu, User, X, ChevronDown, Shield, LogOut } from 'lucide-react';
+import { Menu, User, X, ChevronDown, Shield, LogOut, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -319,6 +319,13 @@ export const Header = () => {
                       </div>
                     </div>
                   </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/activity">
+                      <History className="mr-2 h-4 w-4" />
+                      My Activity
+                    </Link>
+                  </DropdownMenuItem>
                   {user?.role === 'super-admin' && (
                     <>
                       <DropdownMenuSeparator />
