@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/auth/authContext";
 import { ThemeProvider } from "next-themes";
-import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from "@/auth/authGuard";
+import { ProtectedRoute, PublicOnlyRoute, RequireAuthRoute, RoleRoute } from "@/auth/authGuard";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { Layout } from "@/components/layout/Layout";
 import { DocsLayout } from "@/components/layout/DocsLayout";
@@ -65,6 +65,7 @@ const DevDocsIndexPage = lazy(() => import("./pages/docs/DevDocsIndexPage"));
 const DevDocsPage = lazy(() => import("./pages/docs/DevDocsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SignIn = lazy(() => import("./pages/auth/SignIn"));
+const ActivityPage = lazy(() => import("./pages/ActivityPage"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const BusinessPage = lazy(() => import("./pages/admin/BusinessPage"));
@@ -74,6 +75,7 @@ const ReliabilityPage = lazy(() => import("./pages/admin/ReliabilityPage"));
 const SystemPage = lazy(() => import("./pages/admin/SystemPage"));
 const ServerPerformancePage = lazy(() => import("./pages/admin/ServerPerformancePage"));
 const ApiPerformancePage = lazy(() => import("./pages/admin/ApiPerformancePage"));
+const ActivityAuditPage = lazy(() => import("./pages/admin/ActivityAuditPage"));
 
 const queryClient = new QueryClient();
 
@@ -138,6 +140,9 @@ const App = () => (
                     <Route path="/privacy" element={<PrivacyPage />} />
                     <Route path="/terms" element={<TermsPage />} />
                     <Route path="/cookies" element={<CookiePage />} />
+                    <Route element={<RequireAuthRoute />}>
+                      <Route path="/activity" element={<ActivityPage />} />
+                    </Route>
                     <Route element={<RoleRoute allowedRoles={['super-admin']} />}>
                       <Route path="/admin/dashboard" element={<AdminDashboard />} />
                       <Route path="/admin/business" element={<BusinessPage />} />
@@ -147,6 +152,7 @@ const App = () => (
                       <Route path="/admin/system" element={<SystemPage />} />
                       <Route path="/admin/server-performance" element={<ServerPerformancePage />} />
                       <Route path="/admin/api-performance" element={<ApiPerformancePage />} />
+                      <Route path="/admin/activity" element={<ActivityAuditPage />} />
                     </Route>
                     <Route element={<PublicOnlyRoute />}>
                       <Route path="/signin" element={<SignIn />} />

@@ -14,6 +14,7 @@ import {
   useSystem,
   useServerPerformance,
   useApiPerformance,
+  useAdminActivity,
 } from '@/hooks/useAdminMetrics';
 import {
   DollarSign,
@@ -31,6 +32,7 @@ import {
   UserCircle,
   CheckCircle2,
   Zap,
+  History,
 } from 'lucide-react';
 
 function QuickStats() {
@@ -332,6 +334,27 @@ function ApiPerfCard() {
   );
 }
 
+function ActivityAuditCard() {
+  const { data: resp, isLoading } = useAdminActivity({ limit: 1 });
+  const total = resp?.meta?.total ?? 0;
+  const { data: failedResp } = useAdminActivity({ limit: 1, status: 'failed' });
+  const failed = failedResp?.meta?.total ?? 0;
+  const failureRate = total > 0 ? (failed / total) * 100 : 0;
+  return (
+    <SummaryCard
+      title="Activity Audit"
+      icon={<History className="h-4 w-4 text-cyan-600" />}
+      to="/admin/activity"
+      isLoading={isLoading}
+      stats={[
+        { label: 'Total Events', value: total },
+        { label: 'Failed', value: failed, color: failed > 0 ? 'text-red-600' : 'text-green-600' },
+        { label: 'Failure Rate', value: `${failureRate.toFixed(1)}%`, color: failureRate > 5 ? 'text-red-600' : 'text-green-600' },
+      ]}
+    />
+  );
+}
+
 const AdminDashboard = () => {
   const queryClient = useQueryClient();
 
@@ -359,6 +382,7 @@ const AdminDashboard = () => {
           <SystemCard />
           <ServerPerfCard />
           <ApiPerfCard />
+          <ActivityAuditCard />
         </div>
       </div>
     </>

@@ -114,6 +114,7 @@ export const docNavGroups: DocNavGroup[] = [
       { slug: 'file-limits', title: 'File Limits' },
       { slug: 'security-privacy', title: 'Security & Privacy' },
       { slug: 'accounts-plans', title: 'Accounts & Plans' },
+      { slug: 'activity-history', title: 'Activity History' },
     ],
   },
   {
@@ -1605,6 +1606,33 @@ export const docs: DocEntry[] = [
             ['Account required', 'No', 'Yes — email + password signup'],
           ],
         },
+      },
+    ],
+  },
+
+  // ──────────────────────────────────────
+  // Activity History
+  // ──────────────────────────────────────
+  {
+    slug: 'activity-history',
+    title: 'Activity History',
+    description: 'See your recent tool runs, sign-ins, and account changes in one place.',
+    category: 'concept',
+    sections: [
+      {
+        heading: 'What is tracked',
+        content: 'When you are signed in, Fyredocs keeps a personal activity trail: tool jobs you start (with their outcome — completed, failed, or cancelled), sign-ins and sign-outs, plan changes, share links you create, and security-relevant events such as password resets. Open it from your profile menu under "My Activity". Events are grouped by day and can be filtered by category.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'What is never stored',
+        content: 'Activity entries record what happened, not what your files contain. Fyredocs never stores document contents, extracted text, passwords, or tokens in your activity history. Tool entries carry only the tool name, timing, outcome, and technical context such as file counts.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Guests',
+        content: 'Guest sessions contribute anonymous usage events, but there is no personal activity page for guests — a signed-in account is what makes the trail yours. Create a free account to keep a history you can revisit.',
+        type: 'tip',
       },
     ],
   },
