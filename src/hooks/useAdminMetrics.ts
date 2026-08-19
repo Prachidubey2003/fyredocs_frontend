@@ -18,7 +18,9 @@ import {
   fetchAcquisition,
   fetchQueueStatus,
   fetchApiTrends,
+  fetchAdminActivity,
   type EndpointQueryParams,
+  type AdminActivityParams,
 } from '@/lib/adminApi';
 
 export const useOverview = () =>
@@ -151,4 +153,11 @@ export const useApiTrends = (days = 7) =>
     queryKey: ['admin', 'apiTrends', days],
     queryFn: () => fetchApiTrends(days),
     staleTime: 60_000,
+  });
+
+export const useAdminActivity = (params?: AdminActivityParams) =>
+  useQuery({
+    queryKey: ['admin', 'activity', params],
+    queryFn: () => fetchAdminActivity(params),
+    staleTime: 30_000,
   });

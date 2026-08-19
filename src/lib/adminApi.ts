@@ -402,3 +402,58 @@ export type ApiTrendsData = {
 
 export const fetchApiTrends = (days = 7) =>
   optional(apiRequest<ApiResponse<ApiTrendsData>>(`/admin/metrics/api-trends?days=${days}`));
+
+// --- Activity Audit ---
+export type AdminActivityItem = {
+  id: string;
+  clientEventId?: string;
+  userId?: string;
+  isGuest: boolean;
+  sessionId?: string;
+  eventType: string;
+  featureId?: string;
+  toolId?: string;
+  action?: string;
+  entityType?: string;
+  entityId?: string;
+  documentId?: string;
+  status: 'started' | 'success' | 'failed' | 'cancelled';
+  failureReason?: string;
+  errorCode?: string;
+  metadata?: Record<string, unknown>;
+  platform?: string;
+  deviceType?: string;
+  appVersion?: string;
+  correlationId?: string;
+  occurredAt: string;
+  createdAt: string;
+};
+
+export type AdminActivityParams = {
+  page?: number;
+  limit?: number;
+  userId?: string;
+  eventType?: string;
+  toolId?: string;
+  status?: string;
+  platform?: string;
+  search?: string;
+  from?: string;
+  to?: string;
+  sort?: string;
+  order?: 'asc' | 'desc';
+};
+
+export const fetchAdminActivity = async (
+  params?: AdminActivityParams
+): Promise<{ data: AdminActivityItem[]; meta?: PaginationMeta }> => {
+  const q = new URLSearchParams();
+  for (const [key, value] of Object.entries(params ?? {})) {
+    if (value !== undefined && value !== '') q.set(key, String(value));
+  }
+  const qs = q.toString();
+  const resp = await apiRequest<ApiResponseWithMeta<AdminActivityItem[]>>(
+    `/admin/activity${qs ? '?' + qs : ''}`
+  );
+  return { data: resp.data ?? [], meta: resp.meta };
+};

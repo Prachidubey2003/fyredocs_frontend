@@ -36,6 +36,26 @@ export const ProtectedRoute = ({ children }: GuardProps) => {
 };
 
 /**
+ * Unlike ProtectedRoute (a deliberate pass-through so tools stay
+ * guest-accessible), this guard genuinely requires a signed-in user — pages
+ * behind it render user-scoped data that has no guest equivalent.
+ */
+export const RequireAuthRoute = ({ redirectTo = '/signin', children }: GuardProps) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to={redirectTo} replace state={{ from: location }} />;
+  }
+
+  return children ? <>{children}</> : <Outlet />;
+};
+
+/**
  * Keeps an already-authenticated user off the sign-in and sign-up pages,
  * redirecting them home instead. Waits for bootstrap first, or a returning user
  * with a valid cookie would see the login form flash before being redirected.

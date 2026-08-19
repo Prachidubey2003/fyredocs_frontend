@@ -131,6 +131,7 @@ export const devDocNavGroups: DevDocNavGroup[] = [
       { slug: 'frontend-jobs', title: 'Job Tracking' },
       { slug: 'frontend-api-client', title: 'API Client Patterns' },
       { slug: 'frontend-tools-config', title: 'Tool Configuration' },
+      { slug: 'frontend-activity', title: 'Activity Tracking SDK' },
     ],
   },
   {
@@ -2066,6 +2067,52 @@ export const developerDocs: DevDocEntry[] = [
       {
         heading: '403 handling',
         content: 'A 403 Forbidden response (distinct from 401) also triggers the "fyredocs:unauthorized" event, which navigates the user to /signin. This handles cases where the user is authenticated but their permissions have been revoked server-side.',
+        type: 'paragraph',
+      },
+    ],
+  },
+  {
+    slug: 'frontend-activity',
+    title: 'Activity Tracking SDK',
+    description: 'The buffered client event SDK behind the user activity audit trail.',
+    category: 'frontend',
+    sections: [
+      {
+        heading: 'Overview',
+        content: 'src/lib/activity.ts is a buffered, batched, fire-and-forget event SDK. track() queues an event; batches flush to POST /api/activity/events every 10 seconds, at 20 buffered events, or when the tab is hidden (via navigator.sendBeacon, the only transport that survives page teardown). Every entry point swallows its own errors — a tracking outage must never break a tool run.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Idempotency and identity',
+        content: 'Every event carries a client-minted UUID (clientEventId); the server dedupes on it, so re-sending after an ambiguous network failure is safe. No user identity is attached client-side — the server derives it from the auth cookie, and anonymous visitors become guest rows. The per-tab session id lives in sessionStorage under fyredocs.activity.sessionId.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Event catalog',
+        content: 'Event names are lowercase domain.action strings defined in src/lib/activityEvents.ts and validated server-side against a domain allowlist (analytics-service/internal/activity/catalog.go). A new event must stay inside an approved domain (auth, job, upload, share, settings, ...) or ingest rejects it.',
+        type: 'paragraph',
+      },
+      {
+        heading: 'Instrumented call sites',
+        content: '',
+        type: 'table',
+        tableData: {
+          headers: ['Site', 'Events'],
+          rows: [
+            ['useJob (all single-job tools)', 'job.started on create; job.completed / job.failed / job.cancelled on the terminal transition (SSE or polling, deduped by a per-job ref)'],
+            ['useBatchJob (batch tools)', 'Same job.* events per server job, with metadata.batch = true'],
+            ['authContext', 'auth.login, auth.signup (success and failed), auth.logout (flushed before the session cookie dies)'],
+          ],
+        },
+      },
+      {
+        heading: 'Privacy rule',
+        content: 'Metadata is whitelist-built at the call site: sizes, counts, durations, ids. Never filenames, document contents, or anything user-typed. The server additionally strips keys matching password/token/secret/content/text/prompt as defense in depth.',
+        type: 'warning',
+      },
+      {
+        heading: 'User-facing surface',
+        content: 'The /activity route (src/pages/ActivityPage.tsx, behind RequireAuthRoute) renders GET /api/activity/me grouped by day with category filters. Guests are redirected to /signin — their events exist server-side but carry no user id.',
         type: 'paragraph',
       },
     ],

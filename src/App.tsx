@@ -35,7 +35,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/auth/authContext";
 import { ThemeProvider } from "next-themes";
-import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from "@/auth/authGuard";
+import { ProtectedRoute, PublicOnlyRoute, RequireAuthRoute, RoleRoute } from "@/auth/authGuard";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
 import { CookieConsent } from "@/components/common/CookieConsent";
@@ -69,6 +69,7 @@ const TrashPage = lazy(() => import("./pages/app/TrashPage"));
 const MembersPage = lazy(() => import("./pages/app/MembersPage"));
 const ExportsPage = lazy(() => import("./pages/app/ExportsPage"));
 const SignIn = lazy(() => import("./pages/auth/SignIn"));
+const ActivityPage = lazy(() => import("./pages/ActivityPage"));
 const SignUp = lazy(() => import("./pages/auth/SignUp"));
 const BusinessPage = lazy(() => import("./pages/admin/BusinessPage"));
 const GrowthPage = lazy(() => import("./pages/admin/GrowthPage"));
@@ -79,6 +80,7 @@ const NatsPage = lazy(() => import("./pages/admin/NatsPage"));
 const ServerPerformancePage = lazy(() => import("./pages/admin/ServerPerformancePage"));
 const ApiPerformancePage = lazy(() => import("./pages/admin/ApiPerformancePage"));
 const ObservabilityPage = lazy(() => import("./pages/admin/ObservabilityPage"));
+const ActivityAuditPage = lazy(() => import("./pages/admin/ActivityAuditPage"));
 
 const queryClient = new QueryClient();
 
@@ -117,6 +119,9 @@ const App = () => (
                     <Route path="/cookies" element={<CookiePage />} />
                     <Route element={<ProtectedRoute />}>
                       <Route path="/my-files" element={<MyFilesPage />} />
+                    </Route>
+                    <Route element={<RequireAuthRoute />}>
+                      <Route path="/activity" element={<ActivityPage />} />
                     </Route>
                     <Route element={<PublicOnlyRoute redirectTo="/dashboard" />}>
                       <Route path="/signin" element={<SignIn />} />
@@ -165,6 +170,7 @@ const App = () => (
                       <Route path="/admin/server-performance" element={<ServerPerformancePage />} />
                       <Route path="/admin/api-performance" element={<ApiPerformancePage />} />
                       <Route path="/admin/observability" element={<ObservabilityPage />} />
+                      <Route path="/admin/activity" element={<ActivityAuditPage />} />
                     </Route>
                   </Route>
               </Routes>

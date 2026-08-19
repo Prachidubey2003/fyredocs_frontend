@@ -38,6 +38,8 @@ import {
   refreshSession,
   signup,
 } from '@/auth/authClient';
+import { flush, track } from '@/lib/activity';
+import { ACTIVITY_EVENTS } from '@/lib/activityEvents';
 
 type AuthContextValue = {
   isAuthenticated: boolean;
@@ -223,13 +225,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   /** Signs in. Falls back to syncUser when the response omits a user, so a shape change downgrades to an extra request rather than a broken session. */
   const handleLogin = useCallback(
     async (credentials: AuthCredentials) => {
-      const response = await login(credentials);
-      if (response.user) {
-        hydrateAuth(response.user, response.accessExpiresAt);
-        return response.user;
+      // Failures are tracked without credentials or error detail — a login
+      // error message can echo the typed email, which must not be persisted.
+      try {
+        const response = await login(credentials);
+        track({ eventType: ACTIVITY_EVENTS.authLogin });
+        if (response.user) {
+          hydrateAuth(response.user, response.accessExpiresAt);
+          return response.user;
+        }
+        await syncUser();
+        return null;
+      } catch (error) {
+        track({ eventType: ACTIVITY_EVENTS.authLogin, status: 'failed' });
+        throw error;
       }
-      await syncUser();
-      return null;
     },
     [syncUser, hydrateAuth]
   );
@@ -237,13 +247,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   /** Signs up and treats the result as a login — signup returns an authenticated session. */
   const handleSignup = useCallback(
     async (credentials: AuthSignupCredentials) => {
-      const response = await signup(credentials);
-      if (response.user) {
-        hydrateAuth(response.user, response.accessExpiresAt);
-        return response.user;
+      try {
+        const response = await signup(credentials);
+        track({ eventType: ACTIVITY_EVENTS.authSignup });
+        if (response.user) {
+          hydrateAuth(response.user, response.accessExpiresAt);
+          return response.user;
+        }
+        await syncUser();
+        return null;
+      } catch (error) {
+        track({ eventType: ACTIVITY_EVENTS.authSignup, status: 'failed' });
+        throw error;
       }
-      await syncUser();
-      return null;
     },
     [syncUser, hydrateAuth]
   );
@@ -251,6 +267,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   /** Signs out, clearing local state in `finally` so a failed server call still ends the local session — leaving the UI logged-in after a logout click would be worse than a stale server session. */
   const handleLogout = useCallback(async () => {
     setIsLoading(true);
+    // Track before the session cookie dies, then flush: after logout the
+    // event would be attributed to a guest (or lost with the tab).
+    track({ eventType: ACTIVITY_EVENTS.authLogout });
+    void flush();
     try {
       await logout();
     } finally {

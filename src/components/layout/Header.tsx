@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, LogOut, Search, Shield, User } from 'lucide-react';
+import { History, LayoutDashboard, LogOut, Search, Shield, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -98,6 +98,12 @@ export const Header = () => {
                   <Link to="/dashboard">
                     <LayoutDashboard className="mr-2 h-4 w-4" aria-hidden />
                     Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/activity">
+                    <History className="mr-2 h-4 w-4" aria-hidden />
+                    My Activity
                   </Link>
                 </DropdownMenuItem>
                 {user?.role === 'super-admin' && (
